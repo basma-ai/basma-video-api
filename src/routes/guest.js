@@ -33,7 +33,7 @@ router.post('/guest/request_token', async function (req, res, next) {
     // generate a token for our beloved guest
     // create a guest token
 
-    var token = await users_mod.generate_token(global_vars, 'guests');
+    var token = await users_mod.generate_token('guests');
 
     // get the user agent & IP
     var user_agent = req.headers['user-agent'];
@@ -49,7 +49,6 @@ router.post('/guest/request_token', async function (req, res, next) {
 
     // and now, do the insertion
     await global_vars.knex('guests').insert(insert_data).then((result) => {
-        console.log("done");
         return_data['token'] = token;
         success = true;
     });
@@ -65,6 +64,7 @@ router.post('/guest/request_token', async function (req, res, next) {
 module.exports = function (options) {
 
     global_vars = options;
+    users_mod.init(global_vars);
 
     return router;
 };

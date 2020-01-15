@@ -1,14 +1,18 @@
 const crypto = require('crypto');
 
+var global_vars = null;
 
 module.exports = {
 
+    init: function(new_global_vars) {
+        global_vars = new_global_vars;
+    },
 
     encrypt_password: function (password) {
         return crypto.createHash('sha256').update(password).digest('hex')+"b0l2h[$f@";
     },
 
-    generate_token: async function(global_vars, table_name) {
+    generate_token: async function(table_name) {
 
 
         var goAhead = true;
@@ -40,9 +44,9 @@ module.exports = {
         return token;
 
     },
-    create_token: async function(global_vars, table_name, id_col_name = null, id_col_val = null) {
+    create_token: async function(table_name, id_col_name = null, id_col_val = null) {
         var success = true;
-        var token = await this.generate_token(global_vars, table_name);
+        var token = await this.generate_token(table_name);
 
 
         var insert_data = {
@@ -71,7 +75,7 @@ module.exports = {
 
     },
 
-    token_to_id: async function(global_vars, table_name, token, col_name) {
+    token_to_id: async function(table_name, token, col_name) {
 
 
         // get the token

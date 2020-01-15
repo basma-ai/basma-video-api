@@ -16,24 +16,13 @@ app.use(function(req, res, next) {
 });
 
 
-
-
 // establish database connection, using knex
-// var knex = require('knex')({
-//   client: 'mysql2',
-//   connection: {
-//     host : 'aleecode-testing.cmh5u5ucbhrf.me-south-1.rds.amazonaws.com',
-//     user : 'master',
-//     password : 'q4IN3yUBbqFKzDgINbY7',
-//     database : 'assets_system'
-//   }
-// });
 var knex = require('knex')({
   client: 'mysql2',
   connection: {
     host : 'aleecode-testing.cmh5u5ucbhrf.me-south-1.rds.amazonaws.com',
-    user : 'master',
-    password : 'q4IN3yUBbqFKzDgINbY7',
+    user : 'video_cc',
+    password : 'j32$J4j2^34j23rm32$#F',
     database : 'video_cc',
     insecureAuth: true
   },
@@ -56,6 +45,8 @@ app.get('/', function(req, res) {
 // require routes
 var guest = require('./routes/guest.js')(global_vars)
 var calls = require('./routes/calls.js')(global_vars)
+var master = require('./routes/master.js')(global_vars)
+var agent = require('./routes/agent.js')(global_vars)
 
 // guests
 app.get('/guest', guest);
@@ -67,6 +58,17 @@ app.post('/calls/get_services', calls);
 app.post('/calls/start_call', calls);
 app.post('/calls/refresh_call', calls);
 app.post('/calls/end_call', calls);
+
+// agent
+app.get('/agent', agent);
+app.post('/agent/request_token', agent);
+app.post('/agent/list_pending_calls', agent);
+app.post('/agent/answer_call', agent);
+app.post('/agent/end_call', agent);
+
+// master
+app.get('/master', master);
+app.post('/master/create_vendor_user', master);
 
 
 app.listen(port, () => console.log(`Video CC API listening on port ${port}!`))
