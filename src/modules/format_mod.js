@@ -40,6 +40,10 @@ module.exports = {
 
     format_vu: async function(vu) {
 
+        if(vu == null) {
+            return null;
+        }
+
         delete vu['password'];
         delete vu['creation_time'];
 
@@ -63,6 +67,7 @@ module.exports = {
 
     },
     format_call: async function(call) {
+        call['vu'] = await this.get_vu(call['vu_id']);
         return call;
     }
 

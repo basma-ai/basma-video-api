@@ -2,6 +2,7 @@ var express = require('express');
 var router = express.Router();
 
 var users_mod = require("../modules/users_mod");
+var format_mod = require("../modules/format_mod");
 
 var global_vars;
 
@@ -210,7 +211,7 @@ router.post('/calls/refresh_call', async function (req, res, next) {
                 last_refresh_time: Date.now()
             };
 
-            return_data['call'] = the_call;
+            return_data['call'] = await format_mod.format_call(the_call);
 
             await global_vars.knex('calls').where('id','=',the_call.id).update(update_data).then((result) => {
                 success = true;
@@ -328,6 +329,7 @@ module.exports = function (options) {
 
     global_vars = options;
     users_mod.init(global_vars);
+    format_mod.init(global_vars);
 
     return router;
 };
