@@ -3,6 +3,7 @@ const app = express()
 const bodyParser = require('body-parser');
 const port = 1061
 const setupPaginator = require('el7r-knex-paginator');
+require('dotenv').config()
 
 
 // set expressjs settings
@@ -20,10 +21,10 @@ app.use(function(req, res, next) {
 var knex = require('knex')({
   client: 'mysql2',
   connection: {
-    host : 'aleecode-testing.cmh5u5ucbhrf.me-south-1.rds.amazonaws.com',
-    user : 'video_cc',
-    password : 'j32$J4j2^34j23rm32$#F',
-    database : 'video_cc',
+    host : process.env.DB_HOST,
+    user : process.env.DB_USER,
+    password : process.env.DB_PASSWORD,
+    database : process.env.DB_DATABASE,
     insecureAuth: true
   },
   insecureAuth: true
@@ -51,6 +52,7 @@ var agent = require('./routes/agent.js')(global_vars)
 // guests
 app.get('/guest', guest);
 app.post('/guest/request_token', guest);
+app.post('/guest/get_vendor', guest);
 
 // calls
 app.get('/calls', calls);
@@ -58,6 +60,7 @@ app.post('/calls/get_services', calls);
 app.post('/calls/start_call', calls);
 app.post('/calls/refresh_call', calls);
 app.post('/calls/end_call', calls);
+app.post('/calls/test', calls);
 
 // agent
 app.get('/agent', agent);

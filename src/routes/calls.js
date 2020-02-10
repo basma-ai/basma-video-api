@@ -1,10 +1,11 @@
-var express = require('express');
-var router = express.Router();
+let express = require('express');
+let router = express.Router();
 
-var users_mod = require("../modules/users_mod");
-var format_mod = require("../modules/format_mod");
+let users_mod = require("../modules/users_mod");
+let format_mod = require("../modules/format_mod");
+let twilio_mod = require("../modules/twilio_mod");
 
-var global_vars;
+let global_vars;
 
 
 /**
@@ -40,7 +41,8 @@ router.post('/calls/get_services', async function (req, res, next) {
     if(go_ahead) {
         // and now, do the insertion
         await global_vars.knex('vendors_services').select('*').where('vendor_id', '=', req.body.vendor_id).then((rows) => {
-            return_data = rows;
+            return_data['services'] = rows;
+            success = true;
         });
     }
 
@@ -153,7 +155,7 @@ router.post('/calls/start_call', async function (req, res, next) {
             "vendor_id": 1,
             "vendor_service_id": 2,
             "last_refresh_time": 1579098055243,
-            "connection_data": null
+            "connection_guest_token": null
         }
     }
 }
@@ -211,7 +213,18 @@ router.post('/calls/refresh_call', async function (req, res, next) {
                 last_refresh_time: Date.now()
             };
 
+            if(the_call['connection_guest_token'] == null) {
+                // no token generated for the guest, let's make one
+                var twilio_guest_token = twilio_mod.generate_twilio_token('guest-'+guest_id, 'call-'+the_call.id);
+                // let's put it in the db
+                await global_vars.knex('calls').update({
+                    'connection_guest_token': twilio_guest_token
+                }).where('id','=',the_call.id);
+            }
+
             return_data['call'] = await format_mod.format_call(the_call);
+
+            delete return_data['call']['connection_agent_token'];
 
             await global_vars.knex('calls').where('id','=',the_call.id).update(update_data).then((result) => {
                 success = true;
@@ -313,6 +326,26 @@ router.post('/calls/end_call', async function (req, res, next) {
             });
         }
     }
+
+    res.send({
+        success: success,
+        data: return_data
+    });
+
+});
+
+
+router.post('/calls/test', async function (req, res, next) {
+
+
+    let success = true;
+    let go_ahead = true;
+    let return_data = {};
+
+
+    var twilio_token = twilio_mod.generate_twilio_token('clientname2323','thetestroom32423');
+
+    return_data['twilio_token'] = twilio_token;
 
     res.send({
         success: success,

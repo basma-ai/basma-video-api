@@ -2,6 +2,7 @@ var express = require('express');
 var router = express.Router();
 
 var users_mod = require("../modules/users_mod");
+var format_mod = require("../modules/format_mod");
 
 var global_vars;
 
@@ -60,11 +61,57 @@ router.post('/guest/request_token', async function (req, res, next) {
 
 });
 
+/**
+ * @api {post} /guest/get_vendor Get vendor profile
+ * @apiName GuestGetVendor
+ * @apiGroup Guest
+ * @apiDescription Get a vendor's profile
+ *
+ * @apiParam {Integer} vendor_id The ID of the vendor
+ *
+ * @apiSuccessExample {json} Success-Response:
+ *     HTTP/1.1 200 OK
+ {
+    "success": true,
+    "data": {
+        "vendor": {
+            "id": 1,
+            "name": "International Bank of Basma",
+            "username": "ibb",
+            "logo_url": "https://i.imgur.com/o2H9D9f.png"
+        }
+    }
+}
+ */
+router.post('/guest/get_vendor', async function (req, res, next) {
+
+
+    var success = false;
+    var goAhead = true;
+    var return_data = {};
+
+
+    // generate a token for our beloved guest
+    // create a guest token
+
+    let vendor = await format_mod.get_vendor(req.body.vendor_id);
+
+    success = true;
+    return_data['vendor'] = vendor;
+
+    res.send({
+        success: success,
+        data: return_data
+    });
+
+});
+
 
 module.exports = function (options) {
 
     global_vars = options;
     users_mod.init(global_vars);
+    format_mod.init(global_vars);
 
     return router;
 };

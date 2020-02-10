@@ -5,14 +5,17 @@
   "main": "src/api.js",
   "dependencies": {
     "body-parser": "^1.19.0",
+    "dotenv": "^8.2.0",
     "el7r-knex-paginator": "^1.3.4",
     "express": "^4.17.1",
     "knex": "^0.19.1",
-    "mysql2": "^1.6.5"
+    "mysql2": "^1.6.5",
+    "twilio": "^3.39.3"
   },
   "devDependencies": {},
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nodemon src/api.js"
   },
   "author": "Ali Alnoaimi",
   "license": "ISC"

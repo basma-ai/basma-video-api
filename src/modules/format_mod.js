@@ -68,7 +68,25 @@ module.exports = {
     },
     format_call: async function(call) {
         call['vu'] = await this.get_vu(call['vu_id']);
+        call['vendor_service'] = await this.get_vendor_service(call['vendor_service_id']);
         return call;
+    },
+
+    get_vendor_service: async function(id) {
+
+        let the_row = null;
+
+        await global_vars.knex('vendors_services').select('*')
+            .where('id','=',id).
+            then((rows) => {
+                the_row = rows[0];
+            });
+
+        return await this.format_vendor_service(the_row);
+
+    },
+    format_vendor_service: async function(vendor_service) {
+        return vendor_service;
     }
 
 

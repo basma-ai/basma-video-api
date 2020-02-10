@@ -3,6 +3,7 @@ var router = express.Router();
 
 var users_mod = require("../modules/users_mod");
 var format_mod = require("../modules/format_mod");
+var twilio_mod = require("../modules/twilio_mod");
 
 var global_vars;
 
@@ -84,6 +85,7 @@ router.post('/agent/request_token', async function (req, res, next) {
         var token = await users_mod.create_token('vendors_users_tokens', 'vu_id', the_vu.id);
         return_data['token'] = token;
         return_data['vu_user'] = await format_mod.format_vu(the_vu);
+        success = true;
     }
 
     res.send({
@@ -126,9 +128,19 @@ router.post('/agent/list_pending_calls', async function (req, res, next) {
 
     if(go_ahead) {
         // and now, do the insertion
+        let pre_rows = null
         await global_vars.knex('calls').select('*').where('status', '=', 'calling').where('vendor_id', '=', the_vu.vendor.id).orderBy('creation_time','DESC').then((rows) => {
-            return_data = rows;
+            pre_rows = rows;
+            success = true;
         });
+
+        let final_rows = [];
+
+        for(let row of pre_rows) {
+            final_rows.push(await format_mod.format_call(row));
+        }
+
+        return_data['pending_calls_list'] = final_rows;
     }
 
     res.send({
@@ -209,6 +221,17 @@ router.post('/agent/answer_call', async function (req, res, next) {
 
         if(go_ahead) {
             // cool, we reached here, now let's initiate the call
+
+
+            if(the_call['connection_agent_token'] == null) {
+                // no token generated for the guest, let's make one
+                var twilio_agent_token = twilio_mod.generate_twilio_token('agent-'+vu_id, 'call-'+the_call.id);
+                // let's put it in the db
+                await global_vars.knex('calls').update({
+                    'connection_agent_token': twilio_agent_token
+                }).where('id','=',the_call.id);
+            }
+
             let update_data = {
                 vu_id: vu_id,
                 status: 'started'
@@ -221,6 +244,7 @@ router.post('/agent/answer_call', async function (req, res, next) {
             });
 
             return_data['call'] = await format_mod.get_call(the_call.id);
+            delete return_data['call']['connection_guest_token'];
         }
     }
 
