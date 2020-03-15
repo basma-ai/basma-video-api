@@ -78,7 +78,7 @@ router.post('/vendor/dashboard_numbers', async function (req, res, next) {
 
     return_data['unanswered_calls'] = unanswered_calls;
 
-    // answered_calls
+    // top services
     let top_services = [];
     stmnt = global_vars.knex('calls').select('vendor_service_id').count('vendor_service_id as value_occurrence').groupBy('vendor_service_id').orderBy('value_occurrence', 'DESC');
     stmnt = stmnt.where('vendor_id', '=', vu.vendor.id);
@@ -95,6 +95,28 @@ router.post('/vendor/dashboard_numbers', async function (req, res, next) {
     return_data['top_services'] = [];
     for(let service of top_services) {
         return_data['top_services'].push(await format_mod.get_vendor_service(service.vendor_service_id));
+    }
+
+    // Most active agent
+    let most_active = [];
+    stmnt = global_vars.knex('calls').select('vu_id').count('vu_id as value_occurrence').groupBy('vu_id').orderBy('value_occurrence', 'DESC');
+    stmnt = stmnt.where('vendor_id', '=', vu.vendor.id);
+
+    if(vu.role != 'admin') {
+        stmnt = stmnt.where('vu_id', '!=', vu.id);
+    }
+
+
+    await stmnt.then((result) => {
+        most_active = result;
+    });
+
+    return_data['most_active_agents'] = [];
+    for(let vu_ma of most_active) {
+
+        let vu_topush = await format_mod.get_vu(vu_ma.vu_id);
+        vu_topush['calls_answered'] = vu_ma['value_occurrence'];
+        return_data['most_active_agents'].push(vu_topush);
     }
 
     res.send({
@@ -144,7 +166,8 @@ router.post('/vendor/calls_history', async function (req, res, next) {
         stmnt = stmnt.where('vu_id', '=', vu.id);
     }
     stmnt = stmnt.orderBy('id', 'DESC');
-    stmnt = stmnt.paginate(1, 1, true);
+    stmnt = stmnt.limit(10);
+    // stmnt = stmnt.paginate(1, 1, true);
 
 
 
@@ -168,6 +191,135 @@ router.post('/vendor/calls_history', async function (req, res, next) {
     });
 
 });
+
+
+/**
+ * @api {post} /vendor/create_user Create a user
+ * @apiName VendorCreateUser
+ * @apiGroup Vendor
+ * @apiDescription Create a user for a vendor (agent, manager et al.)
+ *
+ * @apiParam {String} vu_token The vendor token
+ * @apiParam {String} name Full name
+ * @apiParam {String} role "agent" or "admin"
+ * @apiParam {String} username The username
+ * @apiParam {String} password The password
+ *
+ * @apiSuccessExample {json} Success-Response:
+ *     HTTP/1.1 200 OK
+
+
+ */
+router.post('/vendor/create_user', async function (req, res, next) {
+
+
+    var success = false;
+    var go_ahead = true;
+    var return_data = {};
+
+
+    // generate a token for our beloved guest
+    // create a guest token
+
+    const vu_id = await users_mod.token_to_id( 'vendors_users_tokens', req.body.vu_token, 'vu_id');
+    let vu = await format_mod.get_vu(vu_id);
+
+    if(vu == null && vu.role == 'admin') {
+        go_ahead = false;
+    }
+
+    if(go_ahead) {
+        // check if username is taken
+        await global_vars.knex('vendors_users').select('*').where('vendor_id', '=', vu.vendor.id).where('username','=',req.body.username).then((rows) => {
+            if(rows.length > 0) {
+                if (return_data['errors'] == null) { return_data['errors'] = []; }
+                return_data['errors'].push('username_taken');
+                go_ahead = false;
+            }
+        });
+    }
+
+    if(go_ahead) {
+        // define the data to be inserted
+
+        var insert_data = {
+            vendor_id: vu.vendor.id,
+            name: req.body.name,
+            role: req.body.role,
+            username: req.body.username,
+            password: users_mod.encrypt_password(req.body.password),
+            creation_time: Date.now()
+        };
+
+        // and now, do the insertion
+        await global_vars.knex('vendors_users').insert(insert_data).then((result) => {
+            console.log("done");
+            success = true;
+        });
+    }
+
+    res.send({
+        success: success,
+        data: return_data
+    });
+
+});
+
+
+/**
+ * @api {post} /vendor/list_users List users
+ * @apiName VendorListUsers
+ * @apiGroup Vendor
+ * @apiDescription List the users of the logged in vendor
+ *
+ * @apiParam {String} vu_token The vendor token
+ *
+ * @apiSuccessExample {json} Success-Response:
+ *     HTTP/1.1 200 OK
+
+
+ */
+router.post('/vendor/list_users', async function (req, res, next) {
+
+
+    var success = true;
+    var go_ahead = true;
+    var return_data = {};
+
+
+    // generate a token for our beloved guest
+    // create a guest token
+
+    const vu_id = await users_mod.token_to_id( 'vendors_users_tokens', req.body.vu_token, 'vu_id');
+    let vu = await format_mod.get_vu(vu_id);
+
+    if(vu == null && vu.role == 'admin') {
+        go_ahead = false;
+    }
+
+    if(go_ahead) {
+        // check if username is taken
+        let users = null;
+        await global_vars.knex('vendors_users').select('*').where('vendor_id', '=', vu.vendor.id).orderBy('id','DESC').then((rows) => {
+            users = rows;
+        });
+
+        let fixed_users = [];
+
+        for(let user of users) {
+            fixed_users.push(await format_mod.format_vu(user));
+        }
+
+        return_data['users'] =  fixed_users;
+    }
+
+    res.send({
+        success: success,
+        data: return_data
+    });
+
+});
+
 
 
 module.exports = function (options) {
