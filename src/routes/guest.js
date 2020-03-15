@@ -68,6 +68,7 @@ router.post('/guest/request_token', async function (req, res, next) {
  * @apiDescription Get a vendor's profile
  *
  * @apiParam {Integer} vendor_id The ID of the vendor
+ * @apiParam {Integer} vendor_username The Username of the vendor
  *
  * @apiSuccessExample {json} Success-Response:
  *     HTTP/1.1 200 OK
@@ -93,6 +94,19 @@ router.post('/guest/get_vendor', async function (req, res, next) {
 
     // generate a token for our beloved guest
     // create a guest token
+
+
+    if(req.body.vendor_username != null) {
+        let the_vendor = null;
+
+        await global_vars.knex('vendors').select('*')
+            .where('username','=',req.body.vendor_username).
+            then((rows) => {
+                the_vendor = rows[0];
+            });
+
+        req.body.vendor_id = the_vendor['id'];
+    }
 
     let vendor = await format_mod.get_vendor(req.body.vendor_id);
 
