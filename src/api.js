@@ -77,6 +77,7 @@ app.post('/master/create_vendor_user', master);
 // vendors
 app.get('/vendor', vendor);
 app.post('/vendor/dashboard_numbers', vendor);
+app.post('/vendor/calls_history', vendor);
 
 
 app.listen(port, () => console.log(`Video CC API listening on port ${port}!`))
