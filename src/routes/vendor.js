@@ -166,7 +166,7 @@ router.post('/vendor/calls_history', async function (req, res, next) {
         stmnt = stmnt.where('vu_id', '=', vu.id);
     }
     stmnt = stmnt.orderBy('id', 'DESC');
-    stmnt = stmnt.limit(10);
+    stmnt = stmnt.limit(20);
     // stmnt = stmnt.paginate(1, 1, true);
 
 
