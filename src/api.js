@@ -80,6 +80,7 @@ app.post('/vendor/dashboard_numbers', vendor);
 app.post('/vendor/calls_history', vendor);
 app.post('/vendor/create_user', vendor);
 app.post('/vendor/list_users', vendor);
+app.post('/vendor/list_services', vendor);
 
 
 app.listen(port, () => console.log(`Video CC API listening on port ${port}!`))
