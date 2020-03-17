@@ -232,7 +232,7 @@ router.post('/calls/refresh_call', async function (req, res, next) {
 
             // get no of users in queue
             let queue_count = 0;
-            await global_vars.knex('calls').count('id as total').where('vendor_id', '=', return_data['call']['vendor_id']).where('status', '=', 'calling').then((result) => {
+            await global_vars.knex('calls').count('id as total').where('id','<',return_data['call']['id']).where('vendor_id', '=', return_data['call']['vendor_id']).where('status', '=', 'calling').then((result) => {
                 queue_count = result[0]['total'];
                 // console.log(result);
             });
@@ -242,7 +242,7 @@ router.post('/calls/refresh_call', async function (req, res, next) {
             // get estimated wait time
             // get the average time  20 calls
             let average_call_duration = 0;
-            await global_vars.knex('calls').avg('duration as average_duration').where('id','<',return_data['call']['id']).where('vendor_id', '=', return_data['call']['vendor_id']).where('status', '=', 'calling').whereNotNull('duration').then((result) => {
+            await global_vars.knex('calls').avg('duration as average_duration').where('vendor_id', '=', return_data['call']['vendor_id']).where('status', '=', 'calling').whereNotNull('duration').then((result) => {
                 average_call_duration = result[0]['average_duration'];
                 // console.log(result);
             });
