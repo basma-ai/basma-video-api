@@ -27,12 +27,9 @@ module.exports = {
         client.video.rooms.create({
             uniqueName: room_id,
             recordParticipantsOnConnect: true
-        })
-            .then(room => console.log(room.sid));
+        }).then(room => console.log(room.sid));
 
         var VideoGrant = AccessToken.VideoGrant;
-
-
 
         // Create an Access Token
         var accessToken = new AccessToken(
@@ -45,7 +42,10 @@ module.exports = {
         accessToken.identity = client_id;
 
         // Grant access to Video
-        var grant = new VideoGrant();
+        var grant = new VideoGrant({
+            recordParticipantsOnConnect: true
+        });
+
         grant.room = room_id;
         accessToken.addGrant(grant);
 
