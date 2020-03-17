@@ -6,6 +6,7 @@ var global_vars = null;
 var ACCOUNT_SID = process.env.TWILIO_ACCOUNT_SID;
 var API_KEY_SID = process.env.TWILIO_API_KEY_SID;
 var API_KEY_SECRET = process.env.TWILIO_API_KEY_SECRET;
+const client = require('twilio')(ACCOUNT_SID, API_KEY_SECRET);
 
 module.exports = {
 
@@ -15,7 +16,6 @@ module.exports = {
 
     complete_room: function(room_name) {
 
-        const client = require('twilio')(ACCOUNT_SID, API_KEY_SECRET);
 
         client.video.rooms(room_name)
             .update({status: 'completed'})
@@ -23,6 +23,12 @@ module.exports = {
 
     },
     generate_twilio_token: function (client_id, room_id) {
+
+        client.video.rooms.create({
+            uniqueName: room_id,
+            recordParticipantsOnConnect: true
+        })
+            .then(room => console.log(room.sid));
 
         var VideoGrant = AccessToken.VideoGrant;
 
