@@ -229,6 +229,31 @@ router.post('/calls/refresh_call', async function (req, res, next) {
             await global_vars.knex('calls').where('id','=',the_call.id).update(update_data).then((result) => {
                 success = true;
             });
+
+            // get no of users in queue
+            let queue_count = 0;
+            await global_vars.knex('calls').count('id as total').where('vendor_id', '=', return_data['call']['vendor_id']).where('status', '=', 'calling').then((result) => {
+                queue_count = result[0]['total'];
+                // console.log(result);
+            });
+
+            return_data['queue_count'] = queue_count;
+
+            // get estimated wait time
+            // get the average time  20 calls
+            let average_call_duration = 0;
+            await global_vars.knex('calls').avg('duration as average_duration').where('vendor_id', '=', return_data['call']['vendor_id']).where('status', '=', 'calling').whereNotNull('duration').then((result) => {
+                average_call_duration = result[0]['average_duration'];
+                // console.log(result);
+            });
+
+            return_data['estimated_waiting_time'] = average_call_duration * queue_count;
+
+
+
+
+
+
         }
     }
 
@@ -319,7 +344,9 @@ router.post('/calls/end_call', async function (req, res, next) {
 
             // cool, we reached here, now let's initiate the call
             let update_data = {
-                status: 'ended'
+                status: 'ended',
+                end_time: Date.now(),
+                duration: Date.now()-the_call['answer_time']
             };
 
             // return_data['call'] = the_call;

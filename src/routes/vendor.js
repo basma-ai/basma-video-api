@@ -358,7 +358,7 @@ router.post('/vendor/list_services', async function (req, res, next) {
         await global_vars.knex('vendors_services').select('*').where('vendor_id', '=', vu.vendor.id).orderBy('id','DESC').then((rows) => {
             vendors_services = rows;
         });
-        
+
 
         return_data['services'] =  vendors_services;
     }

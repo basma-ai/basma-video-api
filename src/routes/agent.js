@@ -47,32 +47,36 @@ router.post('/agent/request_token', async function (req, res, next) {
 
 
     var the_vendor = null;
-    await global_vars.knex('vendors').select('*').where('id','=',req.body.vendor_id).then((rows) => {
-        if(rows[0] != null) {
+    await global_vars.knex('vendors').select('*').where('id', '=', req.body.vendor_id).then((rows) => {
+        if (rows[0] != null) {
             the_vendor = rows[0];
         }
     });
 
-    if(the_vendor == null) {
+    if (the_vendor == null) {
         // no matching service found, halt
-        if (return_data['errors'] == null) { return_data['errors'] = []; }
+        if (return_data['errors'] == null) {
+            return_data['errors'] = [];
+        }
         return_data['errors'].push('invalid_vendor_id');
         go_ahead = false;
     }
 
     var the_vu = null; // friendly reminder, vu stands for vendor user, remember that so that you wouldn't get confused in the future.
-    if(go_ahead) {
+    if (go_ahead) {
         // check the validity of the username and password
 
         await global_vars.knex('vendors_users').select('*')
-            .where('username','=',req.body.username).
-            where('password', '=', users_mod.encrypt_password(req.body.password)).
-            then((rows) => {
+            .where('username', '=', req.body.username).where('password', '=', users_mod.encrypt_password(req.body.password))
+            .where('vendor_id', '=', req.body.vendor_id)
+            .then((rows) => {
                 the_vu = rows[0];
-        });
+            });
 
-        if(the_vu == null) {
-            if (return_data['errors'] == null) { return_data['errors'] = []; }
+        if (the_vu == null) {
+            if (return_data['errors'] == null) {
+                return_data['errors'] = [];
+            }
             return_data['errors'].push('invalid_credentials');
             go_ahead = false;
         }
@@ -80,7 +84,7 @@ router.post('/agent/request_token', async function (req, res, next) {
 
     }
 
-    if(go_ahead) {
+    if (go_ahead) {
         //     create_token: async function(global_vars, table_name, id_col_name = null, id_col_val = null) {
         var token = await users_mod.create_token('vendors_users_tokens', 'vu_id', the_vu.id);
         return_data['token'] = token;
@@ -114,11 +118,19 @@ router.post('/agent/list_pending_calls', async function (req, res, next) {
     let go_ahead = true;
     let return_data = {};
 
+    // delete calls with 5 seconds of no refresh
+    let last_time = Date.now()-(60*60*5);
+    await global_vars.knex('calls').where('last_refresh_time', '<', last_time).where('status', '=', 'calling').update({
+        status: 'missed'
+    });
+
 
     // check the validity of the provided token
-    const vu_id = await users_mod.token_to_id( 'vendors_users_tokens', req.body.vu_token, 'vu_id');
-    if(vu_id == null) {
-        if (return_data['errors'] == null) { return_data['errors'] = []; }
+    const vu_id = await users_mod.token_to_id('vendors_users_tokens', req.body.vu_token, 'vu_id');
+    if (vu_id == null) {
+        if (return_data['errors'] == null) {
+            return_data['errors'] = [];
+        }
         return_data['errors'].push('invalid_vu_token');
         go_ahead = false;
     }
@@ -126,17 +138,17 @@ router.post('/agent/list_pending_calls', async function (req, res, next) {
     var the_vu = await format_mod.get_vu(vu_id);
 
 
-    if(go_ahead) {
+    if (go_ahead) {
         // and now, do the insertion
         let pre_rows = null
-        await global_vars.knex('calls').select('*').where('status', '=', 'calling').where('vendor_id', '=', the_vu.vendor.id).orderBy('creation_time','DESC').then((rows) => {
+        await global_vars.knex('calls').select('*').where('status', '=', 'calling').where('vendor_id', '=', the_vu.vendor.id).orderBy('creation_time', 'ASC').then((rows) => {
             pre_rows = rows;
             success = true;
         });
 
         let final_rows = [];
 
-        for(let row of pre_rows) {
+        for (let row of pre_rows) {
             final_rows.push(await format_mod.format_call(row));
         }
 
@@ -179,9 +191,11 @@ router.post('/agent/answer_call', async function (req, res, next) {
 
 
     // check the validity of the provided token
-    const vu_id = await users_mod.token_to_id( 'vendors_users_tokens', req.body.vu_token, 'vu_id');
-    if(vu_id == null) {
-        if (return_data['errors'] == null) { return_data['errors'] = []; }
+    const vu_id = await users_mod.token_to_id('vendors_users_tokens', req.body.vu_token, 'vu_id');
+    if (vu_id == null) {
+        if (return_data['errors'] == null) {
+            return_data['errors'] = [];
+        }
         return_data['errors'].push('invalid_vu_token');
         go_ahead = false;
     }
@@ -189,57 +203,64 @@ router.post('/agent/answer_call', async function (req, res, next) {
     // var the_vu = await format_mod.get_vu(vu_id);
 
 
-    if(go_ahead) {
+    if (go_ahead) {
         // get the call
         var the_call = null;
-        await global_vars.knex('calls').select('*').where('id','=',req.body.call_id).then((rows) => {
-            if(rows[0] != null) {
+        await global_vars.knex('calls').select('*').where('id', '=', req.body.call_id).then((rows) => {
+            if (rows[0] != null) {
                 the_call = rows[0];
             }
         });
 
-        if(the_call == null) {
+        if (the_call == null) {
             // no matching service found, halt
-            if (return_data['errors'] == null) { return_data['errors'] = []; }
+            if (return_data['errors'] == null) {
+                return_data['errors'] = [];
+            }
             return_data['errors'].push('invalid_call_id');
             go_ahead = false;
         }
 
-        if(go_ahead && the_call.vu_id != null && the_call.vu_id != vu_id) {
+        if (go_ahead && the_call.vu_id != null && the_call.vu_id != vu_id) {
             // no matching service found, halt
-            if (return_data['errors'] == null) { return_data['errors'] = []; }
+            if (return_data['errors'] == null) {
+                return_data['errors'] = [];
+            }
             return_data['errors'].push('taken_by_another_agent');
             go_ahead = false;
         }
 
-        if(go_ahead && the_call.status == 'ended') {
+        if (go_ahead && the_call.status == 'ended') {
             // no matching service found, halt
-            if (return_data['errors'] == null) { return_data['errors'] = []; }
+            if (return_data['errors'] == null) {
+                return_data['errors'] = [];
+            }
             return_data['errors'].push('call_ended');
             go_ahead = false;
         }
 
-        if(go_ahead) {
+        if (go_ahead) {
             // cool, we reached here, now let's initiate the call
 
 
-            if(the_call['connection_agent_token'] == null) {
+            if (the_call['connection_agent_token'] == null) {
                 // no token generated for the guest, let's make one
-                var twilio_agent_token = twilio_mod.generate_twilio_token('agent-'+vu_id, 'call-'+the_call.id);
+                var twilio_agent_token = twilio_mod.generate_twilio_token('agent-' + vu_id, 'call-' + the_call.id);
                 // let's put it in the db
                 await global_vars.knex('calls').update({
                     'connection_agent_token': twilio_agent_token
-                }).where('id','=',the_call.id);
+                }).where('id', '=', the_call.id);
             }
 
             let update_data = {
                 vu_id: vu_id,
-                status: 'started'
+                status: 'started',
+                answer_time: Date.now()
             };
 
             // return_data['call'] = the_call;
 
-            await global_vars.knex('calls').where('id','=',the_call.id).update(update_data).then((result) => {
+            await global_vars.knex('calls').where('id', '=', the_call.id).update(update_data).then((result) => {
                 success = true;
             });
 
@@ -285,9 +306,11 @@ router.post('/agent/end_call', async function (req, res, next) {
 
 
     // check the validity of the provided token
-    const vu_id = await users_mod.token_to_id( 'vendors_users_tokens', req.body.vu_token, 'vu_id');
-    if(vu_id == null) {
-        if (return_data['errors'] == null) { return_data['errors'] = []; }
+    const vu_id = await users_mod.token_to_id('vendors_users_tokens', req.body.vu_token, 'vu_id');
+    if (vu_id == null) {
+        if (return_data['errors'] == null) {
+            return_data['errors'] = [];
+        }
         return_data['errors'].push('invalid_vu_token');
         go_ahead = false;
     }
@@ -295,47 +318,57 @@ router.post('/agent/end_call', async function (req, res, next) {
     // var the_vu = await format_mod.get_vu(vu_id);
 
 
-    if(go_ahead) {
+    if (go_ahead) {
         // get the call
         var the_call = null;
-        await global_vars.knex('calls').select('*').where('id','=',req.body.call_id).then((rows) => {
-            if(rows[0] != null) {
+        await global_vars.knex('calls').select('*').where('id', '=', req.body.call_id).then((rows) => {
+            if (rows[0] != null) {
                 the_call = rows[0];
             }
         });
 
-        if(the_call == null) {
+        if (the_call == null) {
             // no matching service found, halt
-            if (return_data['errors'] == null) { return_data['errors'] = []; }
+            if (return_data['errors'] == null) {
+                return_data['errors'] = [];
+            }
             return_data['errors'].push('invalid_call_id');
             go_ahead = false;
         }
 
-        if(go_ahead && the_call.vu_id != vu_id) {
+        if (go_ahead && the_call.vu_id != vu_id) {
             // no matching service found, halt
-            if (return_data['errors'] == null) { return_data['errors'] = []; }
+            if (return_data['errors'] == null) {
+                return_data['errors'] = [];
+            }
             return_data['errors'].push('unauthorized_acction');
             go_ahead = false;
         }
 
-        if(go_ahead && the_call.status == 'ended') {
+        if (go_ahead && the_call.status == 'ended') {
             // no matching service found, halt
-            if (return_data['errors'] == null) { return_data['errors'] = []; }
+            if (return_data['errors'] == null) {
+                return_data['errors'] = [];
+            }
             return_data['errors'].push('call_ended');
             go_ahead = false;
         }
 
-        if(go_ahead) {
+        if (go_ahead) {
             // cool, we reached here, now let's initiate the call
             let update_data = {
-                status: 'ended'
+                status: 'ended',
+                end_time: Date.now(),
+                duration: Date.now()-the_call['answer_time']
             };
 
             // return_data['call'] = the_call;
 
-            await global_vars.knex('calls').where('id','=',the_call.id).update(update_data).then((result) => {
+            await global_vars.knex('calls').where('id', '=', the_call.id).update(update_data).then((result) => {
                 success = true;
             });
+
+
 
             return_data['call'] = await format_mod.get_call(the_call.id);
         }
