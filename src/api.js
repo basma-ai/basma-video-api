@@ -44,10 +44,11 @@ app.get('/', function(req, res) {
 });
 
 // require routes
-var guest = require('./routes/guest.js')(global_vars)
-var calls = require('./routes/calls.js')(global_vars)
-var master = require('./routes/master.js')(global_vars)
-var agent = require('./routes/agent.js')(global_vars)
+let guest = require('./routes/guest.js')(global_vars)
+let calls = require('./routes/calls.js')(global_vars)
+let master = require('./routes/master.js')(global_vars)
+let agent = require('./routes/agent.js')(global_vars)
+let vendor = require('./routes/vendor.js')(global_vars)
 
 // guests
 app.get('/guest', guest);
@@ -72,6 +73,14 @@ app.post('/agent/end_call', agent);
 // master
 app.get('/master', master);
 app.post('/master/create_vendor_user', master);
+
+// vendors
+app.get('/vendor', vendor);
+app.post('/vendor/dashboard_numbers', vendor);
+app.post('/vendor/calls_history', vendor);
+app.post('/vendor/create_user', vendor);
+app.post('/vendor/list_users', vendor);
+app.post('/vendor/list_services', vendor);
 
 
 app.listen(port, () => console.log(`Video CC API listening on port ${port}!`))

@@ -2,6 +2,10 @@ var AccessToken = require('twilio').jwt.AccessToken;
 require('dotenv').config()
 
 var global_vars = null;
+// Substitute your Twilio AccountSid and ApiKey details
+var ACCOUNT_SID = process.env.TWILIO_ACCOUNT_SID;
+var API_KEY_SID = process.env.TWILIO_API_KEY_SID;
+var API_KEY_SECRET = process.env.TWILIO_API_KEY_SECRET;
 
 module.exports = {
 
@@ -9,14 +13,20 @@ module.exports = {
         global_vars = new_global_vars;
     },
 
+    complete_room: function(room_name) {
+
+        const client = require('twilio')(ACCOUNT_SID, API_KEY_SECRET);
+
+        client.video.rooms(room_name)
+            .update({status: 'completed'})
+            .then(room => console.log(room.uniqueName + " completed"));
+
+    },
     generate_twilio_token: function (client_id, room_id) {
 
         var VideoGrant = AccessToken.VideoGrant;
 
-        // Substitute your Twilio AccountSid and ApiKey details
-        var ACCOUNT_SID = process.env.TWILIO_ACCOUNT_SID;
-        var API_KEY_SID = process.env.TWILIO_API_KEY_SID;
-        var API_KEY_SECRET = process.env.TWILIO_API_KEY_SECRET;
+
 
         // Create an Access Token
         var accessToken = new AccessToken(

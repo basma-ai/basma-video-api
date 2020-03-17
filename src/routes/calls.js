@@ -314,6 +314,9 @@ router.post('/calls/end_call', async function (req, res, next) {
         }
 
         if(go_ahead) {
+
+            twilio_mod.complete_room('call-'+the_call.id);
+
             // cool, we reached here, now let's initiate the call
             let update_data = {
                 status: 'ended'

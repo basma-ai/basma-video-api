@@ -48,6 +48,7 @@ module.exports = {
         delete vu['creation_time'];
 
         vu['vendor'] = await this.get_vendor(vu['vendor_id']);
+        vu['photo_url'] = 'https://ui-avatars.com/api/?name='+encodeURIComponent(vu.name);
         delete vu['vendor_id'];
 
         return vu;
