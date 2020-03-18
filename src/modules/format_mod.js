@@ -24,7 +24,7 @@ module.exports = {
       return vendor;
     },
 
-    get_vu: async function(vu_id) { // friendly reminder, vu stands for vendor user
+    get_vu: async function(vu_id, full = true) { // friendly reminder, vu stands for vendor user
 
         let the_vu = null;
 
@@ -34,11 +34,11 @@ module.exports = {
                 the_vu = rows[0];
             });
 
-        return await this.format_vu(the_vu);
+        return await this.format_vu(the_vu, full);
 
     },
 
-    format_vu: async function(vu) {
+    format_vu: async function(vu, full = true) {
 
         if(vu == null) {
             return null;
@@ -47,9 +47,13 @@ module.exports = {
         delete vu['password'];
         delete vu['creation_time'];
 
-        vu['vendor'] = await this.get_vendor(vu['vendor_id']);
+        if(full) {
+            vu['vendor'] = await this.get_vendor(vu['vendor_id']);
+            delete vu['vendor_id'];
+        }
+
         vu['photo_url'] = 'https://ui-avatars.com/api/?name='+encodeURIComponent(vu.name);
-        delete vu['vendor_id'];
+
 
         return vu;
     },

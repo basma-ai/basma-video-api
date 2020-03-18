@@ -114,9 +114,13 @@ router.post('/vendor/dashboard_numbers', async function (req, res, next) {
     return_data['most_active_agents'] = [];
     for(let vu_ma of most_active) {
 
-        let vu_topush = await format_mod.get_vu(vu_ma.vu_id);
-        vu_topush['calls_answered'] = vu_ma['value_occurrence'];
-        return_data['most_active_agents'].push(vu_topush);
+        if(vu_ma.vu_id != null) {
+            let vu_topush = await format_mod.get_vu(vu_ma.vu_id, false);
+            vu_topush['calls_answered'] = vu_ma['value_occurrence'];
+            return_data['most_active_agents'].push(vu_topush);
+        }
+
+
     }
 
     res.send({
