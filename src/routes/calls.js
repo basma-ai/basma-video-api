@@ -31,14 +31,16 @@ router.post('/calls/get_services', async function (req, res, next) {
 
     // check the validity of the provided token
     const guest_id = await users_mod.token_to_id('guests', req.body.guest_token, 'id');
-    if(guest_id == null) {
-        if (return_data['errors'] == null) { return_data['errors'] = []; }
+    if (guest_id == null) {
+        if (return_data['errors'] == null) {
+            return_data['errors'] = [];
+        }
         return_data['errors'].push('invalid_guest_token');
         go_ahead = false;
     }
 
 
-    if(go_ahead) {
+    if (go_ahead) {
         // and now, do the insertion
         await global_vars.knex('vendors_services').select('*').where('vendor_id', '=', req.body.vendor_id).then((rows) => {
             return_data['services'] = rows;
@@ -82,30 +84,34 @@ router.post('/calls/start_call', async function (req, res, next) {
 
     // check the validity of the provided token
     const guest_id = await users_mod.token_to_id('guests', req.body.guest_token, 'id');
-    if(guest_id == null) {
-        if (return_data['errors'] == null) { return_data['errors'] = []; }
+    if (guest_id == null) {
+        if (return_data['errors'] == null) {
+            return_data['errors'] = [];
+        }
         return_data['errors'].push('invalid_guest_token');
         go_ahead = false;
     }
 
 
-    if(go_ahead) {
+    if (go_ahead) {
         // get the service
         var the_service = null;
-        await global_vars.knex('vendors_services').select('*').where('id','=',req.body.service_id).then((rows) => {
-            if(rows[0] != null) {
+        await global_vars.knex('vendors_services').select('*').where('id', '=', req.body.service_id).then((rows) => {
+            if (rows[0] != null) {
                 the_service = rows[0];
             }
         });
 
-        if(the_service == null) {
+        if (the_service == null) {
             // no matching service found, halt
-            if (return_data['errors'] == null) { return_data['errors'] = []; }
+            if (return_data['errors'] == null) {
+                return_data['errors'] = [];
+            }
             return_data['errors'].push('invalid_service_id');
             go_ahead = false;
         }
 
-        if(go_ahead) {
+        if (go_ahead) {
             // cool, we reached here, now let's initiate the call
             let insert_data = {
                 guest_id: guest_id,
@@ -169,70 +175,78 @@ router.post('/calls/refresh_call', async function (req, res, next) {
 
 
     // check the validity of the provided token
-    const guest_id = await users_mod.token_to_id( 'guests', req.body.guest_token, 'id');
-    if(guest_id == null) {
-        if (return_data['errors'] == null) { return_data['errors'] = []; }
+    const guest_id = await users_mod.token_to_id('guests', req.body.guest_token, 'id');
+    if (guest_id == null) {
+        if (return_data['errors'] == null) {
+            return_data['errors'] = [];
+        }
         return_data['errors'].push('invalid_guest_token');
         go_ahead = false;
     }
 
 
-    if(go_ahead) {
+    if (go_ahead) {
         // get the call
         var the_call = null;
-        await global_vars.knex('calls').select('*').where('id','=',req.body.call_id).then((rows) => {
-            if(rows[0] != null) {
+        await global_vars.knex('calls').select('*').where('id', '=', req.body.call_id).then((rows) => {
+            if (rows[0] != null) {
                 the_call = rows[0];
             }
         });
 
-        if(the_call == null) {
+        if (the_call == null) {
             // no matching service found, halt
-            if (return_data['errors'] == null) { return_data['errors'] = []; }
+            if (return_data['errors'] == null) {
+                return_data['errors'] = [];
+            }
             return_data['errors'].push('invalid_call_id');
             go_ahead = false;
         }
 
-        if(go_ahead && the_call.guest_id != guest_id) {
+        if (go_ahead && the_call.guest_id != guest_id) {
             // no matching service found, halt
-            if (return_data['errors'] == null) { return_data['errors'] = []; }
+            if (return_data['errors'] == null) {
+                return_data['errors'] = [];
+            }
             return_data['errors'].push('unauthorized_action');
             go_ahead = false;
         }
 
-        if(go_ahead && the_call.status == 'ended') {
+        if (go_ahead && the_call.status == 'ended') {
             // no matching service found, halt
-            if (return_data['errors'] == null) { return_data['errors'] = []; }
+            if (return_data['errors'] == null) {
+                return_data['errors'] = [];
+            }
             return_data['errors'].push('call_ended');
             go_ahead = false;
         }
 
-        if(go_ahead) {
+        if (go_ahead) {
             // cool, we reached here, now let's initiate the call
             let update_data = {
                 last_refresh_time: Date.now()
             };
 
-            if(the_call['connection_guest_token'] == null) {
+            if (the_call['connection_guest_token'] == null) {
                 // no token generated for the guest, let's make one
-                var twilio_guest_token = twilio_mod.generate_twilio_token('guest-'+guest_id, 'call-'+the_call.id);
+                var twilio_guest_token = twilio_mod.generate_twilio_token('guest-' + guest_id, 'call-' + the_call.id);
                 // let's put it in the db
                 await global_vars.knex('calls').update({
                     'connection_guest_token': twilio_guest_token
-                }).where('id','=',the_call.id);
+                }).where('id', '=', the_call.id);
             }
 
             return_data['call'] = await format_mod.format_call(the_call);
 
             delete return_data['call']['connection_agent_token'];
 
-            await global_vars.knex('calls').where('id','=',the_call.id).update(update_data).then((result) => {
+            await global_vars.knex('calls').where('id', '=', the_call.id).update(update_data).then((result) => {
                 success = true;
             });
 
             // get no of users in queue
             let queue_count = 0;
-            await global_vars.knex('calls').count('id as total').where('id','<',return_data['call']['id']).where('vendor_id', '=', return_data['call']['vendor_id']).where('status', '=', 'calling').then((result) => {
+            await global_vars.knex('calls').count('id as total').where('id', '<', return_data['call']['id']).where('vendor_id', '=', return_data['call']['vendor_id']).where('status', '=', 'calling').then((result) => {
                 queue_count = result[0]['total'];
                 // console.log(result);
             });
@@ -248,10 +262,6 @@ router.post('/calls/refresh_call', async function (req, res, next) {
             });
 
             return_data['estimated_waiting_time'] = average_call_duration * queue_count;
-
-
-
-
 
 
         }
@@ -300,58 +310,66 @@ router.post('/calls/end_call', async function (req, res, next) {
 
 
     // check the validity of the provided token
-    const guest_id = await users_mod.token_to_id( 'guests', req.body.guest_token, 'id');
-    if(guest_id == null) {
-        if (return_data['errors'] == null) { return_data['errors'] = []; }
+    const guest_id = await users_mod.token_to_id('guests', req.body.guest_token, 'id');
+    if (guest_id == null) {
+        if (return_data['errors'] == null) {
+            return_data['errors'] = [];
+        }
         return_data['errors'].push('invalid_guest_token');
         go_ahead = false;
     }
 
 
-    if(go_ahead) {
+    if (go_ahead) {
         // get the call
         var the_call = null;
-        await global_vars.knex('calls').select('*').where('id','=',req.body.call_id).then((rows) => {
-            if(rows[0] != null) {
+        await global_vars.knex('calls').select('*').where('id', '=', req.body.call_id).then((rows) => {
+            if (rows[0] != null) {
                 the_call = rows[0];
             }
         });
 
-        if(the_call == null) {
+        if (the_call == null) {
             // no matching service found, halt
-            if (return_data['errors'] == null) { return_data['errors'] = []; }
+            if (return_data['errors'] == null) {
+                return_data['errors'] = [];
+            }
             return_data['errors'].push('invalid_call_id');
             go_ahead = false;
         }
 
-        if(go_ahead && the_call.guest_id != guest_id) {
+        if (go_ahead && the_call.guest_id != guest_id) {
             // no matching service found, halt
-            if (return_data['errors'] == null) { return_data['errors'] = []; }
+            if (return_data['errors'] == null) {
+                return_data['errors'] = [];
+            }
             return_data['errors'].push('unauthorized_action');
             go_ahead = false;
         }
 
-        if(go_ahead && the_call.status == 'ended') {
+        if (go_ahead && the_call.status == 'ended') {
             // no matching service found, halt
-            if (return_data['errors'] == null) { return_data['errors'] = []; }
+            if (return_data['errors'] == null) {
+                return_data['errors'] = [];
+            }
             return_data['errors'].push('call_ended');
             go_ahead = false;
         }
 
-        if(go_ahead) {
+        if (go_ahead) {
 
-            twilio_mod.complete_room('call-'+the_call.id);
+            twilio_mod.complete_room('call-' + the_call.id);
 
             // cool, we reached here, now let's initiate the call
             let update_data = {
                 status: 'ended',
                 end_time: Date.now(),
-                duration: Date.now()-the_call['answer_time']
+                duration: (the_call['answer_time'] == null || the_call['answer_time'] == 0) ? 0 : Date.now() - the_call['answer_time']
             };
 
             // return_data['call'] = the_call;
 
-            await global_vars.knex('calls').where('id','=',the_call.id).update(update_data).then((result) => {
+            await global_vars.knex('calls').where('id', '=', the_call.id).update(update_data).then((result) => {
                 success = true;
             });
         }
@@ -373,7 +391,7 @@ router.post('/calls/test', async function (req, res, next) {
     let return_data = {};
 
 
-    var twilio_token = twilio_mod.generate_twilio_token('clientname2323','thetestroom32423');
+    var twilio_token = twilio_mod.generate_twilio_token('clientname2323', 'thetestroom32423');
 
     return_data['twilio_token'] = twilio_token;
 
@@ -383,9 +401,6 @@ router.post('/calls/test', async function (req, res, next) {
     });
 
 });
-
-
-
 
 
 module.exports = function (options) {

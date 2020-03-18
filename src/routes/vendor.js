@@ -250,6 +250,7 @@ router.post('/vendor/create_user', async function (req, res, next) {
             vendor_id: vu.vendor.id,
             name: req.body.name,
             role: req.body.role,
+            email: req.body.email,
             username: req.body.username,
             password: users_mod.encrypt_password(req.body.password),
             creation_time: Date.now()

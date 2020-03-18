@@ -13,6 +13,8 @@ var global_vars;
  * @apiGroup Guest
  * @apiDescription Request an access token for a guest
  *
+ * @apiParam name Name
+ * @apiParam phone Phone
  *
  * @apiSuccessExample {json} Success-Response:
  *     HTTP/1.1 200 OK
@@ -45,6 +47,8 @@ router.post('/guest/request_token', async function (req, res, next) {
         token: token,
         user_agent: user_agent,
         ip: ip,
+        name: req.body.name,
+        phone: req.body.phone,
         creation_time: Date.now()
     };
 
