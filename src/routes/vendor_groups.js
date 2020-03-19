@@ -269,6 +269,72 @@ router.post('/vendor/groups/list', async function (req, res, next) {
 });
 
 
+/**
+ * @api {post} /vendor/groups/get Get a group
+ * @apiName VendorGroupsGet
+ * @apiGroup vendor
+ * @apiDescription Get a group
+ *
+ * @apiParam {String} vu_token Vendor User Token
+ * @apiParam {Integer} group_id Group ID
+ *
+ * @apiSuccessExample {json} Success-Response:
+ *     HTTP/1.1 200 OK
+
+
+ */
+router.post('/vendor/groups/get', async function (req, res, next) {
+
+    setupPaginator(global_vars.knex);
+
+    let success = false;
+    let go_ahead = true;
+    let return_data = {};
+
+
+    const vu_id = await users_mod.token_to_id('vendors_users_tokens', req.body.vu_token, 'vu_id');
+
+    const vu = await format_mod.get_vu(vu_id, true);
+
+    // check if admin
+    if(vu.role == 'admin') {
+
+        // that's awesome!, we can proceed with the process of creating an account for a new group as per the instructions and details provided by the vu (vendor user), the process will begin by by inserting the group in the database, then, you will be updated by another comment
+        let update_data = {
+            name: req.body.name
+        };
+
+        let record;
+        await global_vars.knex('groups')
+            .where('vendor_id', '=', vu.vendor.id)
+            .where('id', '=', req.body.service_id)
+            .then((rows) => {
+
+                record = rows[0];
+
+            }).catch((err) => {
+                go_ahead = false;
+                console.log(err);
+            });
+
+        return_data['grpi['] = await format_mod.format_group(record);
+
+
+    } else {
+        return_data['errors'] = ['unauthorized_action'];
+    }
+
+
+
+
+    res.send({
+        success: success,
+        data: return_data
+    });
+
+});
+
+
 
 module.exports = function (options) {
 

@@ -89,11 +89,13 @@ app.get('/vendor/groups', vendor_groups);
 app.post('/vendor/groups/create', vendor_groups);
 app.post('/vendor/groups/edit', vendor_groups);
 app.post('/vendor/groups/list', vendor_groups);
+app.post('/vendor/groups/get', vendor_groups);
 
 // vendors services
 app.get('/services/groups', vendor_services);
 app.post('/vendor/services/create', vendor_services);
 app.post('/vendor/services/edit', vendor_services);
 app.post('/vendor/services/list', vendor_services);
+app.post('/vendor/services/get', vendor_services);
 
 app.listen(port, () => console.log(`Video CC API listening on port ${port}!`))
