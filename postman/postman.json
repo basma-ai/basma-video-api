@@ -1,0 +1,544 @@
+{
+  "info": {
+    "_postman_id": "e009fcef-b609-4baf-bef3-25d39b46d05d",
+    "name": "Video CC",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Guests",
+      "item": [
+        {
+          "name": "Request Guest Token",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n\t\"name\": \"Ali\",\n\t\"phone\": \"0097336722368\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{api_url}}/guest/request_token",
+              "host": [
+                "{{api_url}}"
+              ],
+              "path": [
+                "guest",
+                "request_token"
+              ]
+            }
+          },
+          "response": []
+        }
+      ],
+      "protocolProfileBehavior": {}
+    },
+    {
+      "name": "Calls",
+      "item": [
+        {
+          "name": "Get services",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "name": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n\t\"vendor_id\": 1,\n\t\"guest_token\": \"6e8437e93def1196aa029cebe18214ea5df8138e3e6619b67d26891268da1880\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{api_url}}/calls/get_services",
+              "host": [
+                "{{api_url}}"
+              ],
+              "path": [
+                "calls",
+                "get_services"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Start a call",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "name": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n\t\"guest_token\": \"cf6dc255705a657763b1ec632276e9ed5684511cc8089c2061bdd5a6f71776ce\",\n\t\"service_id\": 2\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{api_url}}/calls/start_call",
+              "host": [
+                "{{api_url}}"
+              ],
+              "path": [
+                "calls",
+                "start_call"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Refresh a call",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "name": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n\t\"guest_token\": \"cf6dc255705a657763b1ec632276e9ed5684511cc8089c2061bdd5a6f71776ce\",\n\t\"call_id\": 2\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{api_url}}/calls/refresh_call",
+              "host": [
+                "{{api_url}}"
+              ],
+              "path": [
+                "calls",
+                "refresh_call"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "End call",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "name": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n\t\"guest_token\": \"cf6dc255705a657763b1ec632276e9ed5684511cc8089c2061bdd5a6f71776ce\",\n\t\"call_id\": 2\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{api_url}}/calls/end_call",
+              "host": [
+                "{{api_url}}"
+              ],
+              "path": [
+                "calls",
+                "end_call"
+              ]
+            }
+          },
+          "response": []
+        }
+      ],
+      "protocolProfileBehavior": {}
+    },
+    {
+      "name": "Master",
+      "item": [
+        {
+          "name": "Create a vendor user",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "name": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n\t\"master_secret\": \"kj23@#4j23$@#K$L@34\",\n\t\"vendor_id\": 1,\n\t\"name\": \"Ali Alnoaimi\",\n\t\"username\": \"ali.bh\",\n\t\"password\": \"123456\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{api_url}}/master/create_vendor_user",
+              "host": [
+                "{{api_url}}"
+              ],
+              "path": [
+                "master",
+                "create_vendor_user"
+              ]
+            }
+          },
+          "response": []
+        }
+      ],
+      "protocolProfileBehavior": {}
+    },
+    {
+      "name": "Agent",
+      "item": [
+        {
+          "name": "Request agent token",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "name": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n\t\"vendor_id\": 1,\n\t\"username\": \"ali.bh\",\n\t\"password\": \"123456\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{api_url}}/agent/request_token",
+              "host": [
+                "{{api_url}}"
+              ],
+              "path": [
+                "agent",
+                "request_token"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "List pending calls",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "name": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n\t\"vu_token\": \"7d62487ba4a1ee1aa2b3f4efeb363f4cadd0cdce7a7d26f94453a691c8c9215b\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{api_url}}/agent/list_pending_calls",
+              "host": [
+                "{{api_url}}"
+              ],
+              "path": [
+                "agent",
+                "list_pending_calls"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Answer call",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "name": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n\t\"vu_token\": \"ed557db179703329783a5c8cfac2713d2ab330476d66e55462f6c77a2002fc56\",\n\t\"call_id\": 3\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{api_url}}/agent/answer_call",
+              "host": [
+                "{{api_url}}"
+              ],
+              "path": [
+                "agent",
+                "answer_call"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "End call",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "name": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n\t\"vu_token\": \"ed557db179703329783a5c8cfac2713d2ab330476d66e55462f6c77a2002fc56\",\n\t\"call_id\": 5\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{api_url}}/agent/end_call",
+              "host": [
+                "{{api_url}}"
+              ],
+              "path": [
+                "agent",
+                "end_call"
+              ]
+            }
+          },
+          "response": []
+        }
+      ],
+      "protocolProfileBehavior": {}
+    },
+    {
+      "name": "Vendors",
+      "item": [
+        {
+          "name": "Groups",
+          "item": [
+            {
+              "name": "Create group",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n\t\"vu_token\": \"d5a1b1a3fb5179530b3c7770a821d3584eaa798741c8a87d627c5a6822ca700b\",\n\t\"name\": \"Legends\",\n\t\"service_ids\": []\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{api_url}}/vendor/groups/create",
+                  "host": [
+                    "{{api_url}}"
+                  ],
+                  "path": [
+                    "vendor",
+                    "groups",
+                    "create"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Edit group",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n\t\"vu_token\": \"d5a1b1a3fb5179530b3c7770a821d3584eaa798741c8a87d627c5a6822ca700b\",\n\t\"name\": \"Legends\",\n\t\"service_ids\": []\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{api_url}}/vendor/groups/edit",
+                  "host": [
+                    "{{api_url}}"
+                  ],
+                  "path": [
+                    "vendor",
+                    "groups",
+                    "edit"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ],
+          "protocolProfileBehavior": {},
+          "_postman_isSubFolder": true
+        },
+        {
+          "name": "Dashboard Numbers",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n\t\"vu_token\": \"d5a1b1a3fb5179530b3c7770a821d3584eaa798741c8a87d627c5a6822ca700b\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{api_url}}/vendor/dashboard_numbers",
+              "host": [
+                "{{api_url}}"
+              ],
+              "path": [
+                "vendor",
+                "dashboard_numbers"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Calls History",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n\t\"vu_token\": \"d5a1b1a3fb5179530b3c7770a821d3584eaa798741c8a87d627c5a6822ca700b\",\n\t\"page\": 1,\n\t\"per_page\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{api_url}}/vendor/calls_history",
+              "host": [
+                "{{api_url}}"
+              ],
+              "path": [
+                "vendor",
+                "calls_history"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create user",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n\t\"vu_token\": \"d5a1b1a3fb5179530b3c7770a821d3584eaa798741c8a87d627c5a6822ca700b\",\n\t\"username\": \"ali.bh2\",\n\t\"password\": \"123123\",\n\t\"email\": \"noaimi@basma.ai\",\n\t\"name\": \"Ali 2\",\n\t\"role\": \"agent\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{api_url}}/vendor/create_user",
+              "host": [
+                "{{api_url}}"
+              ],
+              "path": [
+                "vendor",
+                "create_user"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "List users",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n\t\"vu_token\": \"d5a1b1a3fb5179530b3c7770a821d3584eaa798741c8a87d627c5a6822ca700b\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{api_url}}/vendor/list_users",
+              "host": [
+                "{{api_url}}"
+              ],
+              "path": [
+                "vendor",
+                "list_users"
+              ]
+            }
+          },
+          "response": []
+        }
+      ],
+      "protocolProfileBehavior": {}
+    }
+  ],
+  "protocolProfileBehavior": {}
+}

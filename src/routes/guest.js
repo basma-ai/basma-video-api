@@ -47,7 +47,9 @@ router.post('/guest/request_token', async function (req, res, next) {
         token: token,
         user_agent: user_agent,
         ip: ip,
-        name: req.body.name,
+        name: req.body.first_name+' '+req.body.last_name,
+        first_name: req.body.first_name,
+        last_name: req.body.last_name,
         phone: req.body.phone,
         creation_time: Date.now()
     };

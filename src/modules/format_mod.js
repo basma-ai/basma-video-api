@@ -92,7 +92,40 @@ module.exports = {
     },
     format_vendor_service: async function(vendor_service) {
         return vendor_service;
-    }
+    },
+    get_group: async function(id) {
+        let the_row = null;
+
+        await global_vars.knex('groups').select('*')
+            .where('id','=',id)
+            .then((rows) => {
+                the_row = rows[0];
+            });
+
+        // get its services
+        the_row['services'] = [];
+        if(the_row != null) {
+
+            let services_raw = [];
+
+            await global_vars.knex('groups_services_relations')
+                .select('*')
+                .where('vendor_id', '=', the_row.vendor_id)
+                .where('group_id', '=', the_row.id)
+                .orderBy('id', 'DESC').then((rows) => {
+                    services_raw = rows;
+                });
+
+            for(let service_raw of services_raw) {
+                the_row['services'].push(await this.format_vendor_service(service_raw));
+            }
+        }
+
+        return await this.format_group(the_row);
+    },
+    format_group: async function(data) {
+        return data;
+    },
 
 
 }
