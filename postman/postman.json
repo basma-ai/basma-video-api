@@ -451,6 +451,153 @@
                 }
               },
               "response": []
+            },
+            {
+              "name": "Get a group",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n\t\"vu_token\": \"02f090b0ecf81ded9e32dae52141c0bc6b14e429b3eca2d30fa5cde24b19cfcd\",\n\t\"service_id\": 29\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{api_url}}/vendor/groups/get",
+                  "host": [
+                    "{{api_url}}"
+                  ],
+                  "path": [
+                    "vendor",
+                    "groups",
+                    "get"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ],
+          "protocolProfileBehavior": {},
+          "_postman_isSubFolder": true
+        },
+        {
+          "name": "Services",
+          "item": [
+            {
+              "name": "Create service",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n\t\"vu_token\": \"02f090b0ecf81ded9e32dae52141c0bc6b14e429b3eca2d30fa5cde24b19cfcd\",\n\t\"name\": \"Test Service\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{api_url}}/vendor/services/create",
+                  "host": [
+                    "{{api_url}}"
+                  ],
+                  "path": [
+                    "vendor",
+                    "services",
+                    "create"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Edit service",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n\t\"vu_token\": \"02f090b0ecf81ded9e32dae52141c0bc6b14e429b3eca2d30fa5cde24b19cfcd\",\n\t\"service_id\": \"18\",\n\t\"name\": \"The new test service - edited\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{api_url}}/vendor/services/edit",
+                  "host": [
+                    "{{api_url}}"
+                  ],
+                  "path": [
+                    "vendor",
+                    "services",
+                    "edit"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "List services",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n\t\"vu_token\": \"02f090b0ecf81ded9e32dae52141c0bc6b14e429b3eca2d30fa5cde24b19cfcd\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{api_url}}/vendor/services/list",
+                  "host": [
+                    "{{api_url}}"
+                  ],
+                  "path": [
+                    "vendor",
+                    "services",
+                    "list"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Get a service",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n\t\"vu_token\": \"02f090b0ecf81ded9e32dae52141c0bc6b14e429b3eca2d30fa5cde24b19cfcd\",\n\t\"service_id\": 18\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{api_url}}/vendor/services/get",
+                  "host": [
+                    "{{api_url}}"
+                  ],
+                  "path": [
+                    "vendor",
+                    "services",
+                    "get"
+                  ]
+                }
+              },
+              "response": []
             }
           ],
           "protocolProfileBehavior": {},
