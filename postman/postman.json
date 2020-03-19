@@ -423,6 +423,34 @@
                 }
               },
               "response": []
+            },
+            {
+              "name": "List groups",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n\t\"vu_token\": \"d5a1b1a3fb5179530b3c7770a821d3584eaa798741c8a87d627c5a6822ca700b\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{api_url}}/vendor/groups/list",
+                  "host": [
+                    "{{api_url}}"
+                  ],
+                  "path": [
+                    "vendor",
+                    "groups",
+                    "list"
+                  ]
+                }
+              },
+              "response": []
             }
           ],
           "protocolProfileBehavior": {},

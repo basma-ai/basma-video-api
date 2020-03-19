@@ -50,6 +50,7 @@ let master = require('./routes/master.js')(global_vars)
 let agent = require('./routes/agent.js')(global_vars)
 let vendor = require('./routes/vendor.js')(global_vars)
 let vendor_groups = require('./routes/vendor_groups.js')(global_vars)
+let vendor_services = require('./routes/vendor_services.js')(global_vars)
 
 // guests
 app.get('/guest', guest);
@@ -87,5 +88,12 @@ app.post('/vendor/list_services', vendor);
 app.get('/vendor/groups', vendor_groups);
 app.post('/vendor/groups/create', vendor_groups);
 app.post('/vendor/groups/edit', vendor_groups);
+app.post('/vendor/groups/list', vendor_groups);
+
+// vendors services
+app.get('/services/groups', vendor_services);
+app.post('/vendor/services/create', vendor_services);
+app.post('/vendor/services/edit', vendor_services);
+app.post('/vendor/services/list', vendor_services);
 
 app.listen(port, () => console.log(`Video CC API listening on port ${port}!`))
