@@ -4,15 +4,12 @@ var router = express.Router();
 var users_mod = require("../modules/users_mod");
 var format_mod = require("../modules/format_mod");
 var twilio_mod = require("../modules/twilio_mod");
-const setupPaginator = require('el7r-knex-paginator');
 
 var global_vars;
 
 
-
 router.post('/vendor/services/create', async function (req, res, next) {
 
-    setupPaginator(global_vars.knex);
 
     let success = false;
     let go_ahead = true;
@@ -24,7 +21,7 @@ router.post('/vendor/services/create', async function (req, res, next) {
     const vu = await format_mod.get_vu(vu_id, true);
 
     // check if admin
-    if(vu.role == 'admin') {
+    if (vu.role == 'admin') {
 
         let insert_data = {
             vendor_id: vu.vendor.id,
@@ -51,8 +48,6 @@ router.post('/vendor/services/create', async function (req, res, next) {
     }
 
 
-
-
     res.send({
         success: success,
         data: return_data
@@ -77,7 +72,6 @@ router.post('/vendor/services/create', async function (req, res, next) {
  */
 router.post('/vendor/services/edit', async function (req, res, next) {
 
-    setupPaginator(global_vars.knex);
 
     let success = false;
     let go_ahead = true;
@@ -89,7 +83,7 @@ router.post('/vendor/services/edit', async function (req, res, next) {
     const vu = await format_mod.get_vu(vu_id, true);
 
     // check if admin
-    if(vu.role == 'admin') {
+    if (vu.role == 'admin') {
 
         // that's awesome!, we can proceed with the process of creating an account for a new group as per the instructions and details provided by the vu (vendor user), the process will begin by by inserting the group in the database, then, you will be updated by another comment
         let update_data = {
@@ -114,8 +108,6 @@ router.post('/vendor/services/edit', async function (req, res, next) {
     }
 
 
-
-
     res.send({
         success: success,
         data: return_data
@@ -138,7 +130,6 @@ router.post('/vendor/services/edit', async function (req, res, next) {
  */
 router.post('/vendor/services/list', async function (req, res, next) {
 
-    setupPaginator(global_vars.knex);
 
     let success = false;
     let go_ahead = true;
@@ -150,7 +141,7 @@ router.post('/vendor/services/list', async function (req, res, next) {
     const vu = await format_mod.get_vu(vu_id, true);
 
     // check if admin
-    if(vu.role == 'admin') {
+    if (vu.role == 'admin') {
 
         // that's awesome!, we can proceed with the process of creating an account for a new group as per the instructions and details provided by the vu (vendor user), the process will begin by by inserting the group in the database, then, you will be updated by another comment
         let update_data = {
@@ -160,9 +151,14 @@ router.post('/vendor/services/list', async function (req, res, next) {
         let raw_records = [];
         await global_vars.knex('vendors_services')
             .where('vendor_id', '=', vu.vendor.id)
+            .paginate({
+                perPage: req.body.per_page == null ? 20 : req.body.per_page,
+                currentPage: req.body.page == null ? 0 : req.body.page
+            })
             .then((rows) => {
 
                 raw_records = rows;
+                success = true;
 
             }).catch((err) => {
                 go_ahead = false;
@@ -170,18 +166,17 @@ router.post('/vendor/services/list', async function (req, res, next) {
             });
 
         let list = [];
-        for(let raw_service of raw_records) {
+        for (let raw_service of raw_records.data) {
             list.push(await format_mod.format_vendor_service(raw_service));
         }
 
         return_data['list'] = list;
+        return_data['pagination'] = raw_records.pagination;
 
 
     } else {
         return_data['errors'] = ['unauthorized_action'];
     }
-
-
 
 
     res.send({
@@ -190,8 +185,6 @@ router.post('/vendor/services/list', async function (req, res, next) {
     });
 
 });
-
-
 
 
 /**
@@ -209,7 +202,6 @@ router.post('/vendor/services/list', async function (req, res, next) {
  */
 router.post('/vendor/services/get', async function (req, res, next) {
 
-    setupPaginator(global_vars.knex);
 
     let success = false;
     let go_ahead = true;
@@ -221,7 +213,7 @@ router.post('/vendor/services/get', async function (req, res, next) {
     const vu = await format_mod.get_vu(vu_id, true);
 
     // check if admin
-    if(vu.role == 'admin') {
+    if (vu.role == 'admin') {
 
         // that's awesome!, we can proceed with the process of creating an account for a new group as per the instructions and details provided by the vu (vendor user), the process will begin by by inserting the group in the database, then, you will be updated by another comment
         let update_data = {
@@ -249,15 +241,12 @@ router.post('/vendor/services/get', async function (req, res, next) {
     }
 
 
-
-
     res.send({
         success: success,
         data: return_data
     });
 
 });
-
 
 
 module.exports = function (options) {

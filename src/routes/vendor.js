@@ -4,7 +4,6 @@ var router = express.Router();
 var users_mod = require("../modules/users_mod");
 var format_mod = require("../modules/format_mod");
 var twilio_mod = require("../modules/twilio_mod");
-const setupPaginator = require('el7r-knex-paginator');
 
 var global_vars;
 
@@ -40,7 +39,7 @@ router.post('/vendor/dashboard_numbers', async function (req, res, next) {
     let stmnt = global_vars.knex('calls').count('id as count');
     stmnt = stmnt.where('vendor_id', '=', vu.vendor.id);
 
-    if(vu.role != 'admin') {
+    if (vu.role != 'admin') {
         stmnt = stmnt.where('vu_id', '=', vu.id);
     }
     await stmnt.then((result) => {
@@ -54,7 +53,7 @@ router.post('/vendor/dashboard_numbers', async function (req, res, next) {
     stmnt = stmnt.where('vendor_id', '=', vu.vendor.id);
     stmnt = stmnt.where('status', '=', 'ended');
 
-    if(vu.role != 'admin') {
+    if (vu.role != 'admin') {
         stmnt = stmnt.where('vu_id', '=', vu.id);
     }
     await stmnt.then((result) => {
@@ -69,7 +68,7 @@ router.post('/vendor/dashboard_numbers', async function (req, res, next) {
     stmnt = stmnt.where('vendor_id', '=', vu.vendor.id);
     stmnt = stmnt.where('status', '!=', 'ended');
 
-    if(vu.role != 'admin') {
+    if (vu.role != 'admin') {
         stmnt = stmnt.where('vu_id', '!=', vu.id);
     }
     await stmnt.then((result) => {
@@ -83,7 +82,7 @@ router.post('/vendor/dashboard_numbers', async function (req, res, next) {
     stmnt = global_vars.knex('calls').select('vendor_service_id').count('vendor_service_id as value_occurrence').groupBy('vendor_service_id').orderBy('value_occurrence', 'DESC');
     stmnt = stmnt.where('vendor_id', '=', vu.vendor.id);
 
-    if(vu.role != 'admin') {
+    if (vu.role != 'admin') {
         stmnt = stmnt.where('vu_id', '!=', vu.id);
     }
 
@@ -93,7 +92,7 @@ router.post('/vendor/dashboard_numbers', async function (req, res, next) {
     });
 
     return_data['top_services'] = [];
-    for(let service of top_services) {
+    for (let service of top_services) {
         return_data['top_services'].push(await format_mod.get_vendor_service(service.vendor_service_id));
     }
 
@@ -102,7 +101,7 @@ router.post('/vendor/dashboard_numbers', async function (req, res, next) {
     stmnt = global_vars.knex('calls').select('vu_id').count('vu_id as value_occurrence').groupBy('vu_id').orderBy('value_occurrence', 'DESC');
     stmnt = stmnt.where('vendor_id', '=', vu.vendor.id);
 
-    if(vu.role != 'admin') {
+    if (vu.role != 'admin') {
         stmnt = stmnt.where('vu_id', '!=', vu.id);
     }
 
@@ -112,9 +111,9 @@ router.post('/vendor/dashboard_numbers', async function (req, res, next) {
     });
 
     return_data['most_active_agents'] = [];
-    for(let vu_ma of most_active) {
+    for (let vu_ma of most_active) {
 
-        if(vu_ma.vu_id != null) {
+        if (vu_ma.vu_id != null) {
             let vu_topush = await format_mod.get_vu(vu_ma.vu_id, false);
             vu_topush['calls_answered'] = vu_ma['value_occurrence'];
             return_data['most_active_agents'].push(vu_topush);
@@ -129,7 +128,6 @@ router.post('/vendor/dashboard_numbers', async function (req, res, next) {
     });
 
 });
-
 
 
 /**
@@ -149,7 +147,6 @@ router.post('/vendor/dashboard_numbers', async function (req, res, next) {
  */
 router.post('/vendor/calls_history', async function (req, res, next) {
 
-    setupPaginator(global_vars.knex);
 
     let success = true;
     let go_ahead = true;
@@ -166,27 +163,26 @@ router.post('/vendor/calls_history', async function (req, res, next) {
     let stmnt = global_vars.knex('calls').select('*');
     stmnt = stmnt.where('vendor_id', '=', vu.vendor.id);
 
-    if(vu.role != 'admin') {
+    if (vu.role != 'admin') {
         stmnt = stmnt.where('vu_id', '=', vu.id);
     }
     stmnt = stmnt.orderBy('id', 'DESC');
     stmnt = stmnt.limit(20);
-    // stmnt = stmnt.paginate(1, 1, true);
-
+    stmnt = stmnt.paginate({perPage: req.body.per_page, currentPage: req.body.page});
 
 
     await stmnt.then((rows) => {
         calls = rows;
     });
 
+
     let fixed_calls = [];
-    for(let call of calls) {
+    for (let call of calls.data) {
         fixed_calls.push(await format_mod.format_call(call));
     }
 
     return_data['calls'] = fixed_calls;
-
-
+    return_data['pagination'] = calls.pagination;
 
 
     res.send({
@@ -225,25 +221,27 @@ router.post('/vendor/create_user', async function (req, res, next) {
     // generate a token for our beloved guest
     // create a guest token
 
-    const vu_id = await users_mod.token_to_id( 'vendors_users_tokens', req.body.vu_token, 'vu_id');
+    const vu_id = await users_mod.token_to_id('vendors_users_tokens', req.body.vu_token, 'vu_id');
     let vu = await format_mod.get_vu(vu_id);
 
-    if(vu == null && vu.role == 'admin') {
+    if (vu == null && vu.role == 'admin') {
         go_ahead = false;
     }
 
-    if(go_ahead) {
+    if (go_ahead) {
         // check if username is taken
-        await global_vars.knex('vendors_users').select('*').where('vendor_id', '=', vu.vendor.id).where('username','=',req.body.username).then((rows) => {
-            if(rows.length > 0) {
-                if (return_data['errors'] == null) { return_data['errors'] = []; }
+        await global_vars.knex('vendors_users').select('*').where('vendor_id', '=', vu.vendor.id).where('username', '=', req.body.username).then((rows) => {
+            if (rows.length > 0) {
+                if (return_data['errors'] == null) {
+                    return_data['errors'] = [];
+                }
                 return_data['errors'].push('username_taken');
                 go_ahead = false;
             }
         });
     }
 
-    if(go_ahead) {
+    if (go_ahead) {
         // define the data to be inserted
 
         var insert_data = {
@@ -295,27 +293,27 @@ router.post('/vendor/list_users', async function (req, res, next) {
     // generate a token for our beloved guest
     // create a guest token
 
-    const vu_id = await users_mod.token_to_id( 'vendors_users_tokens', req.body.vu_token, 'vu_id');
+    const vu_id = await users_mod.token_to_id('vendors_users_tokens', req.body.vu_token, 'vu_id');
     let vu = await format_mod.get_vu(vu_id);
 
-    if(vu == null && vu.role == 'admin') {
+    if (vu == null && vu.role == 'admin') {
         go_ahead = false;
     }
 
-    if(go_ahead) {
+    if (go_ahead) {
         // check if username is taken
         let users = null;
-        await global_vars.knex('vendors_users').select('*').where('vendor_id', '=', vu.vendor.id).orderBy('id','DESC').then((rows) => {
+        await global_vars.knex('vendors_users').select('*').where('vendor_id', '=', vu.vendor.id).orderBy('id', 'DESC').then((rows) => {
             users = rows;
         });
 
         let fixed_users = [];
 
-        for(let user of users) {
+        for (let user of users) {
             fixed_users.push(await format_mod.format_vu(user));
         }
 
-        return_data['users'] =  fixed_users;
+        return_data['users'] = fixed_users;
     }
 
     res.send({
@@ -350,22 +348,22 @@ router.post('/vendor/list_services', async function (req, res, next) {
     // generate a token for our beloved guest
     // create a guest token
 
-    const vu_id = await users_mod.token_to_id( 'vendors_users_tokens', req.body.vu_token, 'vu_id');
+    const vu_id = await users_mod.token_to_id('vendors_users_tokens', req.body.vu_token, 'vu_id');
     let vu = await format_mod.get_vu(vu_id);
 
-    if(vu == null && vu.role == 'admin') {
+    if (vu == null && vu.role == 'admin') {
         go_ahead = false;
     }
 
-    if(go_ahead) {
+    if (go_ahead) {
         // check if username is taken
         let vendors_services = null;
-        await global_vars.knex('vendors_services').select('*').where('vendor_id', '=', vu.vendor.id).orderBy('id','DESC').then((rows) => {
+        await global_vars.knex('vendors_services').select('*').where('vendor_id', '=', vu.vendor.id).orderBy('id', 'DESC').then((rows) => {
             vendors_services = rows;
         });
 
 
-        return_data['services'] =  vendors_services;
+        return_data['services'] = vendors_services;
     }
 
     res.send({
@@ -374,7 +372,6 @@ router.post('/vendor/list_services', async function (req, res, next) {
     });
 
 });
-
 
 
 module.exports = function (options) {

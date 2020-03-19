@@ -2,8 +2,8 @@ const express = require('express')
 const app = express()
 const bodyParser = require('body-parser');
 const port = 1061
-const setupPaginator = require('el7r-knex-paginator');
 require('dotenv').config()
+const { attachPaginate } = require('knex-paginate');
 
 
 // set expressjs settings
@@ -30,7 +30,7 @@ var knex = require('knex')({
   insecureAuth: true
 });
 
-setupPaginator(knex);
+attachPaginate();
 
 
 // var global variables to pass
