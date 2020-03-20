@@ -55,7 +55,7 @@ router.post('/vendor/calls/list', async function (req, res, next) {
 
 
     let fixed_calls = [];
-    for (let call of calls.data) {
+    for (let call of (calls.data == null ? calls : calls.data)) {
         fixed_calls.push(await format_mod.format_call(call, false));
     }
 
@@ -69,8 +69,6 @@ router.post('/vendor/calls/list', async function (req, res, next) {
     });
 
 });
-
-
 
 
 module.exports = function (options) {

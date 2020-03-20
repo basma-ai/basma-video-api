@@ -250,7 +250,7 @@ router.post('/vendor/groups/list', async function (req, res, next) {
         });
 
         let groups = [];
-        for (let raw_group of raw_groups.data) {
+        for (let raw_group of (raw_groups.data == null ? raw_groups : raw_groups.data)) {
             groups.push(await format_mod.format_group(raw_group));
         }
 

@@ -279,8 +279,8 @@ router.post('/vendor/users/list', async function (req, res, next) {
 
         let fixed_users = [];
 
-        for (let user of users.data) {
-            fixed_users.push(await format_mod.format_vu(user));
+        for (let user of (users.data == null ? users : users.data)) {
+            fixed_users.push(await format_mod.format_vu(user, false));
         }
 
         return_data['list'] = fixed_users;

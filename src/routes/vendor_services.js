@@ -170,7 +170,7 @@ router.post('/vendor/services/list', async function (req, res, next) {
         });
 
         let list = [];
-        for (let raw_service of raw_records.data) {
+        for (let raw_service of (raw_records.data == null ? raw_records : raw_records.data)) {
             list.push(await format_mod.format_vendor_service(raw_service));
         }
 
