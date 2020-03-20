@@ -8,7 +8,6 @@ var twilio_mod = require("../modules/twilio_mod");
 var global_vars;
 
 
-
 /**
  * @api {post} /vendor/users/create Create a user
  * @apiName VendorCreateUser
@@ -88,8 +87,6 @@ router.post('/vendor/users/create', async function (req, res, next) {
 });
 
 
-
-
 /**
  * @api {post} /vendor/users/edit Edit a user
  * @apiName VendorUsersEdit
@@ -97,8 +94,10 @@ router.post('/vendor/users/create', async function (req, res, next) {
  * @apiDescription Edit a users
  *
  * @apiParam {String} vu_token Vendor User Token
- * @apiParam {Integer} user_id User ID
- * @apiParam {String} name Service name
+ * @apiParam {Integer} vu_id Vendor User ID
+ * @apiParam {String} name Name
+ * @apiParam {String} role "admin" or "agent"
+ * @apiParam {String} password new password, leave empty if you do not wish to change
  *
  * @apiSuccessExample {json} Success-Response:
  *     HTTP/1.1 200 OK
@@ -118,17 +117,26 @@ router.post('/vendor/users/edit', async function (req, res, next) {
     const vu = await format_mod.get_vu(vu_id, true);
 
     // check if admin
-    if (vu.role == 'admin') {
+    if (vu.role == 'admin' || vu.id == req.body.vu_id) {
 
         // that's awesome!, we can proceed with the process of creating an account for a new group as per the instructions and details provided by the vu (vendor user), the process will begin by by inserting the group in the database, then, you will be updated by another comment
         let update_data = {
-            service_name: req.body.name
+            name: req.body.name,
+            email: req.body.email
         };
 
+        if (req.body.password != null && req.body.password != '') {
+            update_data['password'] = users_mod.encrypt_password(req.body.password);
+        }
+
+        if (vu.role == 'admin' && req.body.role != null) {
+            update_data['role'] = req.body.role;
+        }
+
         let group_id = 0;
-        await global_vars.knex('vendors_services').update(update_data)
+        await global_vars.knex('vendors_users').update(update_data)
             .where('vendor_id', '=', vu.vendor.id)
-            .where('id', '=', req.body.service_id)
+            .where('id', '=', req.body.vu_id)
             .then((result) => {
 
                 success = true;
@@ -151,7 +159,6 @@ router.post('/vendor/users/edit', async function (req, res, next) {
 });
 
 
-
 /**
  * @api {post} /vendor/users/list List users
  * @apiName VendorListUsers
@@ -159,6 +166,8 @@ router.post('/vendor/users/edit', async function (req, res, next) {
  * @apiDescription List the users of the logged in vendor
  *
  * @apiParam {String} vu_token The vendor token
+ * @apiParam {Integer} per_page Per page
+ * @apiParam {Integer} page Page number
  *
  * @apiSuccessExample {json} Success-Response:
  *     HTTP/1.1 200 OK
@@ -188,6 +197,9 @@ router.post('/vendor/users/list', async function (req, res, next) {
         let users = null;
         await global_vars.knex('vendors_users').select('*').where('vendor_id', '=', vu.vendor.id).orderBy('id', 'DESC').then((rows) => {
             users = rows;
+        }).paginate({
+            perPage: req.body.per_page == null ? 20 : req.body.per_page,
+            currentPage: req.body.page == null ? 0 : req.body.page
         });
 
         let fixed_users = [];
@@ -205,7 +217,6 @@ router.post('/vendor/users/list', async function (req, res, next) {
     });
 
 });
-
 
 
 module.exports = function (options) {

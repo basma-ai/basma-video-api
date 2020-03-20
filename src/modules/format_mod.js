@@ -71,9 +71,14 @@ module.exports = {
         return await this.format_call(the_row);
 
     },
-    format_call: async function(call) {
-        call['vu'] = await this.get_vu(call['vu_id']);
+    format_call: async function(call, full = true) {
+        call['vu'] = await this.get_vu(call['vu_id'], false);
         call['vendor_service'] = await this.get_vendor_service(call['vendor_service_id']);
+
+        if(!full) {
+            delete call['connection_guest_token'];
+            delete call['connection_agent_token'];
+        }
         return call;
     },
 
