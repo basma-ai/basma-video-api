@@ -106,7 +106,7 @@ router.post('/agent/request_token', async function (req, res, next) {
  * @apiDescription Get a list of the pending calls that the agent can answer
  *
  * @apiParam {String} [vu_token] VU stands for "vendor user", here put the vendor user's token, the one you got upon signin
- * @apiParam {Array} [service_ids] Array with list of the services, if empty will show all
+ * @apiParam {Array} [services_ids] Array with list of the services, if empty will show all
  *
  * @apiSuccessExample {json} Success-Response:
  *     HTTP/1.1 200 OK
@@ -165,9 +165,9 @@ router.post('/agent/list_pending_calls', async function (req, res, next) {
                     }
                 });
 
-                if(req.body.service_ids) {
+                if(req.body.services_ids) {
                     service_ids = service_ids.filter((a) => {
-                        return req.body.service_ids.includes(a);
+                        return req.body.services_ids.includes(a);
                     });
                 }
 
