@@ -176,6 +176,40 @@
             }
           },
           "response": []
+        },
+        {
+          "name": "Submit rating",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "name": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n\t\"guest_token\": \"49667443923e8c109bfbb404476103642d8a0703916c43e6738ef120dd89e2cb\",\n\t\"call_id\": 458,\n\t\"rating\": 4.5,\n\t\"feedback_text\": \"hello there, I loved the service, thank you!\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{api_url}}/calls/submit_rating",
+              "host": [
+                "{{api_url}}"
+              ],
+              "path": [
+                "calls",
+                "submit_rating"
+              ]
+            }
+          },
+          "response": []
         }
       ],
       "protocolProfileBehavior": {}
@@ -237,7 +271,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n\t\"vendor_id\": 1,\n\t\"username\": \"ali.bh\",\n\t\"password\": \"123456\"\n}",
+              "raw": "{\n\t\"vendor_id\": 1,\n\t\"username\": \"ali.bh\",\n\t\"password\": \"123123\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -550,7 +584,7 @@
                 "header": [],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n\t\"vu_token\": \"{{vu_token}}\",\n\t\"per_page\": 1,\n\t\"page\": 2\n}",
+                  "raw": "{\n\t\"vu_token\": \"{{vu_token}}\"\n}",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -613,7 +647,7 @@
                 "header": [],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n\t\"vu_token\": \"{{vu_token}}\",\n\t\"username\": \"ali.bh2\",\n\t\"password\": \"123123\",\n\t\"email\": \"noaimi@basma.ai\",\n\t\"name\": \"Ali 2\",\n\t\"role\": \"agent\"\n}",
+                  "raw": "{\n\t\"vu_token\": \"{{vu_token}}\",\n\t\"username\": \"ali.bh2\",\n\t\"password\": \"123123\",\n\t\"email\": \"noaimi@basma.ai\",\n\t\"name\": \"Ali 2\",\n\t\"role\": \"agent\",\n\t\"groups_ids\": [29, 30]\n}",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -712,13 +746,14 @@
                   }
                 },
                 "url": {
-                  "raw": "{{api_url}}/vendor/calls_history",
+                  "raw": "{{api_url}}/vendor/calls/list",
                   "host": [
                     "{{api_url}}"
                   ],
                   "path": [
                     "vendor",
-                    "calls_history"
+                    "calls",
+                    "list"
                   ]
                 }
               },

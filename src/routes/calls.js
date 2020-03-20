@@ -382,6 +382,110 @@ router.post('/calls/end_call', async function (req, res, next) {
 
 });
 
+/**
+ * @api {post} /calls/submit_rating Submit rating
+ * @apiName CallsSubmitRating
+ * @apiGroup Calls
+ * @apiDescription Submit a rating for a call
+ *
+ * @apiParam {String} [guest_token] The access token of the guest
+ * @apiParam {Integer} call_id The ID of the call
+ * @apiParam {Integer} rating from 1 to 5, 5 being the best
+ * @apiParam {String} feedback_text The feedback text
+ *
+ * @apiSuccessExample {json} Success-Response:
+ *     HTTP/1.1 200 OK
+ {
+    "success": true,
+    "data": {
+    }
+}
+ * @apiErrorExample {json} Success-Response:
+ *     HTTP/1.1 200 OK
+ {
+    "success": true,
+    "data": {
+        "errors": [
+            "call_ended"
+        ]
+    }
+}
+ */
+router.post('/calls/submit_rating', async function (req, res, next) {
+
+
+    let success = true;
+    let go_ahead = true;
+    let return_data = {};
+
+
+    // check the validity of the provided token
+    const guest_id = await users_mod.token_to_id('guests', req.body.guest_token, 'id');
+    if (guest_id == null) {
+        if (return_data['errors'] == null) {
+            return_data['errors'] = [];
+        }
+        return_data['errors'].push('invalid_guest_token');
+        go_ahead = false;
+    }
+
+
+    if (go_ahead) {
+        // get the call
+        var the_call = null;
+        await global_vars.knex('calls').select('*').where('id', '=', req.body.call_id).then((rows) => {
+            if (rows[0] != null) {
+                the_call = rows[0];
+            }
+        });
+
+        if (the_call == null) {
+            // no matching service found, halt
+            if (return_data['errors'] == null) {
+                return_data['errors'] = [];
+            }
+            return_data['errors'].push('invalid_call_id');
+            go_ahead = false;
+        }
+
+        if (go_ahead && the_call.guest_id != guest_id) {
+            // no matching service found, halt
+            if (return_data['errors'] == null) {
+                return_data['errors'] = [];
+            }
+            return_data['errors'].push('unauthorized_action');
+            go_ahead = false;
+        }
+
+
+
+        if (go_ahead) {
+
+            // cool, we reached here, now let's initiate the call
+            let insert_data = {
+                call_id: the_call.id,
+                guest_id: the_call.guest_id,
+                time: Date.now(),
+                rating: req.body.rating,
+                feedback_text: req.body.feedback_text,
+            };
+
+            // return_data['call'] = the_call;
+
+            await global_vars.knex('ratings').insert(insert_data).then((result) => {
+                success = true;
+            });
+        }
+    }
+
+    res.send({
+        success: success,
+        data: return_data
+    });
+
+});
+
+
 
 router.post('/calls/test', async function (req, res, next) {
 

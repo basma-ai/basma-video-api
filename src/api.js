@@ -66,6 +66,7 @@ app.post('/calls/get_services', calls);
 app.post('/calls/start_call', calls);
 app.post('/calls/refresh_call', calls);
 app.post('/calls/end_call', calls);
+app.post('/calls/submit_rating', calls);
 app.post('/calls/test', calls);
 
 // agent
