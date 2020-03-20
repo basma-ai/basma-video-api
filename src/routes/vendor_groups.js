@@ -160,7 +160,8 @@ router.post('/vendor/groups/edit', async function (req, res, next) {
         };
 
         let group_id = 0;
-        await global_vars.knex('groups').update(update_data)
+        await global_vars.knex('groups')
+            .update(update_data)
             .where('vendor_id', '=', vu.vendor.id)
             .where('id', '=', req.body.group_id)
             .then((result) => {
@@ -176,6 +177,8 @@ router.post('/vendor/groups/edit', async function (req, res, next) {
 
             // cool, now let's assign the services
             await set_group_services(vu, req.body.group_id, req.body.service_ids);
+
+            return_data['group'] = await format_mod.get_group(req.body.group_id, true);
 
         }
     } else {

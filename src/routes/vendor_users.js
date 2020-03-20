@@ -8,6 +8,53 @@ var twilio_mod = require("../modules/twilio_mod");
 var global_vars;
 
 
+async function set_vu_groups(vu, vu_id, groups_ids) {
+
+
+    for (let group_id of groups_ids) {
+
+
+        // check if the relationships exists
+        let exists = false;
+        await global_vars.knex('vu_groups_relations')
+            .where('vendor_id', '=', vu.vendor.id)
+            .where('vu_id', '=', vu_id)
+            .where('group_id', '=', group_id).select('*').then((rows) => {
+                if (rows.length > 0) {
+                    exists = true;
+                }
+            }).then((result) => {
+
+            }).catch((error) => {
+                console.log(error);
+
+            });
+
+
+        // if doesn't exist, then add it
+        if (!exists) {
+            let insert_data = {
+                vu_id: vu_id,
+                group_id: group_id,
+                vendor_id: vu.vendor.id
+            }
+            await global_vars.knex('vu_groups_relations').insert(insert_data).then((result) => {
+                console.log("vu_groups_relations inserted");
+            });
+        }
+
+    }
+
+    // now let's delete the deleted ones
+    await global_vars.knex('vu_groups_relations')
+        .where('vendor_id', '=', vu.vendor.id)
+        .where('vu_id', '=', vu_id)
+        .whereNotIn('group_id', groups_ids)
+        .delete();
+
+}
+
+
 /**
  * @api {post} /vendor/users/create Create a user
  * @apiName VendorCreateUser
@@ -19,6 +66,8 @@ var global_vars;
  * @apiParam {String} role "agent" or "admin"
  * @apiParam {String} username The username
  * @apiParam {String} password The password
+ * @apiParam {String} [phone_status] Phone status
+ * @apiParam {Array} [groups_ids] Group IDs
  *
  * @apiSuccessExample {json} Success-Response:
  *     HTTP/1.1 200 OK
@@ -66,7 +115,8 @@ router.post('/vendor/users/create', async function (req, res, next) {
             email: req.body.email,
             username: req.body.username,
             password: users_mod.encrypt_password(req.body.password),
-            creation_time: Date.now()
+            creation_time: Date.now(),
+            phone_status: req.body.phone_status
         };
 
         // and now, do the insertion
@@ -75,6 +125,13 @@ router.post('/vendor/users/create', async function (req, res, next) {
             record_id = result[0];
             success = true;
         });
+
+        if (success) {
+            // cool, now let's assign the groups
+            if (req.body.groups_ids != null) {
+                await set_vu_groups(vu, vu.id, req.body.groups_ids);
+            }
+        }
 
         return_data['user'] = await format_mod.get_vu(record_id, true);
     }
@@ -96,8 +153,10 @@ router.post('/vendor/users/create', async function (req, res, next) {
  * @apiParam {String} vu_token Vendor User Token
  * @apiParam {Integer} vu_id Vendor User ID
  * @apiParam {String} name Name
- * @apiParam {String} role "admin" or "agent"
- * @apiParam {String} password new password, leave empty if you do not wish to change
+ * @apiParam {String} [role] "admin" or "agent"
+ * @apiParam {String} [password] new password, leave empty if you do not wish to change
+ * @apiParam {String} [phone_status] "online" or "offline"
+ * @apiParam {Array} [groups_ids] Group IDs
  *
  * @apiSuccessExample {json} Success-Response:
  *     HTTP/1.1 200 OK
@@ -122,7 +181,8 @@ router.post('/vendor/users/edit', async function (req, res, next) {
         // that's awesome!, we can proceed with the process of creating an account for a new group as per the instructions and details provided by the vu (vendor user), the process will begin by by inserting the group in the database, then, you will be updated by another comment
         let update_data = {
             name: req.body.name,
-            email: req.body.email
+            email: req.body.email,
+            phone_status: req.body.phone_status
         };
 
         if (req.body.password != null && req.body.password != '') {
@@ -145,6 +205,15 @@ router.post('/vendor/users/edit', async function (req, res, next) {
                 go_ahead = false;
                 console.log(err);
             });
+
+        if(success) {
+            // cool, now let's assign the groups
+            if (req.body.groups_ids != null) {
+                await set_vu_groups(vu, vu.id, req.body.groups_ids);
+            }
+
+            return_data['user'] = await format_mod.get_vu(vu.id, true);
+        }
 
     } else {
         return_data['errors'] = ['unauthorized_action'];
@@ -201,8 +270,8 @@ router.post('/vendor/users/list', async function (req, res, next) {
                 currentPage: req.body.page == null ? 0 : req.body.page
             })
             .then((rows) => {
-            users = rows;
-        });
+                users = rows;
+            });
 
         let fixed_users = [];
 
