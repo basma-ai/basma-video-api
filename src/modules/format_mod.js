@@ -96,7 +96,31 @@ module.exports = {
         if (!full) {
             delete call['connection_guest_token'];
             delete call['connection_agent_token'];
+            delete call['agent_notes'];
         }
+        return call;
+    },
+
+    get_agent_call: async function (id, full = true) { // friendly reminder, vu stands for vendor user
+
+        let the_row = null;
+
+        await global_vars.knex('calls').select('*')
+            .where('id', '=', id).then((rows) => {
+                the_row = rows[0];
+            });
+
+        return await this.format_agent_call(the_row, full);
+
+    },
+    format_agent_call: async function (call, full = true) {
+        call['vu'] = await this.get_vu(call['vu_id'], false);
+        call['vendor_service'] = await this.get_vendor_service(call['vendor_service_id']);
+
+        // if (!full) {
+            delete call['connection_guest_token'];
+            delete call['connection_agent_token'];
+        // }
         return call;
     },
 

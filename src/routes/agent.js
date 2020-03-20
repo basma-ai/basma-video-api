@@ -420,6 +420,101 @@ router.post('/agent/end_call', async function (req, res, next) {
 });
 
 
+/**
+ * @api {post} /agent/update_call Update call info
+ * @apiName AgentCallUpdate
+ * @apiGroup Agent
+ * @apiDescription Update call's info
+ *
+ * @apiParam {String} vu_token The access token of the agent
+ * @apiParam {Integer} call_id The ID of the call
+ * @apiParam {String} agent_notes Update the agent's notes
+ *
+ * @apiSuccessExample {json} Success-Response:
+ *     HTTP/1.1 200 OK
+ {
+    "success": true,
+    "data": {
+    }
+}
+ * @apiErrorExample {json} Success-Response:
+ *     HTTP/1.1 200 OK
+
+ */
+router.post('/agent/update_call', async function (req, res, next) {
+
+
+    let success = true;
+    let go_ahead = true;
+    let return_data = {};
+
+
+    // check the validity of the provided token
+    const vu_id = await users_mod.token_to_id('vendors_users_tokens', req.body.vu_token, 'vu_id');
+    if (vu_id == null) {
+        if (return_data['errors'] == null) {
+            return_data['errors'] = [];
+        }
+        return_data['errors'].push('invalid_vu_token');
+        go_ahead = false;
+    }
+
+    // var the_vu = await format_mod.get_vu(vu_id);
+
+
+    if (go_ahead) {
+        // get the call
+        var the_call = null;
+        await global_vars.knex('calls').select('*').where('id', '=', req.body.call_id).then((rows) => {
+            if (rows[0] != null) {
+                the_call = rows[0];
+            }
+        });
+
+        if (the_call == null) {
+            // no matching service found, halt
+            if (return_data['errors'] == null) {
+                return_data['errors'] = [];
+            }
+            return_data['errors'].push('invalid_call_id');
+            go_ahead = false;
+        }
+
+        if (go_ahead && the_call.vu_id != vu_id) {
+            // no matching service found, halt
+            if (return_data['errors'] == null) {
+                return_data['errors'] = [];
+            }
+            return_data['errors'].push('unauthorized_acction');
+            go_ahead = false;
+        }
+
+
+
+        if (go_ahead) {
+            // cool, we reached here, now let's initiate the call
+            let update_data = {
+                agent_notes: req.body.agent_notes
+            };
+
+            // return_data['call'] = the_call;
+
+            await global_vars.knex('calls').where('id', '=', the_call.id).update(update_data).then((result) => {
+                success = true;
+            });
+
+
+            // return_data['call'] = await format_mod.get_call(the_call.id);
+        }
+    }
+
+    res.send({
+        success: success,
+        data: return_data
+    });
+
+});
+
 module.exports = function (options) {
 
     global_vars = options;

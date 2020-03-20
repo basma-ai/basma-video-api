@@ -75,6 +75,7 @@ app.post('/agent/request_token', agent);
 app.post('/agent/list_pending_calls', agent);
 app.post('/agent/answer_call', agent);
 app.post('/agent/end_call', agent);
+app.post('/agent/update_call', agent);
 
 // master
 app.get('/master', master);
@@ -111,5 +112,6 @@ app.post('/vendor/users/get', vendor_users);
 
 // vendors calls
 app.post('/vendor/calls/list', vendor_calls);
+app.post('/vendor/calls/get', vendor_calls);
 
 app.listen(port, () => console.log(`Video CC API listening on port ${port}!`))

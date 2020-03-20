@@ -305,7 +305,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n\t\"vu_token\": \"{{vu_token}}\",\n}",
+              "raw": "{\n\t\"vu_token\": \"{{vu_token}}\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -388,6 +388,40 @@
               "path": [
                 "agent",
                 "end_call"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update call",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "name": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n\t\"vu_token\": \"{{vu_token}}\",\n\t\"call_id\": 489,\n\t\"agent_notes\": \"some notes go here\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{api_url}}/agent/update_call",
+              "host": [
+                "{{api_url}}"
+              ],
+              "path": [
+                "agent",
+                "update_call"
               ]
             }
           },
@@ -723,6 +757,34 @@
                 }
               },
               "response": []
+            },
+            {
+              "name": "Get user",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n\t\"vu_token\": \"{{vu_token}}\",\n\t\"vu_id\": 12\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{api_url}}/vendor/users/get",
+                  "host": [
+                    "{{api_url}}"
+                  ],
+                  "path": [
+                    "vendor",
+                    "users",
+                    "get"
+                  ]
+                }
+              },
+              "response": []
             }
           ],
           "protocolProfileBehavior": {},
@@ -754,6 +816,34 @@
                     "vendor",
                     "calls",
                     "list"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Get a call",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n\t\"vu_token\": \"{{vu_token}}\",\n\t\"call_id\": 489\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{api_url}}/vendor/calls/get",
+                  "host": [
+                    "{{api_url}}"
+                  ],
+                  "path": [
+                    "vendor",
+                    "calls",
+                    "get"
                   ]
                 }
               },
