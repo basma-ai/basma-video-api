@@ -195,20 +195,23 @@ router.post('/vendor/users/list', async function (req, res, next) {
     if (go_ahead) {
         // check if username is taken
         let users = null;
-        await global_vars.knex('vendors_users').select('*').where('vendor_id', '=', vu.vendor.id).orderBy('id', 'DESC').then((rows) => {
+        await global_vars.knex('vendors_users').select('*').where('vendor_id', '=', vu.vendor.id).orderBy('id', 'DESC')
+            .paginate({
+                perPage: req.body.per_page == null ? 20 : req.body.per_page,
+                currentPage: req.body.page == null ? 0 : req.body.page
+            })
+            .then((rows) => {
             users = rows;
-        }).paginate({
-            perPage: req.body.per_page == null ? 20 : req.body.per_page,
-            currentPage: req.body.page == null ? 0 : req.body.page
         });
 
         let fixed_users = [];
 
-        for (let user of users) {
+        for (let user of users.data) {
             fixed_users.push(await format_mod.format_vu(user));
         }
 
         return_data['users'] = fixed_users;
+        return_data['pagination'] = users.pagination;
     }
 
     res.send({

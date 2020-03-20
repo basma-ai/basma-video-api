@@ -248,7 +248,7 @@ router.post('/vendor/groups/list', async function (req, res, next) {
         }
 
         return_data['groups'] = groups;
-        return_data['pagination'] = raw_groups.paginate;
+        return_data['pagination'] = raw_groups.pagination;
 
 
     } else {
