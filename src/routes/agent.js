@@ -120,7 +120,7 @@ router.post('/agent/list_pending_calls', async function (req, res, next) {
     let return_data = {};
 
     // delete calls with 5 seconds of no refresh
-    let last_time = Date.now()-(60*60*5);
+    let last_time = Date.now() - (60 * 60 * 5);
     await global_vars.knex('calls').where('last_refresh_time', '<', last_time).where('status', '=', 'calling').update({
         status: 'missed'
     });
@@ -143,35 +143,39 @@ router.post('/agent/list_pending_calls', async function (req, res, next) {
 
         let stmnt = global_vars.knex('calls').select('*');
 
-        if(the_vu.role != 'admin') {
+        if (the_vu.role != 'admin') {
             // get the services the vu has access to
 
-                // get services which agent has access to
-                let services_stmnt = global_vars.knex('vendors_services')
-                    .select('vendors_services.*').distinct('vendors_services.id')
-                    .leftJoin('groups_services_relations', 'groups_services_relations.service_id', 'vendors_services.id')
-                    .leftJoin('groups', 'groups.id', 'groups_services_relations.group_id')
-                    .leftJoin('vu_groups_relations', 'vu_groups_relations.group_id', 'groups.id')
-                    .where(function () {
-                        this.where('vu_groups_relations.vu_id', '=', the_vu.id)
-                            .orWhere('vendors_services.is_restricted', '=', false);
-                    }).andWhere('vendors_services.vendor_id', '=', the_vu.vendor.id)
-                    .orderBy('vendors_services.id', 'DESC');
+            // get services which agent has access to
+            let services_stmnt = global_vars.knex('vendors_services')
+                .select('vendors_services.*').distinct('vendors_services.id')
+                .leftJoin('groups_services_relations', 'groups_services_relations.service_id', 'vendors_services.id')
+                .leftJoin('groups', 'groups.id', 'groups_services_relations.group_id')
+                .leftJoin('vu_groups_relations', 'vu_groups_relations.group_id', 'groups.id')
+                .where(function () {
+                    this.where('vu_groups_relations.vu_id', '=', the_vu.id)
+                        .orWhere('vendors_services.is_restricted', '=', false);
+                }).andWhere('vendors_services.vendor_id', '=', the_vu.vendor.id)
+                .orderBy('vendors_services.id', 'DESC');
 
-                let service_ids = [];
-                await services_stmnt.then((rows) => {
-                    for(let row of rows) {
-                        service_ids.push(row.id);
-                    }
-                });
-
-                if(req.body.services_ids) {
-                    service_ids = service_ids.filter((a) => {
-                        return req.body.services_ids.includes(a);
-                    });
+            let service_ids = [];
+            await services_stmnt.then((rows) => {
+                for (let row of rows) {
+                    service_ids.push(row.id);
                 }
+            });
 
-                stmnt.whereIn('vendor_service_id', service_ids);
+            // if(req.body.services_ids) {
+            //     service_ids = service_ids.filter((a) => {
+            //         return req.body.services_ids.includes(a);
+            //     });
+            // }
+
+            stmnt.whereIn('vendor_service_id', service_ids);
+        }
+
+        if (req.body.services_ids != null) {
+            stmnt.whereIn('vendor_service_id', req.body.services_ids);
         }
 
         // and now, do the insertion
@@ -394,7 +398,7 @@ router.post('/agent/end_call', async function (req, res, next) {
             let update_data = {
                 status: 'ended',
                 end_time: Date.now(),
-                duration: Date.now()-the_call['answer_time']
+                duration: Date.now() - the_call['answer_time']
             };
 
             // return_data['call'] = the_call;
@@ -402,7 +406,6 @@ router.post('/agent/end_call', async function (req, res, next) {
             await global_vars.knex('calls').where('id', '=', the_call.id).update(update_data).then((result) => {
                 success = true;
             });
-
 
 
             return_data['call'] = await format_mod.get_call(the_call.id);
