@@ -279,7 +279,7 @@ router.post('/vendor/users/list', async function (req, res, next) {
             fixed_users.push(await format_mod.format_vu(user));
         }
 
-        return_data['users'] = fixed_users;
+        return_data['list'] = fixed_users;
         return_data['pagination'] = users.pagination;
     }
 

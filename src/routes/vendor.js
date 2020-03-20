@@ -133,55 +133,6 @@ router.post('/vendor/dashboard_numbers', async function (req, res, next) {
 
 
 
-/**
- * @api {post} /vendor/list_services List services
- * @apiName VendorListServices
- * @apiGroup Vendor
- * @apiDescription List of the services
- *
- * @apiParam {String} vu_token The vendor token
- *
- * @apiSuccessExample {json} Success-Response:
- *     HTTP/1.1 200 OK
-
-
- */
-router.post('/vendor/list_services', async function (req, res, next) {
-
-
-    var success = true;
-    var go_ahead = true;
-    var return_data = {};
-
-
-    // generate a token for our beloved guest
-    // create a guest token
-
-    const vu_id = await users_mod.token_to_id('vendors_users_tokens', req.body.vu_token, 'vu_id');
-    let vu = await format_mod.get_vu(vu_id);
-
-    if (vu == null && vu.role == 'admin') {
-        go_ahead = false;
-    }
-
-    if (go_ahead) {
-        // check if username is taken
-        let vendors_services = null;
-        await global_vars.knex('vendors_services').select('*').where('vendor_id', '=', vu.vendor.id).orderBy('id', 'DESC').then((rows) => {
-            vendors_services = rows;
-        });
-
-
-        return_data['services'] = vendors_services;
-    }
-
-    res.send({
-        success: success,
-        data: return_data
-    });
-
-});
-
 
 module.exports = function (options) {
 

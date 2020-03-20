@@ -133,7 +133,7 @@ module.exports = {
             if (the_row != null) {
 
                 let services_raw = [];
-                
+
                 await global_vars.knex('groups_services_relations')
                     .select('*')
                     .where('vendor_id', '=', the_row.vendor_id)

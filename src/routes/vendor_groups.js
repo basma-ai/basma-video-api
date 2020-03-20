@@ -250,7 +250,7 @@ router.post('/vendor/groups/list', async function (req, res, next) {
             groups.push(await format_mod.format_group(raw_group));
         }
 
-        return_data['groups'] = groups;
+        return_data['list'] = groups;
         return_data['pagination'] = raw_groups.pagination;
 
 

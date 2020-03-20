@@ -59,7 +59,7 @@ router.post('/vendor/calls/list', async function (req, res, next) {
         fixed_calls.push(await format_mod.format_call(call, false));
     }
 
-    return_data['calls'] = fixed_calls;
+    return_data['list'] = fixed_calls;
     return_data['pagination'] = calls.pagination;
 
 
