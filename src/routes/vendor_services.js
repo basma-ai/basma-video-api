@@ -25,7 +25,8 @@ router.post('/vendor/services/create', async function (req, res, next) {
 
         let insert_data = {
             vendor_id: vu.vendor.id,
-            name: req.body.name
+            name: req.body.name,
+            is_restricted: req.body.is_restricted
         };
 
         let record_id = 0;
@@ -64,6 +65,7 @@ router.post('/vendor/services/create', async function (req, res, next) {
  * @apiParam {String} vu_token Vendor User Token
  * @apiParam {Integer} service_id Group ID
  * @apiParam {String} name Service name
+ * @apiParam {Boolean} is_restricted Is Restricted?
  *
  * @apiSuccessExample {json} Success-Response:
  *     HTTP/1.1 200 OK
@@ -87,7 +89,8 @@ router.post('/vendor/services/edit', async function (req, res, next) {
 
         // that's awesome!, we can proceed with the process of creating an account for a new group as per the instructions and details provided by the vu (vendor user), the process will begin by by inserting the group in the database, then, you will be updated by another comment
         let update_data = {
-            name: req.body.name
+            name: req.body.name,
+            is_restricted: req.body.is_restricted
         };
 
         let group_id = 0;
