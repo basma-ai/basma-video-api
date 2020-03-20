@@ -166,7 +166,7 @@ router.post('/agent/list_pending_calls', async function (req, res, next) {
                 });
 
                 if(req.body.service_ids) {
-                    service_ids.filter((a) => {
+                    service_ids = service_ids.filter((a) => {
                         return req.body.service_ids.includes(a);
                     });
                 }
