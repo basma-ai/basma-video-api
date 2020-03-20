@@ -271,7 +271,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n\t\"vu_token\": \"7d62487ba4a1ee1aa2b3f4efeb363f4cadd0cdce7a7d26f94453a691c8c9215b\"\n}",
+              "raw": "{\n\t\"vu_token\": \"{{vu_token}}\",\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -305,7 +305,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n\t\"vu_token\": \"ed557db179703329783a5c8cfac2713d2ab330476d66e55462f6c77a2002fc56\",\n\t\"call_id\": 3\n}",
+              "raw": "{\n\t\"vu_token\": \"{{vu_token}}\",\n\t\"call_id\": 3\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -339,7 +339,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n\t\"vu_token\": \"ed557db179703329783a5c8cfac2713d2ab330476d66e55462f6c77a2002fc56\",\n\t\"call_id\": 5\n}",
+              "raw": "{\n\t\"vu_token\": \"{{vu_token}}\",\n\t\"call_id\": 5\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -375,7 +375,7 @@
                 "header": [],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n\t\"vu_token\": \"d5a1b1a3fb5179530b3c7770a821d3584eaa798741c8a87d627c5a6822ca700b\",\n\t\"name\": \"Legends\",\n\t\"service_ids\": []\n}",
+                  "raw": "{\n\t\"vu_token\": \"{{vu_token}}\",\n\t\"name\": \"Legends\",\n\t\"service_ids\": []\n}",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -403,7 +403,7 @@
                 "header": [],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n\t\"vu_token\": \"d5a1b1a3fb5179530b3c7770a821d3584eaa798741c8a87d627c5a6822ca700b\",\n\t\"group_id\": 29,\n\t\"name\": \"Legends\",\n\t\"service_ids\": [5, 6]\n}",
+                  "raw": "{\n    \"vu_token\": \"{{vu_token}}\",\n    \"group_id\": 29,\n    \"name\": \"Legends\",\n    \"service_ids\": [\n        5,\n        6\n    ]\n}",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -431,7 +431,7 @@
                 "header": [],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n\t\"vu_token\": \"b5a3e7073b930705fd783dcbf79ffc6d1f15d3bfb5de9a01c4458fb02b7e6929\",\n\t\"per_page\": 1,\n\t\"page\": 1\n}",
+                  "raw": "{\n\t\"vu_token\": \"{{vu_token}}\",\n\t\"per_page\": 1,\n\t\"page\": 1\n}",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -459,7 +459,7 @@
                 "header": [],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n\t\"vu_token\": \"02f090b0ecf81ded9e32dae52141c0bc6b14e429b3eca2d30fa5cde24b19cfcd\",\n\t\"service_id\": 29\n}",
+                  "raw": "{\n\t\"vu_token\": \"{{vu_token}}\",\n\t\"service_id\": 29\n}",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -494,7 +494,7 @@
                 "header": [],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n\t\"vu_token\": \"02f090b0ecf81ded9e32dae52141c0bc6b14e429b3eca2d30fa5cde24b19cfcd\",\n\t\"name\": \"Test Service\"\n}",
+                  "raw": "{\n\t\"vu_token\": \"{{vu_token}}\",\n\t\"name\": \"Test Service\"\n}",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -522,7 +522,7 @@
                 "header": [],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n\t\"vu_token\": \"02f090b0ecf81ded9e32dae52141c0bc6b14e429b3eca2d30fa5cde24b19cfcd\",\n\t\"service_id\": \"18\",\n\t\"name\": \"The new test service - edited\"\n}",
+                  "raw": "{\n\t\"vu_token\": \"{{vu_token}}\",\n\t\"service_id\": \"18\",\n\t\"name\": \"The new test service - edited\"\n}",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -550,7 +550,7 @@
                 "header": [],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n\t\"vu_token\": \"b5a3e7073b930705fd783dcbf79ffc6d1f15d3bfb5de9a01c4458fb02b7e6929\",\n\t\"per_page\": 1,\n\t\"page\": 2\n}",
+                  "raw": "{\n\t\"vu_token\": \"{{vu_token}}\",\n\t\"per_page\": 1,\n\t\"page\": 2\n}",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -578,7 +578,7 @@
                 "header": [],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n\t\"vu_token\": \"02f090b0ecf81ded9e32dae52141c0bc6b14e429b3eca2d30fa5cde24b19cfcd\",\n\t\"service_id\": 18\n}",
+                  "raw": "{\n\t\"vu_token\": \"{{vu_token}}\",\n\t\"service_id\": 18\n}",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -613,7 +613,7 @@
                 "header": [],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n\t\"vu_token\": \"b5a3e7073b930705fd783dcbf79ffc6d1f15d3bfb5de9a01c4458fb02b7e6929\",\n\t\"username\": \"ali.bh2\",\n\t\"password\": \"123123\",\n\t\"email\": \"noaimi@basma.ai\",\n\t\"name\": \"Ali 2\",\n\t\"role\": \"agent\"\n}",
+                  "raw": "{\n\t\"vu_token\": \"{{vu_token}}\",\n\t\"username\": \"ali.bh2\",\n\t\"password\": \"123123\",\n\t\"email\": \"noaimi@basma.ai\",\n\t\"name\": \"Ali 2\",\n\t\"role\": \"agent\"\n}",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -641,7 +641,7 @@
                 "header": [],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n\t\"vu_token\": \"b5a3e7073b930705fd783dcbf79ffc6d1f15d3bfb5de9a01c4458fb02b7e6929\"\n}",
+                  "raw": "{\n\t\"vu_token\": \"{{vu_token}}\"\n}",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -669,7 +669,7 @@
                 "header": [],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n\t\"vu_token\": \"b5a3e7073b930705fd783dcbf79ffc6d1f15d3bfb5de9a01c4458fb02b7e6929\",\n\t\"vu_id\": 12,\n\t\"password\": \"123123\",\n\t\"email\": \"noaimi@basma.ai\",\n\t\"name\": \"Ali Alnoaimi\",\n\t\"role\": \"agent\",\n\t\"phone_status\": \"online\",\n\t\"groups_ids\": [29, 30]\n}",
+                  "raw": "{\n\t\"vu_token\": \"{{vu_token}}\",\n\t\"vu_id\": 12,\n\t\"password\": \"123123\",\n\t\"email\": \"noaimi@basma.ai\",\n\t\"name\": \"Ali Alnoaimi\",\n\t\"role\": \"admin\",\n\t\"phone_status\": \"online\",\n\t\"groups_ids\": [29, 30]\n}",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -704,7 +704,7 @@
                 "header": [],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n\t\"vu_token\": \"b5a3e7073b930705fd783dcbf79ffc6d1f15d3bfb5de9a01c4458fb02b7e6929\",\n\t\"page\": 1,\n\t\"per_page\": 10\n}",
+                  "raw": "{\n\t\"vu_token\": \"{{vu_token}}\",\n\t\"page\": 1,\n\t\"per_page\": 10\n}",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -735,7 +735,7 @@
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\n\t\"vu_token\": \"d5a1b1a3fb5179530b3c7770a821d3584eaa798741c8a87d627c5a6822ca700b\"\n}",
+              "raw": "{\n\t\"vu_token\": \"{{vu_token}}\"\n}",
               "options": {
                 "raw": {
                   "language": "json"

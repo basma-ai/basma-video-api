@@ -55,8 +55,10 @@ module.exports = {
             // get groups
             let raw_groups = [];
             await global_vars.knex('vu_groups_relations')
-                .where('vendor_id', '=', vu.vendor.id)
-                .where('vu_id', '=', vu.id)
+                .select('groups.*')
+                .where('vu_groups_relations.vendor_id', '=', vu.vendor.id)
+                .where('vu_groups_relations.vu_id', '=', vu.id)
+                .leftJoin('groups','groups.id', 'vu_groups_relations.group_id')
                 .then((rows) => {
                     raw_groups = rows;
                 })
@@ -127,12 +129,15 @@ module.exports = {
     },
     format_group: async function (the_row, full = true) {
 
+
         // get its services
         if(full) {
             the_row['services'] = [];
             if (the_row != null) {
 
                 let services_raw = [];
+
+
 
                 await global_vars.knex('groups_services_relations')
                     .select('*')
@@ -141,7 +146,6 @@ module.exports = {
                     .orderBy('id', 'DESC').then((rows) => {
                         services_raw = rows;
 
-                        console.log(rows);
 
                     });
 

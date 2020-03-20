@@ -39,7 +39,7 @@ async function set_group_services(vu, group_id, services_ids) {
                 vendor_id: vu.vendor.id
             }
             await global_vars.knex('groups_services_relations').insert(insert_data).then((result) => {
-                console.log("groups_services_relations inserted");
+                // console.log("groups_services_relations inserted");
             });
         }
 
@@ -94,8 +94,8 @@ router.post('/vendor/groups/create', async function (req, res, next) {
         await global_vars.knex('groups').insert(insert_data).then((result) => {
 
             success = true;
-            console.log("the result of group creation");
-            console.log(result);
+            // console.log("the result of group creation");
+            // console.log(result);
             group_id = result[0];
 
         }).catch((err) => {
@@ -229,21 +229,25 @@ router.post('/vendor/groups/list', async function (req, res, next) {
         };
 
         let raw_groups = [];
-        await global_vars.knex('groups')
+        let stmnt = global_vars.knex('groups')
             .where('vendor_id', '=', vu.vendor.id)
-            .paginate({
+
+        if (req.body.per_page != null && req.body.page != null) {
+            stmnt = stmnt.paginate({
                 perPage: req.body.per_page == null ? 20 : req.body.per_page,
                 currentPage: req.body.page == null ? 0 : req.body.page
-            })
-            .then((rows) => {
-
-                raw_groups = rows;
-                success = true;
-
-            }).catch((err) => {
-                go_ahead = false;
-                console.log(err);
             });
+        }
+
+        await stmnt.then((rows) => {
+
+            raw_groups = rows;
+            success = true;
+
+        }).catch((err) => {
+            go_ahead = false;
+            console.log(err);
+        });
 
         let groups = [];
         for (let raw_group of raw_groups.data) {

@@ -149,21 +149,25 @@ router.post('/vendor/services/list', async function (req, res, next) {
         };
 
         let raw_records = [];
-        await global_vars.knex('vendors_services')
-            .where('vendor_id', '=', vu.vendor.id)
-            .paginate({
+        let stmnt = global_vars.knex('vendors_services')
+            .where('vendor_id', '=', vu.vendor.id);
+
+        if (req.body.per_page != null && req.body.page != null) {
+            stmnt = stmnt.paginate({
                 perPage: req.body.per_page == null ? 20 : req.body.per_page,
                 currentPage: req.body.page == null ? 0 : req.body.page
-            })
-            .then((rows) => {
-
-                raw_records = rows;
-                success = true;
-
-            }).catch((err) => {
-                go_ahead = false;
-                console.log(err);
             });
+        }
+
+        await stmnt.then((rows) => {
+
+            raw_records = rows;
+            success = true;
+
+        }).catch((err) => {
+            go_ahead = false;
+            console.log(err);
+        });
 
         let list = [];
         for (let raw_service of raw_records.data) {

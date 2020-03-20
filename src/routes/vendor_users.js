@@ -206,7 +206,7 @@ router.post('/vendor/users/edit', async function (req, res, next) {
                 console.log(err);
             });
 
-        if(success) {
+        if (success) {
             // cool, now let's assign the groups
             if (req.body.groups_ids != null) {
                 await set_vu_groups(vu, vu.id, req.body.groups_ids);
@@ -264,14 +264,18 @@ router.post('/vendor/users/list', async function (req, res, next) {
     if (go_ahead) {
         // check if username is taken
         let users = null;
-        await global_vars.knex('vendors_users').select('*').where('vendor_id', '=', vu.vendor.id).orderBy('id', 'DESC')
-            .paginate({
+        let stmnt = global_vars.knex('vendors_users').select('*').where('vendor_id', '=', vu.vendor.id).orderBy('id', 'DESC')
+
+        if (req.body.per_page != null && req.body.page != null) {
+            stmnt = stmnt.paginate({
                 perPage: req.body.per_page == null ? 20 : req.body.per_page,
                 currentPage: req.body.page == null ? 0 : req.body.page
-            })
-            .then((rows) => {
-                users = rows;
             });
+        }
+
+        await stmnt.then((rows) => {
+            users = rows;
+        });
 
         let fixed_users = [];
 
