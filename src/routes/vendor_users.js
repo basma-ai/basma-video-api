@@ -209,10 +209,10 @@ router.post('/vendor/users/edit', async function (req, res, next) {
         if (success) {
             // cool, now let's assign the groups
             if (req.body.groups_ids != null) {
-                await set_vu_groups(vu, vu.id, req.body.groups_ids);
+                await set_vu_groups(vu, req.body.vu_id, req.body.groups_ids);
             }
 
-            return_data['user'] = await format_mod.get_vu(vu.id, true);
+            return_data['user'] = await format_mod.get_vu(req.body.vu_id, true);
         }
 
     } else {
