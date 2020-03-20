@@ -106,6 +106,7 @@ router.post('/agent/request_token', async function (req, res, next) {
  * @apiDescription Get a list of the pending calls that the agent can answer
  *
  * @apiParam {String} [vu_token] VU stands for "vendor user", here put the vendor user's token, the one you got upon signin
+ * @apiParam {Array} [service_ids] Array with list of the services, if empty will show all
  *
  * @apiSuccessExample {json} Success-Response:
  *     HTTP/1.1 200 OK
@@ -139,9 +140,43 @@ router.post('/agent/list_pending_calls', async function (req, res, next) {
 
 
     if (go_ahead) {
+
+        let stmnt = global_vars.knex('calls').select('*');
+
+        if(the_vu.role != 'admin') {
+            // get the services the vu has access to
+
+                // get services which agent has access to
+                let services_stmnt = global_vars.knex('vendors_services')
+                    .select('vendors_services.*').distinct('vendors_services.id')
+                    .leftJoin('groups_services_relations', 'groups_services_relations.service_id', 'vendors_services.id')
+                    .leftJoin('groups', 'groups.id', 'groups_services_relations.group_id')
+                    .leftJoin('vu_groups_relations', 'vu_groups_relations.group_id', 'groups.id')
+                    .where(function () {
+                        this.where('vu_groups_relations.vu_id', '=', the_vu.id)
+                            .orWhere('vendors_services.is_restricted', '=', false);
+                    }).andWhere('vendors_services.vendor_id', '=', the_vu.vendor.id)
+                    .orderBy('vendors_services.id', 'DESC');
+
+                let service_ids = [];
+                await services_stmnt.then((rows) => {
+                    for(let row of rows) {
+                        service_ids.push(row.id);
+                    }
+                });
+
+                if(req.body.service_ids) {
+                    service_ids.filter((a) => {
+                        return req.body.service_ids.includes(a);
+                    });
+                }
+
+                stmnt.whereIn('vendor_service_id', service_ids);
+        }
+
         // and now, do the insertion
-        let pre_rows = null
-        await global_vars.knex('calls').select('*').where('status', '=', 'calling').where('vendor_id', '=', the_vu.vendor.id).orderBy('creation_time', 'ASC').then((rows) => {
+        let pre_rows = null;
+        await stmnt.where('status', '=', 'calling').where('vendor_id', '=', the_vu.vendor.id).orderBy('creation_time', 'ASC').then((rows) => {
             pre_rows = rows;
             success = true;
         });
