@@ -295,6 +295,51 @@ router.post('/vendor/users/list', async function (req, res, next) {
 });
 
 
+/**
+ * @api {post} /vendor/users/get Get a user
+ * @apiName VendorUsersGet
+ * @apiGroup vendor
+ * @apiDescription Get a user
+ *
+ * @apiParam {String} vu_token Vendor User Token
+ * @apiParam {Integer} vu_id Vendor User ID
+ *
+ * @apiSuccessExample {json} Success-Response:
+ *     HTTP/1.1 200 OK
+
+
+ */
+router.post('/vendor/users/get', async function (req, res, next) {
+
+
+    let success = false;
+    let go_ahead = true;
+    let return_data = {};
+
+
+    const vu_id = await users_mod.token_to_id('vendors_users_tokens', req.body.vu_token, 'vu_id');
+
+    const vu = await format_mod.get_vu(vu_id, true);
+
+    // check if admin
+    if (vu.role == 'admin' || vu.id == req.body.vu_id) {
+
+        return_data['user'] = await format_mod.get_vu(req.body.vu_id, true);
+
+    } else {
+        return_data['errors'] = ['unauthorized_action'];
+    }
+
+
+    res.send({
+        success: success,
+        data: return_data
+    });
+
+});
+
+
+
 module.exports = function (options) {
 
     global_vars = options;

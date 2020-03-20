@@ -155,7 +155,7 @@ router.post('/vendor/services/list', async function (req, res, next) {
     } else {
         // get services which agent has access to
         stmnt = global_vars.knex('vendors_services')
-            .select('vendors_services.*')
+            .select('vendors_services.*').distinct('vendors_services.id')
             .leftJoin('groups_services_relations', 'groups_services_relations.service_id', 'vendors_services.id')
             .leftJoin('groups', 'groups.id', 'groups_services_relations.group_id')
             .leftJoin('vu_groups_relations', 'vu_groups_relations.group_id', 'groups.id')
