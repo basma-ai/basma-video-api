@@ -56,7 +56,7 @@ let guest = require('./routes/guest.js')(global_vars)
 let calls = require('./routes/calls.js')(global_vars)
 let master = require('./routes/master.js')(global_vars)
 let agent = require('./routes/agent.js')(global_vars)
-let files = require('./routes/files.js')(global_vars)
+// let files = require('./routes/files.js')(global_vars)
 
 let vendor = require('./routes/vendor.js')(global_vars)
 let vendor_groups = require('./routes/vendor_groups.js')(global_vars)
@@ -122,20 +122,16 @@ app.post('/vendor/users/get', vendor_users);
 app.post('/vendor/calls/list', vendor_calls);
 app.post('/vendor/calls/get', vendor_calls);
 
-<<<<<<< HEAD
 // vendors users
 app.post('/vendor/custom_fields/create', vendor_custom_fields);
 app.post('/vendor/custom_fields/edit', vendor_custom_fields);
 app.post('/vendor/custom_fields/list', vendor_custom_fields);
 app.post('/vendor/custom_fields/get', vendor_custom_fields);
 
-=======
 // files
-app.post('/files/get', files);
-app.post('/files/upload', files);
+// app.post('/files/get', files);
+// app.post('/files/upload', files);
 
-const server = app.listen(port, () => console.log(`Video CC API listening on port ${port}!`))
->>>>>>> d690b6950d84072028298318ae37a97613b9172d
 
 
 io.on('connection', function (socket) {
