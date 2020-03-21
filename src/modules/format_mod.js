@@ -93,10 +93,24 @@ module.exports = {
         call['vu'] = await this.get_vu(call['vu_id'], false);
         call['vendor_service'] = await this.get_vendor_service(call['vendor_service_id']);
 
+        call['custom_fields_values'] = JSON.parse(call['custom_fields_values']);
+
+
         if (!full) {
             delete call['connection_guest_token'];
             delete call['connection_agent_token'];
             delete call['agent_notes'];
+        }
+
+        if(full) {
+            // get rating
+            let rating = 'no_rating';
+            await global_vars.knex('ratings').where('call_id', '=', call.id).then((rows) => {
+                if(rows.length > 0) {
+                    rating = rows[0];
+                }
+            });
+            call['rating'] = rating;
         }
         return call;
     },
@@ -181,6 +195,23 @@ module.exports = {
 
 
         return the_row;
+    },
+
+    get_custom_field: async function (id) {
+
+        let record = null;
+
+        await global_vars.knex('custom_fields').select('*')
+            .where('id', '=', id).then((rows) => {
+                record = rows[0];
+            });
+
+        return await this.format_custom_field(record);
+
+    },
+
+    format_custom_field: async function (record) {
+        return record;
     },
 
 

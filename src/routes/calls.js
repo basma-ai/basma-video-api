@@ -4,6 +4,8 @@ let router = express.Router();
 let users_mod = require("../modules/users_mod");
 let format_mod = require("../modules/format_mod");
 let twilio_mod = require("../modules/twilio_mod");
+var socket_mod = require("../modules/socket_mod");
+var calls_mod = require("../modules/calls_mod");
 
 let global_vars;
 
@@ -120,7 +122,8 @@ router.post('/calls/start_call', async function (req, res, next) {
                 vendor_id: the_service.vendor_id,
                 vendor_service_id: the_service.id,
                 creation_time: Date.now(),
-                last_refresh_time: Date.now()
+                last_refresh_time: Date.now(),
+                custom_fields_values: req.body.custom_fields_values == null ? null : JSON.stringify(req.body.custom_fields_values)
             };
 
 
@@ -128,6 +131,15 @@ router.post('/calls/start_call', async function (req, res, next) {
                 success = true;
                 return_data['call_id'] = result[0];
             });
+
+            if(success){
+                return_data['call_info'] = await calls_mod.get_guest_call_refresh(return_data['call_id'], guest_id);
+
+                calls_mod.update_all_calls(the_service.vendor_id);
+
+            }
+
+
         }
     }
 
@@ -139,10 +151,10 @@ router.post('/calls/start_call', async function (req, res, next) {
 });
 
 /**
- * @api {post} /calls/refresh_call Refresh a call
- * @apiName CallsRefresh
+ * @api {post} /calls/request_update Refresh a call
+ * @apiName CallsRequest
  * @apiGroup Calls
- * @apiDescription Refresh a call, must be called repeatedly with less then 5 seconds interval to keep the call active and ringing
+ * @apiDescription Request a call update on the socket.io, must be called repeatedly with less then 5 seconds interval to keep the call active and ringing
  *
  * @apiParam {String} guest_token The access token of the guest
  * @apiParam {Integer} call_id The ID of the call
@@ -166,106 +178,19 @@ router.post('/calls/start_call', async function (req, res, next) {
     }
 }
  */
-router.post('/calls/refresh_call', async function (req, res, next) {
+router.post('/calls/request_update', async function (req, res, next) {
 
 
-    let success = true;
-    let go_ahead = true;
-    let return_data = {};
-
-
-    // check the validity of the provided token
     const guest_id = await users_mod.token_to_id('guests', req.body.guest_token, 'id');
-    if (guest_id == null) {
-        if (return_data['errors'] == null) {
-            return_data['errors'] = [];
-        }
-        return_data['errors'].push('invalid_guest_token');
-        go_ahead = false;
-    }
 
+    await socket_mod.send_update({
+        user_type: 'guest',
+        user_id: guest_id,
+        call_id: return_data['call_id'],
+        type: 'call_info',
+        data: await calls_mod.get_guest_call_refresh(req.body.call_id, guest_id)
+    });
 
-    if (go_ahead) {
-        // get the call
-        var the_call = null;
-        await global_vars.knex('calls').select('*').where('id', '=', req.body.call_id).then((rows) => {
-            if (rows[0] != null) {
-                the_call = rows[0];
-            }
-        });
-
-        if (the_call == null) {
-            // no matching service found, halt
-            if (return_data['errors'] == null) {
-                return_data['errors'] = [];
-            }
-            return_data['errors'].push('invalid_call_id');
-            go_ahead = false;
-        }
-
-        if (go_ahead && the_call.guest_id != guest_id) {
-            // no matching service found, halt
-            if (return_data['errors'] == null) {
-                return_data['errors'] = [];
-            }
-            return_data['errors'].push('unauthorized_action');
-            go_ahead = false;
-        }
-
-        if (go_ahead && the_call.status == 'ended') {
-            // no matching service found, halt
-            if (return_data['errors'] == null) {
-                return_data['errors'] = [];
-            }
-            return_data['errors'].push('call_ended');
-            go_ahead = false;
-        }
-
-        if (go_ahead) {
-            // cool, we reached here, now let's initiate the call
-            let update_data = {
-                last_refresh_time: Date.now()
-            };
-
-            if (the_call['connection_guest_token'] == null) {
-                // no token generated for the guest, let's make one
-                var twilio_guest_token = twilio_mod.generate_twilio_token('guest-' + guest_id, 'call-' + the_call.id);
-                // let's put it in the db
-                await global_vars.knex('calls').update({
-                    'connection_guest_token': twilio_guest_token
-                }).where('id', '=', the_call.id);
-            }
-
-            return_data['call'] = await format_mod.format_call(the_call);
-
-            delete return_data['call']['connection_agent_token'];
-
-            await global_vars.knex('calls').where('id', '=', the_call.id).update(update_data).then((result) => {
-                success = true;
-            });
-
-            // get no of users in queue
-            let queue_count = 0;
-            await global_vars.knex('calls').count('id as total').where('id', '<', return_data['call']['id']).where('vendor_id', '=', return_data['call']['vendor_id']).where('status', '=', 'calling').then((result) => {
-                queue_count = result[0]['total'];
-                // console.log(result);
-            });
-
-            return_data['queue_count'] = queue_count;
-
-            // get estimated wait time
-            // get the average time  20 calls
-            let average_call_duration = 0;
-            await global_vars.knex('calls').avg('duration as average_duration').where('vendor_id', '=', return_data['call']['vendor_id']).where('status', '=', 'calling').whereNotNull('duration').then((result) => {
-                average_call_duration = result[0]['average_duration'];
-                // console.log(result);
-            });
-
-            return_data['estimated_waiting_time'] = average_call_duration * queue_count;
-
-
-        }
-    }
 
     res.send({
         success: success,
@@ -372,6 +297,9 @@ router.post('/calls/end_call', async function (req, res, next) {
             await global_vars.knex('calls').where('id', '=', the_call.id).update(update_data).then((result) => {
                 success = true;
             });
+
+            calls_mod.update_all_calls(the_call.vendor_id);
+
         }
     }
 
@@ -512,6 +440,8 @@ module.exports = function (options) {
     global_vars = options;
     users_mod.init(global_vars);
     format_mod.init(global_vars);
+    socket_mod.init(global_vars);
+    calls_mod.init(global_vars);
 
     return router;
 };

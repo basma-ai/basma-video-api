@@ -7,7 +7,6 @@ var twilio_mod = require("../modules/twilio_mod");
 
 var global_vars;
 
-
 /**
  * @api {post} /vendor/calls/list Calls list
  * @apiName VendorCallsHistory
@@ -103,7 +102,7 @@ router.post('/vendor/calls/get', async function (req, res, next) {
     // check if admin
     if (vu.role == 'admin' || call.vu_id == vu.id) {
 
-        return_data['call'] = call;
+        return_data['call'] = await format_mod.format_call(call, true);
         success = true;
 
     } else {
