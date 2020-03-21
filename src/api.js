@@ -5,7 +5,6 @@ const port = 1061
 require('dotenv').config()
 const { attachPaginate } = require('knex-paginate');
 
-
 // set expressjs settings
 app.use(bodyParser.json({ limit: '50mb' }));
 app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
@@ -15,7 +14,6 @@ app.use(function(req, res, next) {
     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
     next();
 });
-
 
 // establish database connection, using knex
 var knex = require('knex')({
@@ -114,4 +112,30 @@ app.post('/vendor/users/get', vendor_users);
 app.post('/vendor/calls/list', vendor_calls);
 app.post('/vendor/calls/get', vendor_calls);
 
-app.listen(port, () => console.log(`Video CC API listening on port ${port}!`))
+const server = app.listen(port, () => console.log(`Video CC API listening on port ${port}!`))
+
+// socket.io
+var io = require('socket.io')(server);
+
+io.on('connection', function(socket){
+    console.log('a user connected with id:', socket.id);
+
+    let id = socket.id;
+
+    // socket.emit('customEmit', { hello: 'world' });
+    // socket.emit('news', { hello: 'world' });
+
+    // client is asking for
+    socket.on('refresh_call', function (data) {
+        console.log(data);
+
+        // calling knex and return
+
+        // reply back with intervals of emit to client
+        io.to("ew47zhoK5zaX38pHAAAB").emit('call_refreshed', { hello: 'world' });
+    });
+
+    socket.on('disconnect', function(){
+        console.log("disconnected");
+    });
+});

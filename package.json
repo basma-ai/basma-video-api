@@ -10,6 +10,7 @@
     "knex": "^0.19.1",
     "knex-paginate": "^1.2.0",
     "mysql2": "^1.6.5",
+    "socket.io": "^2.3.0",
     "twilio": "^3.39.3"
   },
   "devDependencies": {},
