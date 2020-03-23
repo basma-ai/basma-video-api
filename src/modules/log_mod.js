@@ -27,6 +27,9 @@ module.exports = {
 
         //
 
+        // ge the vendor id
+        let vu = await format_mod.get_vu(params.vu_id, true);
+
         // console.log("the params are");
         // console.log(params);
 
@@ -56,7 +59,6 @@ module.exports = {
                 console.log(err);
                 throw err
             });
-
 
 
             if (old_row != null) {
@@ -118,7 +120,8 @@ module.exports = {
             'new_value': JSON.stringify(params.new_value),
             'changed': JSON.stringify(changed),
             'type': params.type,
-            'time': Date.now()
+            'time': Date.now(),
+            'vendor_id': vu.vendor.id
         }).then(function (result) {
             // console.log("log data inserted");
         }).catch((err) => {

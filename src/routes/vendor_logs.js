@@ -58,6 +58,8 @@ router.post('/vendor/logs/list', async function (req, res, next) {
     // joining with user
     get_log_rows = get_log_rows.leftJoin('vendors_users', 'vendors_users.id', 'audit_log.vu_id');
 
+    get_log_rows = get_log_rows.where('audit_log.vendor_id', '=', vu.vendor.id);
+
     // apply the filters
     if (req.body.table_name != null) {
         get_log_rows = get_log_rows.where('table_name', '=', req.body.table_name);
