@@ -14,13 +14,12 @@ module.exports = {
 
     },
 
-    log: async function (the_params) {
-
+    log: async function (params) {
 
         // var pamas = {
         //     table_name: '',
         //     row_id: 0,
-        //     user_id: 0,
+        //     vu_id: 0,
         //     old_value: '',
         //     new_value: '',
         //     type: '' // "create", "edit", "delete" or "view"
@@ -28,8 +27,8 @@ module.exports = {
 
         //
 
-        console.log("the params are");
-        console.log(the_params);
+        // console.log("the params are");
+        // console.log(params);
 
 
         if (params.new_value != null) {
@@ -40,11 +39,16 @@ module.exports = {
 
         if (params.old_value == null) {
 
+
             // check if there's an old value
 
             var get_log_rows = global_vars.knex.from(params.table_name).select("*").where("id", "=", params.row_id);
             var old_row = {};
             await get_log_rows.then((rows) => {
+
+                // console.log("got the old rows");
+                // console.log(rows);
+
                 old_row = rows[0];
             }).catch((err) => {
 
@@ -67,9 +71,8 @@ module.exports = {
 
         var changed = {};
 
-
         for (var key in params.new_value) {
-            if (params.old_value[key] != null) {
+            if (key in params.old_value) {
 
                 if (params.old_value[key] != params.new_value[key]) {
                     changed[key] = params.new_value[key];
@@ -117,7 +120,7 @@ module.exports = {
             'type': params.type,
             'time': Date.now()
         }).then(function (result) {
-            console.log("log data inserted");
+            // console.log("log data inserted");
         }).catch((err) => {
             console.log(err);
             // throw err

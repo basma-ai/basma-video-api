@@ -4,6 +4,7 @@ var router = express.Router();
 var users_mod = require("../modules/users_mod");
 var format_mod = require("../modules/format_mod");
 var twilio_mod = require("../modules/twilio_mod");
+var log_mod = require("../modules/log_mod");
 
 var global_vars;
 
@@ -43,6 +44,19 @@ router.post('/vendor/custom_fields/create', async function (req, res, next) {
         }).catch((err) => {
             go_ahead = false;
         });
+
+        if (success) {
+            let log_params = {
+                table_name: 'custom_fields',
+                row_id: record_id,
+                vu_id: vu.id,
+                new_value: insert_data,
+                type: 'create'
+            };
+
+
+            log_mod.log(log_params);
+        }
 
         return_data['custom_fields'] = await format_mod.get_custom_field(record_id);
 
@@ -106,6 +120,17 @@ router.post('/vendor/custom_fields/edit', async function (req, res, next) {
             is_visible_in_menus: req.body.is_visible_in_menus,
             tarteeb: req.body.tarteeb
         };
+
+
+        let log_params = {
+            table_name: 'custom_fields',
+            row_id: req.body.custom_field_id,
+            vu_id: vu.id,
+            new_value: update_data,
+            type: 'edit'
+        };
+        log_mod.log(log_params);
+
 
         let group_id = 0;
         await global_vars.knex('custom_fields').update(update_data)
@@ -284,6 +309,7 @@ module.exports = function (options) {
     global_vars = options;
     users_mod.init(global_vars);
     format_mod.init(global_vars);
+    log_mod.init(global_vars);
 
     return router;
 };

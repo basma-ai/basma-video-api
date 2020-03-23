@@ -4,6 +4,7 @@ var router = express.Router();
 var users_mod = require("../modules/users_mod");
 var format_mod = require("../modules/format_mod");
 var twilio_mod = require("../modules/twilio_mod");
+var log_mod = require("../modules/log_mod");
 
 var global_vars;
 
@@ -133,6 +134,17 @@ router.post('/vendor/users/create', async function (req, res, next) {
             }
         }
 
+        if (success) {
+            let log_params = {
+                table_name: 'vendors_users',
+                row_id: record_id,
+                vu_id: vu.id,
+                new_value: insert_data,
+                type: 'create'
+            };
+            log_mod.log(log_params);
+        }
+
         return_data['user'] = await format_mod.get_vu(record_id, true);
     }
 
@@ -192,6 +204,18 @@ router.post('/vendor/users/edit', async function (req, res, next) {
         if (vu.role == 'admin' && req.body.role != null) {
             update_data['role'] = req.body.role;
         }
+
+
+        let log_params = {
+            table_name: 'vendors_users',
+            row_id: req.body.vu_id,
+            vu_id: vu.id,
+            new_value: update_data,
+            type: 'edit'
+        };
+
+
+        log_mod.log(log_params);
 
         let group_id = 0;
         await global_vars.knex('vendors_users').update(update_data)
@@ -345,6 +369,7 @@ module.exports = function (options) {
     global_vars = options;
     users_mod.init(global_vars);
     format_mod.init(global_vars);
+    log_mod.init(global_vars);
 
     return router;
 };

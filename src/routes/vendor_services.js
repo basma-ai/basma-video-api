@@ -43,14 +43,17 @@ router.post('/vendor/services/create', async function (req, res, next) {
         });
 
 
-        if(success) {
-            // log_mod.log(global_vars, {
-            //     table_name: 'vendors_services',
-            //     row_id: record_id,
-            //     vu_id: vu.id,
-            //     new_value: insert_data,
-            //     type: 'create'
-            // });
+        if (success) {
+            let log_params = {
+                table_name: 'vendors_services',
+                row_id: record_id,
+                vu_id: vu.id,
+                new_value: insert_data,
+                type: 'create'
+            };
+
+
+            log_mod.log(log_params);
         }
 
         return_data['service'] = await format_mod.get_vendor_service(record_id);
@@ -106,6 +109,16 @@ router.post('/vendor/services/edit', async function (req, res, next) {
             is_restricted: req.body.is_restricted
         };
 
+
+        let log_params = {
+            table_name: 'vendors_services',
+            row_id: req.body.service_id,
+            vu_id: vu.id,
+            new_value: update_data,
+            type: 'edit'
+        };
+        log_mod.log(log_params);
+
         let group_id = 0;
         await global_vars.knex('vendors_services').update(update_data)
             .where('vendor_id', '=', vu.vendor.id)
@@ -118,6 +131,7 @@ router.post('/vendor/services/edit', async function (req, res, next) {
                 go_ahead = false;
                 console.log(err);
             });
+
 
     } else {
         return_data['errors'] = ['unauthorized_action'];

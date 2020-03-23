@@ -4,6 +4,7 @@ var router = express.Router();
 var users_mod = require("../modules/users_mod");
 var format_mod = require("../modules/format_mod");
 var twilio_mod = require("../modules/twilio_mod");
+var log_mod = require("../modules/log_mod");
 
 var global_vars;
 
@@ -41,6 +42,8 @@ async function set_group_services(vu, group_id, services_ids) {
             await global_vars.knex('groups_services_relations').insert(insert_data).then((result) => {
                 // console.log("groups_services_relations inserted");
             });
+
+
         }
 
     }
@@ -107,6 +110,19 @@ router.post('/vendor/groups/create', async function (req, res, next) {
             await set_group_services(vu, group_id, req.body.service_ids);
         }
 
+        if(success) {
+            let log_params = {
+                table_name: 'groups',
+                row_id: group_id,
+                vu_id: vu.id,
+                new_value: insert_data,
+                type: 'create'
+            };
+
+
+            log_mod.log(log_params);
+        }
+
         return_data['group'] = await format_mod.get_group(group_id);
 
     } else {
@@ -158,6 +174,18 @@ router.post('/vendor/groups/edit', async function (req, res, next) {
         let update_data = {
             name: req.body.name
         };
+
+
+        let log_params = {
+            table_name: 'groups',
+            row_id: req.body.group_id,
+            vu_id: vu.id,
+            new_value: update_data,
+            type: 'edit'
+        };
+
+
+        log_mod.log(log_params);
 
         let group_id = 0;
         await global_vars.knex('groups')
@@ -339,6 +367,7 @@ module.exports = function (options) {
     global_vars = options;
     users_mod.init(global_vars);
     format_mod.init(global_vars);
+    log_mod.init(global_vars);
 
     return router;
 };
