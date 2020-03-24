@@ -122,6 +122,8 @@ router.post('/vendor/custom_fields/edit', async function (req, res, next) {
         };
 
 
+
+
         let log_params = {
             table_name: 'custom_fields',
             row_id: req.body.custom_field_id,
@@ -129,7 +131,7 @@ router.post('/vendor/custom_fields/edit', async function (req, res, next) {
             new_value: update_data,
             type: 'edit'
         };
-        log_mod.log(log_params);
+        await log_mod.log(log_params);
 
 
         let group_id = 0;

@@ -215,7 +215,7 @@ router.post('/vendor/users/edit', async function (req, res, next) {
         };
 
 
-        log_mod.log(log_params);
+        await log_mod.log(log_params);
 
         let group_id = 0;
         await global_vars.knex('vendors_users').update(update_data)

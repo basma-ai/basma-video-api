@@ -117,7 +117,8 @@ router.post('/vendor/services/edit', async function (req, res, next) {
             new_value: update_data,
             type: 'edit'
         };
-        log_mod.log(log_params);
+        await log_mod.log(log_params);
+
 
         let group_id = 0;
         await global_vars.knex('vendors_services').update(update_data)

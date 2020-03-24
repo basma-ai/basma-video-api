@@ -49,8 +49,7 @@ module.exports = {
             var old_row = {};
             await get_log_rows.then((rows) => {
 
-                // console.log("got the old rows");
-                // console.log(rows);
+
 
                 old_row = rows[0];
             }).catch((err) => {
@@ -74,7 +73,8 @@ module.exports = {
         var changed = {};
 
         for (var key in params.new_value) {
-            if (key in params.old_value) {
+            if (params.old_value[key] != null) {
+
 
                 if (params.old_value[key] != params.new_value[key]) {
                     changed[key] = params.new_value[key];
