@@ -153,6 +153,21 @@ module.exports = {
     format_vendor_service: async function (vendor_service) {
         return vendor_service;
     },
+
+    get_permission: async function (id) {
+        let the_row = null;
+
+        await global_vars.knex('permissions').select('*')
+            .where('id', '=', id).then((rows) => {
+                the_row = rows[0];
+            });
+
+        return await this.format_permission(the_row);
+    },
+    format_permission: async function (permission) {
+        return permission;
+    },
+
     get_group: async function (id, full = true) {
         let the_row = null;
 
@@ -162,11 +177,9 @@ module.exports = {
                 the_row = rows[0];
             });
 
-
         return await this.format_group(the_row, full);
     },
     format_group: async function (the_row, full = true) {
-
 
         // get its services
         if(full) {
@@ -175,20 +188,54 @@ module.exports = {
 
                 let services_raw = [];
 
-
-
                 await global_vars.knex('groups_services_relations')
                     .select('*')
                     .where('vendor_id', '=', the_row.vendor_id)
                     .where('group_id', '=', the_row.id)
                     .orderBy('id', 'DESC').then((rows) => {
                         services_raw = rows;
-
-
                     });
 
                 for (let service_raw of services_raw) {
                     the_row['services'].push(await this.get_vendor_service(service_raw.service_id));
+                }
+            }
+        }
+
+        return the_row;
+    },
+
+    get_role: async function (id, full = true) {
+        let the_row = null;
+
+        await global_vars.knex('roles').select('*')
+            .where('id', '=', id)
+            .then((rows) => {
+                the_row = rows[0];
+            });
+
+        return await this.format_role(the_row, full);
+    },
+    format_role: async function (the_row, full = true) {
+
+
+        // get its services
+        if(full) {
+            the_row['permissions'] = [];
+            if (the_row != null) {
+
+                let permissions_raw = [];
+
+                await global_vars.knex('roles_permissions_relations')
+                    .select('*')
+                    .where('vendor_id', '=', the_row.vendor_id)
+                    .where('role_id', '=', the_row.id)
+                    .orderBy('id', 'DESC').then((rows) => {
+                        permissions_raw = rows;
+                    });
+
+                for (let permission_raw of permissions_raw) {
+                    the_row['permissions'].push(await this.get_permission(permission_raw.permission_id));
                 }
             }
         }

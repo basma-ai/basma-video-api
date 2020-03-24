@@ -65,6 +65,8 @@ let vendor_users = require('./routes/vendor_users.js')(global_vars)
 let vendor_calls = require('./routes/vendor_calls.js')(global_vars)
 let vendor_custom_fields = require('./routes/vendor_custom_fields.js')(global_vars)
 let vendor_logs = require('./routes/vendor_logs.js')(global_vars)
+let vendor_roles = require('./routes/vendor_roles.js')(global_vars)
+let vendor_permissions = require('./routes/vendor_permissions.js')(global_vars)
 
 // guests
 app.get('/guest', guest);
@@ -128,6 +130,15 @@ app.post('/vendor/custom_fields/create', vendor_custom_fields);
 app.post('/vendor/custom_fields/edit', vendor_custom_fields);
 app.post('/vendor/custom_fields/list', vendor_custom_fields);
 app.post('/vendor/custom_fields/get', vendor_custom_fields);
+
+// vendors roles
+app.post('/vendor/roles/create', vendor_roles);
+app.post('/vendor/roles/edit', vendor_roles);
+app.post('/vendor/roles/list', vendor_roles);
+app.post('/vendor/roles/get', vendor_roles);
+
+// vendors permissions
+app.post('/vendor/permissions/list', vendor_permissions);
 
 // vendors log
 app.post('/vendor/logs/list', vendor_logs);
