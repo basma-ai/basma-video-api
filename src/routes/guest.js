@@ -119,6 +119,21 @@ router.post('/guest/get_vendor', async function (req, res, next) {
     success = true;
     return_data['vendor'] = vendor;
 
+    // get custom fields
+    let raw_custom_fields = [];
+    await global_vars.knex('custom_fields')
+        .where('vendor_id', '=', vendor.id)
+        .orderBy('tarteeb', 'ASC')
+        .then((rows) => {
+            raw_custom_fields = rows;
+        });
+    let custom_fields = [];
+    for(let raw_custom_field of raw_custom_fields) {
+        custom_fields.push(await format_mod.format_custom_field(raw_custom_field));
+    }
+
+    return_data['vendor']['custom_fields'] = custom_fields;
+
     res.send({
         success: success,
         data: return_data

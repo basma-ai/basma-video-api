@@ -4,6 +4,8 @@ var router = express.Router();
 var users_mod = require("../modules/users_mod");
 var format_mod = require("../modules/format_mod");
 var twilio_mod = require("../modules/twilio_mod");
+var calls_mod = require("../modules/calls_mod");
+var socket_mod = require("../modules/socket_mod");
 
 var global_vars;
 
@@ -120,10 +122,10 @@ router.post('/agent/list_pending_calls', async function (req, res, next) {
     let return_data = {};
 
     // delete calls with 5 seconds of no refresh
-    let last_time = Date.now() - (60 * 60 * 5);
-    await global_vars.knex('calls').where('last_refresh_time', '<', last_time).where('status', '=', 'calling').update({
-        status: 'missed'
-    });
+    // let last_time = Date.now() - (60 * 60 * 5);
+    // await global_vars.knex('calls').where('last_refresh_time', '<', last_time).where('status', '=', 'calling').update({
+    //     status: 'missed'
+    // });
 
 
     // check the validity of the provided token
@@ -305,8 +307,21 @@ router.post('/agent/answer_call', async function (req, res, next) {
 
             return_data['call'] = await format_mod.get_call(the_call.id);
             delete return_data['call']['connection_guest_token'];
+
+
+            await socket_mod.send_update({
+                user_type: 'guest',
+                user_id: the_call.guest_id,
+                call_id: the_call.id,
+                type: 'call_info',
+                data: await calls_mod.get_guest_call_refresh(the_call.id, the_call.guest_id)
+            });
+
+            calls_mod.update_all_calls(the_call.vendor_id);
+
         }
     }
+
 
     res.send({
         success: success,
@@ -409,8 +424,20 @@ router.post('/agent/end_call', async function (req, res, next) {
 
 
             return_data['call'] = await format_mod.get_call(the_call.id);
+
+            await socket_mod.send_update({
+                user_type: 'guest',
+                user_id: the_call.guest_id,
+                call_id: the_call.id,
+                type: 'call_info',
+                data: await calls_mod.get_guest_call_refresh(the_call.id, the_call.guest_id)
+            });
+
+            calls_mod.update_all_calls(the_call.vendor_id);
+
         }
     }
+
 
     res.send({
         success: success,
@@ -503,6 +530,14 @@ router.post('/agent/update_call', async function (req, res, next) {
                 success = true;
             });
 
+            await socket_mod.send_update({
+                user_type: 'guest',
+                user_id: the_call.guest_id,
+                call_id: the_call.id,
+                type: 'call_info',
+                data: await calls_mod.get_guest_call_refresh(the_call.id, the_call.guest_id)
+            });
+
 
             // return_data['call'] = await format_mod.get_call(the_call.id);
         }
@@ -520,6 +555,8 @@ module.exports = function (options) {
     global_vars = options;
     users_mod.init(global_vars);
     format_mod.init(global_vars);
+    calls_mod.init(global_vars);
+    socket_mod.init(global_vars);
 
     return router;
 };
