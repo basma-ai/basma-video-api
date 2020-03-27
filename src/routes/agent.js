@@ -6,6 +6,7 @@ var format_mod = require("../modules/format_mod");
 var twilio_mod = require("../modules/twilio_mod");
 var calls_mod = require("../modules/calls_mod");
 var socket_mod = require("../modules/socket_mod");
+var roles_mod = require("../modules/roles_mod");
 
 var global_vars;
 
@@ -140,12 +141,14 @@ router.post('/agent/list_pending_calls', async function (req, res, next) {
 
     var the_vu = await format_mod.get_vu(vu_id);
 
+    // check if is_authenticated
+    const is_authenticated = await roles_mod.is_authenticated(the_vu,[roles_mod.PERMISSIONS.SUPERUSER]);
 
     if (go_ahead) {
 
         let stmnt = global_vars.knex('calls').select('*');
 
-        if (the_vu.role != 'admin') {
+        if (!is_authenticated) {
             // get the services the vu has access to
 
             // get services which agent has access to
@@ -557,6 +560,7 @@ module.exports = function (options) {
     format_mod.init(global_vars);
     calls_mod.init(global_vars);
     socket_mod.init(global_vars);
+    roles_mod.init(global_vars);
 
     return router;
 };

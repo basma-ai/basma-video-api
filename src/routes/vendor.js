@@ -4,6 +4,7 @@ var router = express.Router();
 var users_mod = require("../modules/users_mod");
 var format_mod = require("../modules/format_mod");
 var twilio_mod = require("../modules/twilio_mod");
+var roles_mod = require("../modules/roles_mod");
 
 var global_vars;
 
@@ -23,15 +24,15 @@ var global_vars;
  */
 router.post('/vendor/dashboard_numbers', async function (req, res, next) {
 
-
     let success = true;
     let go_ahead = true;
     let return_data = {};
 
-
     const vu_id = await users_mod.token_to_id('vendors_users_tokens', req.body.vu_token, 'vu_id');
-
     const vu = await format_mod.get_vu(vu_id);
+
+    // check if is_authenticated
+    const is_authenticated = await roles_mod.is_authenticated(vu,[roles_mod.PERMISSIONS.SUPERUSER]);
 
     // total_calls
     let total_calls = 0;
@@ -39,7 +40,7 @@ router.post('/vendor/dashboard_numbers', async function (req, res, next) {
     let stmnt = global_vars.knex('calls').count('id as count');
     stmnt = stmnt.where('vendor_id', '=', vu.vendor.id);
 
-    if (vu.role != 'admin') {
+    if (!is_authenticated) {
         stmnt = stmnt.where('vu_id', '=', vu.id);
     }
     await stmnt.then((result) => {
@@ -53,7 +54,7 @@ router.post('/vendor/dashboard_numbers', async function (req, res, next) {
     stmnt = stmnt.where('vendor_id', '=', vu.vendor.id);
     stmnt = stmnt.where('status', '=', 'ended');
 
-    if (vu.role != 'admin') {
+    if (!is_authenticated) {
         stmnt = stmnt.where('vu_id', '=', vu.id);
     }
     await stmnt.then((result) => {
@@ -68,7 +69,7 @@ router.post('/vendor/dashboard_numbers', async function (req, res, next) {
     stmnt = stmnt.where('vendor_id', '=', vu.vendor.id);
     stmnt = stmnt.where('status', '!=', 'ended');
 
-    if (vu.role != 'admin') {
+    if (!is_authenticated) {
         stmnt = stmnt.where('vu_id', '!=', vu.id);
     }
     await stmnt.then((result) => {
@@ -82,7 +83,7 @@ router.post('/vendor/dashboard_numbers', async function (req, res, next) {
     stmnt = global_vars.knex('calls').select('vendor_service_id').count('vendor_service_id as value_occurrence').groupBy('vendor_service_id').orderBy('value_occurrence', 'DESC');
     stmnt = stmnt.where('vendor_id', '=', vu.vendor.id);
 
-    if (vu.role != 'admin') {
+    if (!is_authenticated) {
         stmnt = stmnt.where('vu_id', '!=', vu.id);
     }
 
@@ -101,7 +102,7 @@ router.post('/vendor/dashboard_numbers', async function (req, res, next) {
     stmnt = global_vars.knex('calls').select('vu_id').count('vu_id as value_occurrence').groupBy('vu_id').orderBy('value_occurrence', 'DESC');
     stmnt = stmnt.where('vendor_id', '=', vu.vendor.id);
 
-    if (vu.role != 'admin') {
+    if (!is_authenticated) {
         stmnt = stmnt.where('vu_id', '!=', vu.id);
     }
 
@@ -139,6 +140,7 @@ module.exports = function (options) {
     global_vars = options;
     users_mod.init(global_vars);
     format_mod.init(global_vars);
+    roles_mod.init(global_vars);
 
     return router;
 };

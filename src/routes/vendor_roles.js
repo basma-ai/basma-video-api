@@ -4,6 +4,7 @@ var router = express.Router();
 var users_mod = require("../modules/users_mod");
 var format_mod = require("../modules/format_mod");
 var log_mod = require("../modules/log_mod");
+var roles_mod = require("../modules/roles_mod");
 
 var global_vars;
 
@@ -78,8 +79,10 @@ router.post('/vendor/roles/create', async function (req, res, next) {
 
     const vu = await format_mod.get_vu(vu_id, true);
 
-    // check if admin
-    if (vu.role == 'admin') {
+    // check if is_authenticated
+    const is_authenticated = await roles_mod.is_authenticated(vu,[roles_mod.PERMISSIONS.ROLES]);
+
+    if (is_authenticated) {
 
         // that's awesome!, we can proceed with the process of creating an account for a new role as per the instructions and details provided by the vu (vendor user), the process will begin by by inserting the role in the database, then, you will be updated by another comment
         let insert_data = {
@@ -119,7 +122,6 @@ router.post('/vendor/roles/create', async function (req, res, next) {
         return_data['role'] = await format_mod.get_role(role_id);
 
     } else {
-
         return_data['errors'] = ['unauthorized_action'];
     }
 
@@ -159,8 +161,10 @@ router.post('/vendor/roles/edit', async function (req, res, next) {
 
     const vu = await format_mod.get_vu(vu_id, true);
 
-    // check if admin
-    if (vu.role == 'admin') {
+    // check if is_authenticated
+    const is_authenticated = await roles_mod.is_authenticated(vu,[roles_mod.PERMISSIONS.ROLES]);
+
+    if (is_authenticated) {
 
         // that's awesome!, we can proceed with the process of creating an account for a new role as per the instructions and details provided by the vu (vendor user), the process will begin by by inserting the role in the database, then, you will be updated by another comment
         let update_data = {
@@ -238,8 +242,10 @@ router.post('/vendor/roles/list', async function (req, res, next) {
 
     const vu = await format_mod.get_vu(vu_id, true);
 
-    // check if admin
-    if (vu.role == 'admin') {
+    // check if is_authenticated
+    const is_authenticated = await roles_mod.is_authenticated(vu,[roles_mod.PERMISSIONS.ROLES]);
+
+    if (is_authenticated) {
 
         // that's awesome!, we can proceed with the process of creating an account for a new role as per the instructions and details provided by the vu (vendor user), the process will begin by by inserting the role in the database, then, you will be updated by another comment
         let update_data = {
@@ -315,8 +321,10 @@ router.post('/vendor/roles/get', async function (req, res, next) {
 
     const vu = await format_mod.get_vu(vu_id, true);
 
-    // check if admin
-    if (vu.role == 'admin') {
+    // check if is_authenticated
+    const is_authenticated = await roles_mod.is_authenticated(vu,[roles_mod.PERMISSIONS.ROLES]);
+
+    if (is_authenticated) {
 
         // that's awesome!, we can proceed with the process of creating an account for a new role as per the instructions and details provided by the vu (vendor user), the process will begin by by inserting the role in the database, then, you will be updated by another comment
         let update_data = {
@@ -358,6 +366,7 @@ module.exports = function (options) {
     users_mod.init(global_vars);
     format_mod.init(global_vars);
     log_mod.init(global_vars);
+    roles_mod.init(global_vars);
 
     return router;
 };

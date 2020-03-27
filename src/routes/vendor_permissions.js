@@ -4,6 +4,7 @@ var router = express.Router();
 var users_mod = require("../modules/users_mod");
 var format_mod = require("../modules/format_mod");
 var log_mod = require("../modules/log_mod");
+var roles_mod = require("../modules/roles_mod");
 
 var global_vars;
 
@@ -33,8 +34,10 @@ router.post('/vendor/permissions/list', async function (req, res, next) {
 
     const vu = await format_mod.get_vu(vu_id, true);
 
-    // check if admin
-    if (vu.role == 'admin') {
+    // check if is_authenticated
+    const is_authenticated = await roles_mod.is_authenticated(vu,[roles_mod.PERMISSIONS.ROLES]);
+
+    if (is_authenticated) {
 
         let raw_permissions = [];
         let stmnt = global_vars.knex('permissions').select('*');
@@ -66,6 +69,7 @@ module.exports = function (options) {
     users_mod.init(global_vars);
     format_mod.init(global_vars);
     log_mod.init(global_vars);
+    roles_mod.init(global_vars);
 
     return router;
 };

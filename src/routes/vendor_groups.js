@@ -5,6 +5,7 @@ var users_mod = require("../modules/users_mod");
 var format_mod = require("../modules/format_mod");
 var twilio_mod = require("../modules/twilio_mod");
 var log_mod = require("../modules/log_mod");
+var roles_mod = require("../modules/roles_mod");
 
 var global_vars;
 
@@ -84,8 +85,10 @@ router.post('/vendor/groups/create', async function (req, res, next) {
 
     const vu = await format_mod.get_vu(vu_id, true);
 
-    // check if admin
-    if (vu.role == 'admin') {
+    // check if is_authenticated
+    const is_authenticated = await roles_mod.is_authenticated(vu,[roles_mod.PERMISSIONS.GROUPS]);
+
+    if (is_authenticated) {
 
         // that's awesome!, we can proceed with the process of creating an account for a new group as per the instructions and details provided by the vu (vendor user), the process will begin by by inserting the group in the database, then, you will be updated by another comment
         let insert_data = {
@@ -162,13 +165,14 @@ router.post('/vendor/groups/edit', async function (req, res, next) {
     let go_ahead = true;
     let return_data = {};
 
-
     const vu_id = await users_mod.token_to_id('vendors_users_tokens', req.body.vu_token, 'vu_id');
 
     const vu = await format_mod.get_vu(vu_id, true);
 
-    // check if admin
-    if (vu.role == 'admin') {
+    // check if can edit groups
+    const is_authenticated = await roles_mod.is_authenticated(vu,[roles_mod.PERMISSIONS.GROUPS]);
+
+    if (is_authenticated) {
 
         // that's awesome!, we can proceed with the process of creating an account for a new group as per the instructions and details provided by the vu (vendor user), the process will begin by by inserting the group in the database, then, you will be updated by another comment
         let update_data = {
@@ -248,8 +252,10 @@ router.post('/vendor/groups/list', async function (req, res, next) {
 
     const vu = await format_mod.get_vu(vu_id, true);
 
-    // check if admin
-    if (vu.role == 'admin') {
+    // check if is_authenticated
+    const is_authenticated = await roles_mod.is_authenticated(vu,[roles_mod.PERMISSIONS.GROUPS]);
+
+    if (is_authenticated) {
 
         // that's awesome!, we can proceed with the process of creating an account for a new group as per the instructions and details provided by the vu (vendor user), the process will begin by by inserting the group in the database, then, you will be updated by another comment
         let update_data = {
@@ -325,8 +331,10 @@ router.post('/vendor/groups/get', async function (req, res, next) {
 
     const vu = await format_mod.get_vu(vu_id, true);
 
-    // check if admin
-    if (vu.role == 'admin') {
+    // check if is_authenticated
+    const is_authenticated = await roles_mod.is_authenticated(vu,[roles_mod.PERMISSIONS.GROUPS]);
+
+    if (is_authenticated) {
 
         // that's awesome!, we can proceed with the process of creating an account for a new group as per the instructions and details provided by the vu (vendor user), the process will begin by by inserting the group in the database, then, you will be updated by another comment
         let update_data = {
@@ -368,6 +376,7 @@ module.exports = function (options) {
     users_mod.init(global_vars);
     format_mod.init(global_vars);
     log_mod.init(global_vars);
+    roles_mod.init(global_vars);
 
     return router;
 };
