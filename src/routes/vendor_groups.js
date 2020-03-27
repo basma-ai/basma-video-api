@@ -105,7 +105,7 @@ router.post('/vendor/groups/create', async function (req, res, next) {
             go_ahead = false;
         });
 
-        if (go_ahead) {
+        if (success) {
             // cool, now let's assign the services
             await set_group_services(vu, group_id, req.body.service_ids);
         }

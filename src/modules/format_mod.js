@@ -69,10 +69,23 @@ module.exports = {
             }
             vu['groups'] = groups;
 
+            // get roles
+            let raw_roles = [];
+            await global_vars.knex('vu_roles_relations')
+                .select('roles.*')
+                .where('vu_roles_relations.vendor_id', '=', vu.vendor.id)
+                .where('vu_roles_relations.vu_id', '=', vu.id)
+                .leftJoin('roles','roles.id', 'vu_roles_relations.role_id')
+                .then((rows) => {
+                    raw_roles = rows;
+                })
 
+            let roles = [];
+            for (let raw_role of raw_roles) {
+                roles.push(await this.format_role(raw_role, true));
+            }
+            vu['roles'] = roles;
         }
-
-
 
         return vu;
     },

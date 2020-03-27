@@ -55,6 +55,51 @@ async function set_vu_groups(vu, vu_id, groups_ids) {
 
 }
 
+async function set_vu_roles(vu, vu_id, roles_ids) {
+
+    for (let role_id of roles_ids) {
+
+
+        // check if the relationships exists
+        let exists = false;
+        await global_vars.knex('vu_roles_relations')
+            .where('vendor_id', '=', vu.vendor.id)
+            .where('vu_id', '=', vu_id)
+            .where('role_id', '=', role_id).select('*').then((rows) => {
+                if (rows.length > 0) {
+                    exists = true;
+                }
+            }).then((result) => {
+
+            }).catch((error) => {
+                console.log(error);
+
+            });
+
+
+        // if doesn't exist, then add it
+        if (!exists) {
+            let insert_data = {
+                vu_id: vu_id,
+                role_id: role_id,
+                vendor_id: vu.vendor.id
+            }
+            await global_vars.knex('vu_roles_relations').insert(insert_data).then((result) => {
+                console.log("vu_roles_relations inserted");
+            });
+        }
+
+    }
+
+    // now let's delete the deleted ones
+    await global_vars.knex('vu_roles_relations')
+        .where('vendor_id', '=', vu.vendor.id)
+        .where('vu_id', '=', vu_id)
+        .whereNotIn('role_id', roles_ids)
+        .delete();
+
+}
+
 
 /**
  * @api {post} /vendor/users/create Create a user
@@ -127,10 +172,17 @@ router.post('/vendor/users/create', async function (req, res, next) {
             success = true;
         });
 
+        console.log(record_id);
+
         if (success) {
             // cool, now let's assign the groups
             if (req.body.groups_ids != null) {
-                await set_vu_groups(vu, vu.id, req.body.groups_ids);
+                await set_vu_groups(vu, record_id, req.body.groups_ids);
+            }
+
+            // cool, now let's assign the roles
+            if (req.body.roles_ids != null) {
+                await set_vu_roles(vu, record_id, req.body.roles_ids);
             }
         }
 
@@ -234,6 +286,11 @@ router.post('/vendor/users/edit', async function (req, res, next) {
             // cool, now let's assign the groups
             if (req.body.groups_ids != null) {
                 await set_vu_groups(vu, req.body.vu_id, req.body.groups_ids);
+            }
+
+            // cool, now let's assign the role
+            if (req.body.roles_ids != null) {
+                await set_vu_roles(vu, req.body.vu_id, req.body.roles_ids);
             }
 
             return_data['user'] = await format_mod.get_vu(req.body.vu_id, true);
