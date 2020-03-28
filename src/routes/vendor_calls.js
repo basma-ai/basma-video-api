@@ -4,6 +4,7 @@ var router = express.Router();
 var users_mod = require("../modules/users_mod");
 var format_mod = require("../modules/format_mod");
 var twilio_mod = require("../modules/twilio_mod");
+var roles_mod = require("../modules/roles_mod");
 
 var global_vars;
 
@@ -40,9 +41,13 @@ router.post('/vendor/calls/list', async function (req, res, next) {
     let stmnt = global_vars.knex('calls').select('*');
     stmnt = stmnt.where('vendor_id', '=', vu.vendor.id);
 
-    if (vu.role != 'admin') {
+    // check if is_authenticated
+    const is_authenticated = await roles_mod.is_authenticated(vu,[roles_mod.PERMISSIONS.SUPERUSER]);
+
+    if (!is_authenticated) {
         stmnt = stmnt.where('vu_id', '=', vu.id);
     }
+
     stmnt = stmnt.orderBy('id', 'DESC');
     // stmnt = stmnt.limit(20);
     stmnt = stmnt.paginate({perPage: req.body.per_page, currentPage: req.body.page});
@@ -92,15 +97,17 @@ router.post('/vendor/calls/get', async function (req, res, next) {
     let go_ahead = true;
     let return_data = {};
 
-
     const vu_id = await users_mod.token_to_id('vendors_users_tokens', req.body.vu_token, 'vu_id');
 
     const vu = await format_mod.get_vu(vu_id, true);
 
     // get the call
     let call = await format_mod.get_agent_call(req.body.call_id);
-    // check if admin
-    if (vu.role == 'admin' || call.vu_id == vu.id) {
+
+    // check if is_authenticated
+    const is_authenticated = await roles_mod.is_authenticated(vu,[roles_mod.PERMISSIONS.CALLS_HISTORY]);
+
+    if (is_authenticated || call.vu_id == vu.id) {
 
         return_data['call'] = await format_mod.format_call(call, true);
         success = true;
@@ -124,6 +131,7 @@ module.exports = function (options) {
     global_vars = options;
     users_mod.init(global_vars);
     format_mod.init(global_vars);
+    roles_mod.init(global_vars);
 
     return router;
 };

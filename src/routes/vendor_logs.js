@@ -5,6 +5,7 @@ var users_mod = require("../modules/users_mod");
 var log_mod = require("../modules/log_mod");
 var global_vars;
 var format_mod = require("../modules/format_mod");
+var roles_mod = require("../modules/roles_mod");
 
 
 // for test purposes
@@ -75,7 +76,9 @@ router.post('/vendor/logs/list', async function (req, res, next) {
     }
 
     // if not admin and not mod, show only log entries belonging to the user the access_token provided belongs to
-    if (!vu.role == 'admin') {
+    const is_superuser = await roles_mod.is_authenticated(vu,[roles_mod.PERMISSIONS.SUPERUSER]);
+
+    if (!is_superuser) {
         get_log_rows = get_log_rows.where('vu_id', '=', vu.id);
     }
 
@@ -135,6 +138,7 @@ module.exports = function (options) {
     global_vars = options;
     format_mod.init(global_vars);
     // users_mod.init(global_vars);
+    roles_mod.init(global_vars);
 
     return router;
 };
