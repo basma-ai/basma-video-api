@@ -184,7 +184,9 @@ router.post('/vendor/services/list', async function (req, res, next) {
         let raw_records = [];
         let stmnt;
 
-        if (vu.role == 'admin') {
+        const is_superuser = await roles_mod.is_authenticated(vu,[roles_mod.PERMISSIONS.SUPERUSER]);
+
+        if (is_superuser) {
             stmnt = global_vars.knex('vendors_services')
                 .where('vendor_id', '=', vu.vendor.id);
         } else {
