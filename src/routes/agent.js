@@ -286,11 +286,17 @@ router.post('/agent/answer_call', async function (req, res, next) {
 
             if (the_call['connection_agent_token'] == null) {
                 // no token generated for the guest, let's make one
-                var twilio_agent_token = twilio_mod.generate_twilio_token('agent-' + vu_id, 'call-' + the_call.id);
+                var twilio_agent_token = await twilio_mod.generate_twilio_token('agent-' + vu_id, 'call-' + the_call.id);
                 // let's put it in the db
-                await global_vars.knex('calls').update({
-                    'connection_agent_token': twilio_agent_token
-                }).where('id', '=', the_call.id);
+                let update_data = {
+                    'connection_agent_token': twilio_agent_token.token
+                };
+
+                if(twilio_agent_token.twilio_room_sid != null) {
+                    update_data['twilio_room_sid'] = twilio_agent_token.twilio_room_sid;
+                }
+
+                await global_vars.knex('calls').update(update_data).where('id', '=', the_call.id);
             }
 
             let update_data = {
@@ -515,7 +521,6 @@ router.post('/agent/update_call', async function (req, res, next) {
             return_data['errors'].push('unauthorized_acction');
             go_ahead = false;
         }
-
 
 
         if (go_ahead) {

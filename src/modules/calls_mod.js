@@ -79,10 +79,23 @@ module.exports = {
 
                 if (the_call['connection_guest_token'] == null) {
                     // no token generated for the guest, let's make one
-                    var twilio_guest_token = twilio_mod.generate_twilio_token('guest-' + guest_id, 'call-' + the_call.id);
+                    var twilio_guest_token = await twilio_mod.generate_twilio_token('guest-' + guest_id, 'call-' + the_call.id);
+                    console.log("twilio_guest_token return is: ");
+                    console.log(twilio_guest_token);
+
+                    let update_data = {
+                        'twilio_guest_token': twilio_guest_token.token
+                    };
+
+                    if(twilio_guest_token.twilio_room_sid != null) {
+                        update_data['twilio_room_sid'] = twilio_guest_token.twilio_room_sid;
+                    }
+
+
                     // let's put it in the db
                     await global_vars.knex('calls').update({
-                        'connection_guest_token': twilio_guest_token
+                        'connection_guest_token': twilio_guest_token.token,
+                        'twilio_room_sid': twilio_guest_token.twilio_room_sid
                     }).where('id', '=', the_call.id);
                 }
 

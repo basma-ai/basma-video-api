@@ -423,9 +423,12 @@ router.post('/calls/test', async function (req, res, next) {
     let return_data = {};
 
 
-    var twilio_token = twilio_mod.generate_twilio_token('clientname2323', 'thetestroom32423');
+    // var twilio_token = twilio_mod.generate_twilio_token('clientname2323', 'thetestroom32423');
 
-    return_data['twilio_token'] = twilio_token;
+
+
+    return_data['recording'] = await twilio_mod.get_recordings('RMfa2b44ee9ab080f87218ec7190c7b992');
+
 
     res.send({
         success: success,
