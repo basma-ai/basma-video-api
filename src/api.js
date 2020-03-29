@@ -67,6 +67,7 @@ let vendor_custom_fields = require('./routes/vendor_custom_fields.js')(global_va
 let vendor_logs = require('./routes/vendor_logs.js')(global_vars)
 let vendor_roles = require('./routes/vendor_roles.js')(global_vars)
 let vendor_permissions = require('./routes/vendor_permissions.js')(global_vars)
+let vendor_reports = require('./routes/vendor_reports.js')(global_vars)
 
 // guests
 app.get('/guest', guest);
@@ -143,12 +144,12 @@ app.post('/vendor/permissions/list', vendor_permissions);
 // vendors log
 app.post('/vendor/logs/list', vendor_logs);
 
+// vendors reports
+app.post('/vendor/reports/calls', vendor_reports);
 
 // files
 // app.post('/files/get', files);
 // app.post('/files/upload', files);
-
-
 
 io.on('connection', function (socket) {
     console.log('a user connected with id:', socket.id);

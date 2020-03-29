@@ -18,6 +18,7 @@ module.exports = {
         AUDIT_LOG: "audit_log",
         SETTINGS: "settings",
         RECORDINGS: "recordings",
+        REPORTS: "reports",
     },
 
     init: function(new_global_vars) {
