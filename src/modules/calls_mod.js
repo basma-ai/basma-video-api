@@ -177,19 +177,25 @@ module.exports = {
         // get the vendor of the call
 
         if(the_call.is_recorded) {
-            console.log("recordigns are enabled, trigger video processing service");
+            console.log("recordings are enabled, trigger video processing service");
 
+            await global_vars.knex('calls').where('id', '=', call_id).update({
+                recording_status: 'pending'
+            }).then((result) => {
 
-            await axios.post(process.env.VIDEO_PROCESSING_API_URL+'/process_recording', {
-                "twilio_sid": the_call.twilio_room_sid,
-                "call_id": the_call.id,
-                "password": process.env.VIDEO_PROCESSING_API_PASSWORD
-            }).then(function (result) {
-
-            }).catch(function (err) {
-                console.log("error getting recordings link");
-                console.log(err);
             });
+
+
+            // await axios.post(process.env.VIDEO_PROCESSING_API_URL+'/process_recording', {
+            //     "twilio_sid": the_call.twilio_room_sid,
+            //     "call_id": the_call.id,
+            //     "password": process.env.VIDEO_PROCESSING_API_PASSWORD
+            // }).then(function (result) {
+            //
+            // }).catch(function (err) {
+            //     console.log("error getting recordings link");
+            //     console.log(err);
+            // });
 
 
         }
