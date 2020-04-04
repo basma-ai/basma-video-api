@@ -229,6 +229,35 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "Send a message",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"guest_token\": \"{{guest_token}}\",\n\t\"call_id\": 781,\n\t\"message_type\": \"text\",\n\t\"value\": \"hello\"\n}"
+						},
+						"url": {
+							"raw": "{{api_url}}/calls/send_message",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"calls",
+								"send_message"
+							]
+						}
+					},
+					"response": []
 				}
 			],
 			"protocolProfileBehavior": {}
@@ -842,7 +871,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n\t\"vu_token\": \"{{vu_token}}\",\n\t\"call_id\": 489\n}",
+									"raw": "{\n\t\"vu_token\": \"{{vu_token}}\",\n\t\"call_id\": 753\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -850,9 +879,12 @@
 									}
 								},
 								"url": {
-									"raw": "{{api_url}}/vendor/calls/get",
+									"raw": "https://video-api.basma.ai/vendor/calls/get",
+									"protocol": "https",
 									"host": [
-										"{{api_url}}"
+										"video-api",
+										"basma",
+										"ai"
 									],
 									"path": [
 										"vendor",
@@ -870,7 +902,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n\t\"vu_token\": \"{{vu_token}}\",\n\t\"call_id\": 747\n}",
+									"raw": "{\n\t\"vu_token\": \"{{vu_token}}\",\n\t\"call_id\": 753\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -878,14 +910,46 @@
 									}
 								},
 								"url": {
-									"raw": "{{api_url}}/vendor/calls/get_recording",
+									"raw": "https://video-api.basma.ai/vendor/calls/get_recording",
+									"protocol": "https",
 									"host": [
-										"{{api_url}}"
+										"video-api",
+										"basma",
+										"ai"
 									],
 									"path": [
 										"vendor",
 										"calls",
 										"get_recording"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Send a message (vendor)",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"guest_token\": \"{{vu_token}}\",\n\t\"call_id\": 781,\n\t\"message_type\": \"text\",\n\t\"value\": \"hello\"\n}"
+								},
+								"url": {
+									"raw": "{{api_url}}/agent/send_message",
+									"host": [
+										"{{api_url}}"
+									],
+									"path": [
+										"agent",
+										"send_message"
 									]
 								}
 							},
