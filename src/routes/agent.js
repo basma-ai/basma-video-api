@@ -285,7 +285,7 @@ router.post('/agent/answer_call', async function (req, res, next) {
 
         if (go_ahead) {
             // cool, we reached here, now let's initiate the call
-            let vendor = format_mod.get_vendor(the_call, true);
+            let vendor = await format_mod.get_vendor(the_call.vendor_id, true);
 
 
             if (the_call['connection_agent_token'] == null) {
