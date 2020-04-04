@@ -285,11 +285,12 @@ router.post('/agent/answer_call', async function (req, res, next) {
 
         if (go_ahead) {
             // cool, we reached here, now let's initiate the call
+            let vendor = format_mod.get_vendor(the_call, true);
 
 
             if (the_call['connection_agent_token'] == null) {
                 // no token generated for the guest, let's make one
-                var twilio_agent_token = await twilio_mod.generate_twilio_token('agent-' + vu_id, 'call-' + the_call.id);
+                var twilio_agent_token = await twilio_mod.generate_twilio_token('agent-' + vu_id, 'call-' + the_call.id, vendor.recording_enabled);
                 // let's put it in the db
                 let update_data = {
                     'connection_agent_token': twilio_agent_token.token
@@ -297,6 +298,7 @@ router.post('/agent/answer_call', async function (req, res, next) {
 
                 if(twilio_agent_token.twilio_room_sid != null) {
                     update_data['twilio_room_sid'] = twilio_agent_token.twilio_room_sid;
+                    update_data['is_recorded'] = vendor.recording_enabled;
                 }
 
                 await global_vars.knex('calls').update(update_data).where('id', '=', the_call.id);

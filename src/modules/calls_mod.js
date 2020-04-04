@@ -75,6 +75,9 @@ module.exports = {
             }
 
             if (go_ahead) {
+
+                let vendor = format_mod.get_vendor(the_call, true);
+
                 // cool, we reached here, now let's initiate the call
                 let update_data = {
                     last_refresh_time: Date.now()
@@ -82,7 +85,7 @@ module.exports = {
 
                 if (the_call['connection_guest_token'] == null) {
                     // no token generated for the guest, let's make one
-                    var twilio_guest_token = await twilio_mod.generate_twilio_token('guest-' + guest_id, 'call-' + the_call.id);
+                    var twilio_guest_token = await twilio_mod.generate_twilio_token('guest-' + guest_id, 'call-' + the_call.id, vendor.recording_enabled);
                     console.log("twilio_guest_token return is: ");
                     console.log(twilio_guest_token);
 
@@ -98,7 +101,8 @@ module.exports = {
                     // let's put it in the db
                     await global_vars.knex('calls').update({
                         'connection_guest_token': twilio_guest_token.token,
-                        'twilio_room_sid': twilio_guest_token.twilio_room_sid
+                        'twilio_room_sid': twilio_guest_token.twilio_room_sid,
+                        is_recorded: vendor.recording_enabled
                     }).where('id', '=', the_call.id);
                 }
 

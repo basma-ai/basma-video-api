@@ -25,14 +25,14 @@ module.exports = {
             .then(room => console.log(room.uniqueName + " completed"));
 
     },
-    generate_twilio_token: async function (client_id, room_id) {
+    generate_twilio_token: async function (client_id, room_id, record = false) {
 
         let twilio_room_sid = null;
 
         console.log("inside generate_twilio_token");
         await client_master.video.rooms.create({
             uniqueName: room_id,
-            recordParticipantsOnConnect: true
+            recordParticipantsOnConnect: record
         }).then(room => {
             console.log(room.sid)
             twilio_room_sid = room.sid;
