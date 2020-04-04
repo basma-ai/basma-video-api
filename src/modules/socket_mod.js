@@ -30,15 +30,12 @@ module.exports = {
         };
 
         if (data.user_type == 'guest') {
-
             const guest_id = await users_mod.token_to_id('guests', data.user_token, 'id');
             insert_data['guest_id'] = guest_id;
-
 
         } else if (data.user_type == 'vu') {
             const vu_id = await users_mod.token_to_id('vendors_users_tokens', data.user_token, 'vu_id');
             insert_data['vu_id'] = vu_id;
-
         }
 
         await global_vars.knex('sockets').insert(insert_data).then((result) => {

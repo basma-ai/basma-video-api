@@ -196,6 +196,29 @@ module.exports = {
 
 
 
+    },
+
+    get_participants: async function(call_id) {
+
+        let raw_call;
+        await global_vars.knex('calls').where('id', '=', call_id).then((rows) => {
+            raw_call = rows[0];
+        });
+
+        // agent user
+        let agent_user = {
+            user_type: 'vu',
+            user_id: raw_call.vu_id
+        }
+
+        let guest_user = {
+            user_type: 'guest',
+            user_id: raw_call.guest_id
+        }
+
+        return [agent_user, guest_user]
+
+
     }
 
 

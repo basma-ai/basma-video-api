@@ -6,6 +6,7 @@ let format_mod = require("../modules/format_mod");
 let twilio_mod = require("../modules/twilio_mod");
 var socket_mod = require("../modules/socket_mod");
 var calls_mod = require("../modules/calls_mod");
+var messages_mod = require("../modules/messages_mod");
 
 let global_vars;
 
@@ -311,6 +312,9 @@ router.post('/calls/end_call', async function (req, res, next) {
 
 });
 
+
+
+
 /**
  * @api {post} /calls/submit_rating Submit rating
  * @apiName CallsSubmitRating
@@ -416,6 +420,106 @@ router.post('/calls/submit_rating', async function (req, res, next) {
 
 
 
+/**
+ * @api {post} /calls/send_message Send a message
+ * @apiName CallsMessagesSend
+ * @apiGroup Calls
+ * @apiDescription Send a message in a call
+ *
+ * @apiParam {String} [guest_token] The access token of the guest
+ * @apiParam {Integer} call_id The ID of the call
+ * @apiParam {String} message_type "text", "image" or "file"
+ * @apiParam {String} value the value of the message
+ *
+ * @apiSuccessExample {json} Success-Response:
+ *     HTTP/1.1 200 OK
+ {
+    "success": true,
+    "data": {
+    }
+}
+ * @apiErrorExample {json} Success-Response:
+ *     HTTP/1.1 200 OK
+
+ */
+router.post('/calls/send_message', async function (req, res, next) {
+
+
+    let success = true;
+    let go_ahead = true;
+    let return_data = {};
+
+
+    // check the validity of the provided token
+    const guest_id = await users_mod.token_to_id('guests', req.body.guest_token, 'id');
+    if (guest_id == null) {
+        if (return_data['errors'] == null) {
+            return_data['errors'] = [];
+        }
+        return_data['errors'].push('invalid_guest_token');
+        go_ahead = false;
+    }
+
+
+    if (go_ahead) {
+        // get the call
+        var the_call = null;
+        await global_vars.knex('calls').select('*').where('id', '=', req.body.call_id).then((rows) => {
+            if (rows[0] != null) {
+                the_call = rows[0];
+            }
+        });
+
+        if (the_call == null) {
+            // no matching service found, halt
+            if (return_data['errors'] == null) {
+                return_data['errors'] = [];
+            }
+            return_data['errors'].push('invalid_call_id');
+            go_ahead = false;
+        }
+
+        if (go_ahead && the_call.guest_id != guest_id) {
+            // no matching service found, halt
+            if (return_data['errors'] == null) {
+                return_data['errors'] = [];
+            }
+            return_data['errors'].push('unauthorized_action');
+            go_ahead = false;
+        }
+
+        if (go_ahead && the_call.status == 'ended') {
+            // no matching service found, halt
+            if (return_data['errors'] == null) {
+                return_data['errors'] = [];
+            }
+            return_data['errors'].push('call_ended');
+            go_ahead = false;
+        }
+
+        if (go_ahead) {
+
+            // send the message
+            await messages_mod.send_message({
+                user_type: 'guest',
+                user_id: guest_id,
+                message_type: req.body.message_type,
+                value: req.body.value,
+                call_id: the_call.id
+            });
+
+        }
+    }
+
+    res.send({
+        success: success,
+        data: return_data
+    });
+
+});
+
+
+
 router.post('/calls/test', async function (req, res, next) {
 
 
@@ -446,6 +550,7 @@ module.exports = function (options) {
     format_mod.init(global_vars);
     socket_mod.init(global_vars);
     calls_mod.init(global_vars);
+    messages_mod.init(global_vars);
 
     return router;
 };
