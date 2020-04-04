@@ -112,7 +112,7 @@ router.post('/vendor/calls/get', async function (req, res, next) {
     let call = await format_mod.get_agent_call(req.body.call_id);
 
     // check if is_authenticated
-    const is_authenticated = await roles_mod.is_authenticated(vu, [roles_mod.PERMISSIONS.CALLS_HISTORY]);
+    const is_authenticated = await roles_mod.is_authenticated(vu,[roles_mod.PERMISSIONS.CALLS_HISTORY], call);
 
     if (is_authenticated || call.vu_id == vu.id) {
 
@@ -161,7 +161,7 @@ router.post('/vendor/calls/get_recording', async function (req, res, next) {
     let call = await format_mod.get_agent_call(req.body.call_id);
 
     // check if is_authenticated
-    const is_authenticated = await roles_mod.is_authenticated(vu, [roles_mod.PERMISSIONS.CALLS_HISTORY]);
+    const is_authenticated = await roles_mod.is_authenticated(vu, [roles_mod.PERMISSIONS.RECORDINGS]);
 
     if (is_authenticated || call.vu_id == vu.id) {
 

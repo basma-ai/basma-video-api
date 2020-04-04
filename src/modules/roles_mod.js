@@ -19,6 +19,7 @@ module.exports = {
         SETTINGS: "settings",
         RECORDINGS: "recordings",
         REPORTS: "reports",
+        BILLING: "billing",
     },
 
     init: function(new_global_vars) {
@@ -26,13 +27,17 @@ module.exports = {
         format_mod.init(global_vars);
     },
 
-    is_authenticated: async function (vu, permission_names) {
+    is_authenticated: async function (vu, permission_names, object = null) {
         // return true;
         // console.log(permission_labels);
         let is_authenticated = false;
         let permissions_ids = [];
         let permissions = [];
         let relations_rows;
+
+        if (object != null && object.hasOwnProperty("vendor_id") && vu.vendor.id != object.vendor_id) {
+            return is_authenticated;
+        }
 
         await global_vars.knex('vu_roles_relations')
             .where('vendor_id', '=', vu.vendor.id)
