@@ -1,4 +1,7 @@
 var global_vars = null;
+
+const axios = require('axios');
+
 let users_mod = require("../modules/users_mod");
 let format_mod = require("../modules/format_mod");
 let twilio_mod = require("../modules/twilio_mod");
@@ -157,6 +160,41 @@ module.exports = {
                 data: await this.get_guest_call_refresh(call.id, call.guest_id)
             });
         }
+
+    },
+
+    end_call_stuff: async function(call_id) {
+
+        let the_call;
+        await global_vars.knex('calls').where('id', '=', call_id).then((rows) => {
+            the_call = rows[0];
+        });
+
+        // get the vendor of the call
+        let the_vendor = await format_mod.get_vendor(the_call.vendor_id);
+
+        if(the_vendor.recordings_enabled) {
+            console.log("recordigns are enabled, trigger video processing service");
+
+
+            await axios.post(process.env.VIDEO_PROCESSING_API_URL+'/process_recording', {
+                "twilio_sid": the_call.twilio_room_sid,
+                "call_id": the_call.id,
+                "password": process.env.VIDEO_PROCESSING_API_PASSWORD
+            }).then(function (result) {
+
+            }).catch(function (err) {
+                console.log("error getting recordings link");
+                console.log(err);
+            });
+
+
+        }
+
+
+
+
+
 
     }
 

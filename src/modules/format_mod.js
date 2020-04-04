@@ -113,6 +113,8 @@ module.exports = {
             delete call['connection_guest_token'];
             delete call['connection_agent_token'];
             delete call['agent_notes'];
+            delete call['twilio_room_sid'];
+            delete call['s3_recording_folder'];
         }
 
         if(full) {

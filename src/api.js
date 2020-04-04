@@ -125,6 +125,7 @@ app.post('/vendor/users/get', vendor_users);
 // vendors calls
 app.post('/vendor/calls/list', vendor_calls);
 app.post('/vendor/calls/get', vendor_calls);
+app.post('/vendor/calls/get_recording', vendor_calls);
 
 // vendors users
 app.post('/vendor/custom_fields/create', vendor_custom_fields);

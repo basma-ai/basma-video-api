@@ -299,6 +299,7 @@ router.post('/calls/end_call', async function (req, res, next) {
             });
 
             calls_mod.update_all_calls(the_call.vendor_id);
+            calls_mod.end_call_stuff(the_call.id);
 
         }
     }
