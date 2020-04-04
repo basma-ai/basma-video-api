@@ -488,14 +488,6 @@ router.post('/calls/send_message', async function (req, res, next) {
             go_ahead = false;
         }
 
-        if (go_ahead && the_call.status == 'ended') {
-            // no matching service found, halt
-            if (return_data['errors'] == null) {
-                return_data['errors'] = [];
-            }
-            return_data['errors'].push('call_ended');
-            go_ahead = false;
-        }
 
         if (go_ahead) {
 

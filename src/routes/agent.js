@@ -7,6 +7,7 @@ var twilio_mod = require("../modules/twilio_mod");
 var calls_mod = require("../modules/calls_mod");
 var socket_mod = require("../modules/socket_mod");
 var roles_mod = require("../modules/roles_mod");
+var messages_mod = require("../modules/messages_mod");
 
 var global_vars;
 
@@ -525,7 +526,7 @@ router.post('/agent/update_call', async function (req, res, next) {
             if (return_data['errors'] == null) {
                 return_data['errors'] = [];
             }
-            return_data['errors'].push('unauthorized_acction');
+            return_data['errors'].push('unauthorized_action');
             go_ahead = false;
         }
 
@@ -562,6 +563,102 @@ router.post('/agent/update_call', async function (req, res, next) {
 
 });
 
+
+/**
+ * @api {post} /agent/send_message Send a message
+ * @apiName AgentMessagesSend
+ * @apiGroup Agent
+ * @apiDescription Send a message in a call
+ *
+ * @apiParam {String} [vu_token] The access token of the VU (Vendor User)
+ * @apiParam {Integer} call_id The ID of the call
+ * @apiParam {String} message_type "text", "image" or "file"
+ * @apiParam {String} value the value of the message
+ *
+ * @apiSuccessExample {json} Success-Response:
+ *     HTTP/1.1 200 OK
+ {
+    "success": true,
+    "data": {
+    }
+}
+ * @apiErrorExample {json} Success-Response:
+ *     HTTP/1.1 200 OK
+
+ */
+router.post('/agent/send_message', async function (req, res, next) {
+
+
+    let success = true;
+    let go_ahead = true;
+    let return_data = {};
+
+
+    // check the validity of the provided token
+    const vu_id = await users_mod.token_to_id('vendors_users_tokens', req.body.vu_token, 'vu_id');
+    if (vu_id == null) {
+        if (return_data['errors'] == null) {
+            return_data['errors'] = [];
+        }
+        return_data['errors'].push('invalid_vu_token');
+        go_ahead = false;
+    }
+
+    // var the_vu = await format_mod.get_vu(vu_id);
+
+
+    if (go_ahead) {
+        // get the call
+        var the_call = null;
+        await global_vars.knex('calls').select('*').where('id', '=', req.body.call_id).then((rows) => {
+            if (rows[0] != null) {
+                the_call = rows[0];
+            }
+        });
+
+        if (the_call == null) {
+            // no matching service found, halt
+            if (return_data['errors'] == null) {
+                return_data['errors'] = [];
+            }
+            return_data['errors'].push('invalid_call_id');
+            go_ahead = false;
+        }
+
+        if (go_ahead && the_call.vu_id != vu_id) {
+            // no matching service found, halt
+            if (return_data['errors'] == null) {
+                return_data['errors'] = [];
+            }
+            return_data['errors'].push('unauthorized_acction');
+            go_ahead = false;
+        }
+
+
+        if (go_ahead) {
+
+            // send the message
+            await messages_mod.send_message({
+                user_type: 'vu',
+                user_id: vu_id,
+                message_type: req.body.message_type,
+                value: req.body.value,
+                call_id: the_call.id
+            });
+
+
+        }
+    }
+
+
+    res.send({
+        success: success,
+        data: return_data
+    });
+
+});
+
+
 module.exports = function (options) {
 
     global_vars = options;
@@ -570,6 +667,8 @@ module.exports = function (options) {
     calls_mod.init(global_vars);
     socket_mod.init(global_vars);
     roles_mod.init(global_vars);
+    messages_mod.init(global_vars);
+
 
     return router;
 };

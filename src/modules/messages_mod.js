@@ -6,7 +6,7 @@ let users_mod = require("../modules/users_mod");
 let format_mod = require("../modules/format_mod");
 let twilio_mod = require("../modules/twilio_mod");
 var socket_mod = require("./socket_mod");
-var calls_mod = require("./socket_mod");
+var calls_mod = require("./calls_mod");
 
 module.exports = {
 

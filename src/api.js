@@ -81,6 +81,7 @@ app.post('/calls/start_call', calls);
 app.post('/calls/request_update', calls);
 app.post('/calls/end_call', calls);
 app.post('/calls/submit_rating', calls);
+app.post('/calls/send_message', calls);
 app.post('/calls/test', calls);
 
 // agent
@@ -90,6 +91,7 @@ app.post('/agent/list_pending_calls', agent);
 app.post('/agent/answer_call', agent);
 app.post('/agent/end_call', agent);
 app.post('/agent/update_call', agent);
+app.post('/agent/send_message', agent);
 
 // master
 app.get('/master', master);
