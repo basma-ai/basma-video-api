@@ -87,6 +87,10 @@ module.exports = {
         //     user_type, user_id, call_id, data, type
         // };
 
+
+        console.log("sending socket updates");
+        console.log(options);
+
         // get the sockets
         let sockets_ids = await this.get_socket_ids(options.user_type, options.user_id, options.call_id);
 

@@ -58,14 +58,14 @@ module.exports = {
                 go_ahead = false;
             }
 
-            if (go_ahead && the_call.guest_id != guest_id) {
-                // no matching service found, halt
-                if (return_data['errors'] == null) {
-                    return_data['errors'] = [];
-                }
-                return_data['errors'].push('unauthorized_action');
-                go_ahead = false;
-            }
+            // if (go_ahead && the_call.guest_id != guest_id) {
+            //     // no matching service found, halt
+            //     if (return_data['errors'] == null) {
+            //         return_data['errors'] = [];
+            //     }
+            //     return_data['errors'].push('unauthorized_action');
+            //     go_ahead = false;
+            // }
 
             if (go_ahead && the_call.status == 'ended') {
                 // no matching service found, halt
