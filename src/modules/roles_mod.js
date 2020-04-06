@@ -20,6 +20,7 @@ module.exports = {
         RECORDINGS: "recordings",
         REPORTS: "reports",
         BILLING: "billing",
+        CALL_REQUESTS: "call_requests",
     },
 
     init: function(new_global_vars) {
@@ -45,8 +46,8 @@ module.exports = {
                 relations_rows = rows
             });
 
-        console.log(vu.id);
-        console.log(relations_rows);
+        // console.log(vu.id);
+        // console.log(relations_rows);
 
         // loop thru user roles to get all permissions
         for (let relation of relations_rows) {
@@ -59,13 +60,13 @@ module.exports = {
                     permissions_ids = rows.map( permission => permission.permission_id);
                 });
 
-            console.log(permissions_ids);
+            // console.log(permissions_ids);
 
             for (let permission_id of permissions_ids) {
                 const permission = await format_mod.get_permission(permission_id)
                 if (permissions.indexOf(permission.name) === -1){
                     permissions.push(permission.name)
-                    console.log(permission.name);
+                    // console.log(permission.name);
                 }
             }
 
@@ -78,7 +79,7 @@ module.exports = {
             for (let permission_name of permission_names) {
                 if (permissions.indexOf(permission_name) > -1) {
                     is_authenticated = true;
-                    console.log(permission_name + ":" + is_authenticated);
+                    // console.log(permission_name + ":" + is_authenticated);
                 }else{
                     is_authenticated = false;
                 }

@@ -1,11 +1,11 @@
 var express = require('express');
 var router = express.Router();
 
-var users_mod = require("../modules/users_mod");
-var format_mod = require("../modules/format_mod");
-var twilio_mod = require("../modules/twilio_mod");
-var log_mod = require("../modules/log_mod");
-var roles_mod = require("../modules/roles_mod");
+var users_mod = require("../../modules/users_mod");
+var format_mod = require("../../modules/format_mod");
+var twilio_mod = require("../../modules/twilio_mod");
+var log_mod = require("../../modules/log_mod");
+var roles_mod = require("../../modules/roles_mod");
 
 var global_vars;
 
@@ -331,13 +331,17 @@ router.post('/vendor/users/list', async function (req, res, next) {
     let vu = await format_mod.get_vu(vu_id);
 
     // check if is_authenticated
-    const is_authenticated = await roles_mod.is_authenticated(vu,[roles_mod.PERMISSIONS.USERS]);
+    const has_users_permission = await roles_mod.is_authenticated(vu,[roles_mod.PERMISSIONS.USERS]);
 
-    if (is_authenticated) {
+    if (true) {
 
         // check if username is taken
         let users = null;
         let stmnt = global_vars.knex('vendors_users').select('*').where('vendor_id', '=', vu.vendor.id).orderBy('id', 'DESC')
+
+        if(!has_users_permission) {
+            stmnt = stmnt.where('id', '=', vu_id);
+        }
 
         if (req.body.per_page != null && req.body.page != null) {
             stmnt = stmnt.paginate({

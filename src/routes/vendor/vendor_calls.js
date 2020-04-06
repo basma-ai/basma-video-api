@@ -1,11 +1,13 @@
 var express = require('express');
 var router = express.Router();
 
-var users_mod = require("../modules/users_mod");
-var format_mod = require("../modules/format_mod");
-var twilio_mod = require("../modules/twilio_mod");
-var roles_mod = require("../modules/roles_mod");
+var users_mod = require("../../modules/users_mod");
+var format_mod = require("../../modules/format_mod");
+var twilio_mod = require("../../modules/twilio_mod");
+var roles_mod = require("../../modules/roles_mod");
+var notifs_mod = require("../../modules/notifs_mod");
 const AWS = require('aws-sdk');
+var moment = require('moment');
 
 var global_vars;
 
@@ -213,12 +215,106 @@ router.post('/vendor/calls/get_recording', async function (req, res, next) {
 });
 
 
+
+/**
+ * @api {post} /vendor/calls/schedule Schedule a Call
+ * @apiName VendorCallsSchedule
+ * @apiGroup vendor
+ * @apiDescription Schedule a call with a customer
+ *
+ * @apiParam {String} vu_token Vendor User Token
+ * @apiParam {Integer} service_id Service ID
+ * @apiParam {String} phone_number Phone number
+ * @apiParam {Boolean} send_sms Send the user an SMS notification
+ * @apiParam {Integer} scheduled_time The call's time, as a unix timestamp in ms (that's milliseconds)
+ * @apiParam {JSON} custom_fields_value The custom fields and their values, as a json array
+ *
+ * @apiSuccessExample {json} Success-Response:
+ *     HTTP/1.1 200 OK
+ */
+router.post('/vendor/calls/schedule', async function (req, res, next) {
+
+
+    let success = false;
+    let go_ahead = true;
+    let return_data = {};
+
+    const vu_id = await users_mod.token_to_id('vendors_users_tokens', req.body.vu_token, 'vu_id');
+
+    const vu = await format_mod.get_vu(vu_id, true);
+
+    // check if is_authenticated
+    const is_authenticated = await roles_mod.is_authenticated(vu, [roles_mod.PERMISSIONS.CALL_REQUESTS]);
+
+    if (is_authenticated) {
+
+        // insert the schedule in the database
+        await global_vars.knex('call_requests').insert({
+            vendor_id: vu.vendor.id,
+            vu_id: vu.id,
+            creation_time: Date.now(),
+            scheduled_time: req.body.scheduled_time,
+            service_id: req.body.service_id,
+            send_sms: req.body.send_sms,
+            custom_fields_values: req.body.custom_fields_values == null ? null : JSON.stringify(req.body.custom_fields_values)
+
+        }).then((result) => {
+            success = true;
+        });
+
+        if(success) {
+            if(req.body.send_sms) {
+
+                console.log("I AM HERE!!!");
+
+                // phone number
+                let phone_number = null;
+                if(req.body.custom_fields_values != null) {
+
+                    let phone_cs = req.body.custom_fields_values.filter((a) => {
+                        return a.name == 'phone' || 'mobile' || 'phone_number' || 'mobile_number';
+                    })[0];
+
+                    if(phone_cs != null) {
+                        phone_number = phone_cs.value;
+                    }
+
+                }
+
+                global_vars.logger.debug('vendor_calls:schedule '+`phone: ${phone_number}`);
+                if(phone_number != null) {
+                    let date_humanized = '';
+                     notifs_mod.sendSMS(phone_number, `Your video call with ${vu.vendor.name} is scheduled on ${date_humanized}, to attend your video call, follow the link: ${link}`);
+                }
+
+            }
+        }
+
+
+
+
+    } else {
+        return_data['errors'] = ['unauthorized_action'];
+    }
+
+
+    res.send({
+        success: success,
+        data: return_data
+    });
+
+});
+
+
+
+
 module.exports = function (options) {
 
     global_vars = options;
     users_mod.init(global_vars);
     format_mod.init(global_vars);
     roles_mod.init(global_vars);
+    notifs_mod.init(global_vars);
 
     return router;
 };

@@ -1,10 +1,10 @@
 var express = require('express');
 var router = express.Router();
 
-var users_mod = require("../modules/users_mod");
-var format_mod = require("../modules/format_mod");
-var log_mod = require("../modules/log_mod");
-var roles_mod = require("../modules/roles_mod");
+var users_mod = require("../../modules/users_mod");
+var format_mod = require("../../modules/format_mod");
+var log_mod = require("../../modules/log_mod");
+var roles_mod = require("../../modules/roles_mod");
 
 var global_vars;
 

@@ -1,27 +1,23 @@
 var express = require('express');
 var router = express.Router();
 
-var users_mod = require("../modules/users_mod");
-var format_mod = require("../modules/format_mod");
-var twilio_mod = require("../modules/twilio_mod");
-var log_mod = require("../modules/log_mod");
-var roles_mod = require("../modules/roles_mod");
+var users_mod = require("../../modules/users_mod");
+var format_mod = require("../../modules/format_mod");
+var log_mod = require("../../modules/log_mod");
+var roles_mod = require("../../modules/roles_mod");
 
 var global_vars;
 
-
-async function set_group_services(vu, group_id, services_ids) {
-
-
-    for (let service_id of services_ids) {
-
-
+async function set_role_permissions(vu, role_id, permissions_ids) {
+    
+    for (let permission_id of permissions_ids) {
+        
         // check if the relationships exists
         let exists = false;
-        await global_vars.knex('groups_services_relations')
+        await global_vars.knex('roles_permissions_relations')
             .where('vendor_id', '=', vu.vendor.id)
-            .where('group_id', '=', group_id)
-            .where('service_id', '=', service_id).select('*').then((rows) => {
+            .where('role_id', '=', role_id)
+            .where('permission_id', '=', permission_id).select('*').then((rows) => {
                 if (rows.length > 0) {
                     exists = true;
                 }
@@ -36,12 +32,12 @@ async function set_group_services(vu, group_id, services_ids) {
         // if doesn't exist, then add it
         if (!exists) {
             let insert_data = {
-                service_id: service_id,
-                group_id: group_id,
+                permission_id: permission_id,
+                role_id: role_id,
                 vendor_id: vu.vendor.id
             }
-            await global_vars.knex('groups_services_relations').insert(insert_data).then((result) => {
-                // console.log("groups_services_relations inserted");
+            await global_vars.knex('roles_permissions_relations').insert(insert_data).then((result) => {
+                // console.log("roles_permissions_relations inserted");
             });
 
 
@@ -50,30 +46,110 @@ async function set_group_services(vu, group_id, services_ids) {
     }
 
     // now let's delete the deleted ones
-    await global_vars.knex('groups_services_relations')
+    await global_vars.knex('roles_permissions_relations')
         .where('vendor_id', '=', vu.vendor.id)
-        .where('group_id', '=', group_id)
-        .whereNotIn('service_id', services_ids)
+        .where('role_id', '=', role_id)
+        .whereNotIn('permission_id', permissions_ids)
         .delete();
 
 }
 
 /**
- * @api {post} /vendor/groups/create Create a group
+ * @api {post} /vendor/roles/create Create a role
  * @apiName VendorGroupsCreate
  * @apiGroup vendor
- * @apiDescription Create a group
+ * @apiDescription Create a role
  *
  * @apiParam {String} vu_token Vendor User Token
  * @apiParam {Integer} name Group name
- * @apiParam {Integer} services_ids An array of the IDs of the services to attach to the group
+ * @apiParam {Integer} permissions_ids An array of the IDs of the permissions to attach to the role
  *
  * @apiSuccessExample {json} Success-Response:
  *     HTTP/1.1 200 OK
 
 
  */
-router.post('/vendor/groups/create', async function (req, res, next) {
+router.post('/vendor/roles/create', async function (req, res, next) {
+
+    let success = false;
+    let go_ahead = true;
+    let return_data = {};
+
+    const vu_id = await users_mod.token_to_id('vendors_users_tokens', req.body.vu_token, 'vu_id');
+
+    const vu = await format_mod.get_vu(vu_id, true);
+
+    // check if is_authenticated
+    const is_authenticated = await roles_mod.is_authenticated(vu,[roles_mod.PERMISSIONS.ROLES]);
+
+    if (is_authenticated) {
+
+        // that's awesome!, we can proceed with the process of creating an account for a new role as per the instructions and details provided by the vu (vendor user), the process will begin by by inserting the role in the database, then, you will be updated by another comment
+        let insert_data = {
+            vendor_id: vu.vendor.id,
+            name: req.body.name
+        };
+
+        let role_id = 0;
+        await global_vars.knex('roles').insert(insert_data).then((result) => {
+
+            success = true;
+            // console.log("the result of role creation");
+            // console.log(result);
+            role_id = result[0];
+
+        }).catch((err) => {
+            go_ahead = false;
+        });
+
+        if (go_ahead) {
+            // cool, now let's assign the permissions
+            await set_role_permissions(vu, role_id, req.body.permissions_ids);
+        }
+
+        if(success) {
+            let log_params = {
+                table_name: 'roles',
+                row_id: role_id,
+                vu_id: vu.id,
+                new_value: insert_data,
+                type: 'create'
+            };
+
+            log_mod.log(log_params);
+        }
+
+        return_data['role'] = await format_mod.get_role(role_id);
+
+    } else {
+        return_data['errors'] = ['unauthorized_action'];
+    }
+
+
+    res.send({
+        success: success,
+        data: return_data
+    });
+
+});
+
+/**
+ * @api {post} /vendor/roles/edit Edit a role
+ * @apiName VendorGroupsEdit
+ * @apiGroup vendor
+ * @apiDescription Edit a role
+ *
+ * @apiParam {String} vu_token Vendor User Token
+ * @apiParam {Integer} role_id Group ID
+ * @apiParam {String} name Group name
+ * @apiParam {Integer} permissions_ids An array of the IDs of the permissions to attach to the role
+ *
+ * @apiSuccessExample {json} Success-Response:
+ *     HTTP/1.1 200 OK
+
+
+ */
+router.post('/vendor/roles/edit', async function (req, res, next) {
 
 
     let success = false;
@@ -86,103 +162,19 @@ router.post('/vendor/groups/create', async function (req, res, next) {
     const vu = await format_mod.get_vu(vu_id, true);
 
     // check if is_authenticated
-    const is_authenticated = await roles_mod.is_authenticated(vu,[roles_mod.PERMISSIONS.GROUPS]);
+    const is_authenticated = await roles_mod.is_authenticated(vu,[roles_mod.PERMISSIONS.ROLES]);
 
     if (is_authenticated) {
 
-        // that's awesome!, we can proceed with the process of creating an account for a new group as per the instructions and details provided by the vu (vendor user), the process will begin by by inserting the group in the database, then, you will be updated by another comment
-        let insert_data = {
-            vendor_id: vu.vendor.id,
-            name: req.body.name
-        };
-
-        let group_id = 0;
-        await global_vars.knex('groups').insert(insert_data).then((result) => {
-
-            success = true;
-            // console.log("the result of group creation");
-            // console.log(result);
-            group_id = result[0];
-
-        }).catch((err) => {
-            go_ahead = false;
-        });
-
-        if (success) {
-            // cool, now let's assign the services
-            await set_group_services(vu, group_id, req.body.service_ids);
-        }
-
-        if(success) {
-            let log_params = {
-                table_name: 'groups',
-                row_id: group_id,
-                vu_id: vu.id,
-                new_value: insert_data,
-                type: 'create'
-            };
-
-
-            log_mod.log(log_params);
-        }
-
-        return_data['group'] = await format_mod.get_group(group_id);
-
-    } else {
-
-
-        return_data['errors'] = ['unauthorized_action'];
-    }
-
-
-    res.send({
-        success: success,
-        data: return_data
-    });
-
-});
-
-/**
- * @api {post} /vendor/groups/edit Edit a group
- * @apiName VendorGroupsEdit
- * @apiGroup vendor
- * @apiDescription Edit a group
- *
- * @apiParam {String} vu_token Vendor User Token
- * @apiParam {Integer} group_id Group ID
- * @apiParam {String} name Group name
- * @apiParam {Integer} services_ids An array of the IDs of the services to attach to the group
- *
- * @apiSuccessExample {json} Success-Response:
- *     HTTP/1.1 200 OK
-
-
- */
-router.post('/vendor/groups/edit', async function (req, res, next) {
-
-
-    let success = false;
-    let go_ahead = true;
-    let return_data = {};
-
-    const vu_id = await users_mod.token_to_id('vendors_users_tokens', req.body.vu_token, 'vu_id');
-
-    const vu = await format_mod.get_vu(vu_id, true);
-
-    // check if can edit groups
-    const is_authenticated = await roles_mod.is_authenticated(vu,[roles_mod.PERMISSIONS.GROUPS]);
-
-    if (is_authenticated) {
-
-        // that's awesome!, we can proceed with the process of creating an account for a new group as per the instructions and details provided by the vu (vendor user), the process will begin by by inserting the group in the database, then, you will be updated by another comment
+        // that's awesome!, we can proceed with the process of creating an account for a new role as per the instructions and details provided by the vu (vendor user), the process will begin by by inserting the role in the database, then, you will be updated by another comment
         let update_data = {
             name: req.body.name
         };
 
 
         let log_params = {
-            table_name: 'groups',
-            row_id: req.body.group_id,
+            table_name: 'roles',
+            row_id: req.body.role_id,
             vu_id: vu.id,
             new_value: update_data,
             type: 'edit'
@@ -191,15 +183,13 @@ router.post('/vendor/groups/edit', async function (req, res, next) {
 
         await log_mod.log(log_params);
 
-        let group_id = 0;
-        await global_vars.knex('groups')
+        let role_id = 0;
+        await global_vars.knex('roles')
             .update(update_data)
             .where('vendor_id', '=', vu.vendor.id)
-            .where('id', '=', req.body.group_id)
+            .where('id', '=', req.body.role_id)
             .then((result) => {
-
                 success = true;
-
             }).catch((err) => {
                 go_ahead = false;
                 console.log(err);
@@ -207,10 +197,10 @@ router.post('/vendor/groups/edit', async function (req, res, next) {
 
         if (go_ahead) {
 
-            // cool, now let's assign the services
-            await set_group_services(vu, req.body.group_id, req.body.service_ids);
+            // cool, now let's assign the permissions
+            await set_role_permissions(vu, req.body.role_id, req.body.permissions_ids);
 
-            return_data['group'] = await format_mod.get_group(req.body.group_id, true);
+            return_data['role'] = await format_mod.get_role(req.body.role_id, true);
 
         }
     } else {
@@ -226,10 +216,10 @@ router.post('/vendor/groups/edit', async function (req, res, next) {
 });
 
 /**
- * @api {post} /vendor/groups/list List a group
+ * @api {post} /vendor/roles/list List a role
  * @apiName VendorGroupsList
  * @apiGroup vendor
- * @apiDescription List a group
+ * @apiDescription List a role
  *
  * @apiParam {String} vu_token Vendor User Token
  * @apiParam {Integer} per_page Records per page
@@ -240,7 +230,7 @@ router.post('/vendor/groups/edit', async function (req, res, next) {
 
 
  */
-router.post('/vendor/groups/list', async function (req, res, next) {
+router.post('/vendor/roles/list', async function (req, res, next) {
 
 
     let success = false;
@@ -253,17 +243,17 @@ router.post('/vendor/groups/list', async function (req, res, next) {
     const vu = await format_mod.get_vu(vu_id, true);
 
     // check if is_authenticated
-    const is_authenticated = await roles_mod.is_authenticated(vu,[roles_mod.PERMISSIONS.GROUPS]);
+    const is_authenticated = await roles_mod.is_authenticated(vu,[roles_mod.PERMISSIONS.ROLES]);
 
     if (is_authenticated) {
 
-        // that's awesome!, we can proceed with the process of creating an account for a new group as per the instructions and details provided by the vu (vendor user), the process will begin by by inserting the group in the database, then, you will be updated by another comment
+        // that's awesome!, we can proceed with the process of creating an account for a new role as per the instructions and details provided by the vu (vendor user), the process will begin by by inserting the role in the database, then, you will be updated by another comment
         let update_data = {
             name: req.body.name
         };
 
-        let raw_groups = [];
-        let stmnt = global_vars.knex('groups')
+        let raw_roles = [];
+        let stmnt = global_vars.knex('roles')
             .where('vendor_id', '=', vu.vendor.id)
 
         if (req.body.per_page != null && req.body.page != null) {
@@ -275,7 +265,7 @@ router.post('/vendor/groups/list', async function (req, res, next) {
 
         await stmnt.then((rows) => {
 
-            raw_groups = rows;
+            raw_roles = rows;
             success = true;
 
         }).catch((err) => {
@@ -283,13 +273,13 @@ router.post('/vendor/groups/list', async function (req, res, next) {
             console.log(err);
         });
 
-        let groups = [];
-        for (let raw_group of (raw_groups.data == null ? raw_groups : raw_groups.data)) {
-            groups.push(await format_mod.format_group(raw_group));
+        let roles = [];
+        for (let raw_role of (raw_roles.data == null ? raw_roles : raw_roles.data)) {
+            roles.push(await format_mod.format_role(raw_role));
         }
 
-        return_data['list'] = groups;
-        return_data['pagination'] = raw_groups.pagination;
+        return_data['list'] = roles;
+        return_data['pagination'] = raw_roles.pagination;
 
 
     } else {
@@ -306,20 +296,20 @@ router.post('/vendor/groups/list', async function (req, res, next) {
 
 
 /**
- * @api {post} /vendor/groups/get Get a group
+ * @api {post} /vendor/roles/get Get a role
  * @apiName VendorGroupsGet
  * @apiGroup vendor
- * @apiDescription Get a group
+ * @apiDescription Get a role
  *
  * @apiParam {String} vu_token Vendor User Token
- * @apiParam {Integer} group_id Group ID
+ * @apiParam {Integer} role_id Group ID
  *
  * @apiSuccessExample {json} Success-Response:
  *     HTTP/1.1 200 OK
 
 
  */
-router.post('/vendor/groups/get', async function (req, res, next) {
+router.post('/vendor/roles/get', async function (req, res, next) {
 
 
     let success = false;
@@ -332,19 +322,19 @@ router.post('/vendor/groups/get', async function (req, res, next) {
     const vu = await format_mod.get_vu(vu_id, true);
 
     // check if is_authenticated
-    const is_authenticated = await roles_mod.is_authenticated(vu,[roles_mod.PERMISSIONS.GROUPS]);
+    const is_authenticated = await roles_mod.is_authenticated(vu,[roles_mod.PERMISSIONS.ROLES]);
 
     if (is_authenticated) {
 
-        // that's awesome!, we can proceed with the process of creating an account for a new group as per the instructions and details provided by the vu (vendor user), the process will begin by by inserting the group in the database, then, you will be updated by another comment
+        // that's awesome!, we can proceed with the process of creating an account for a new role as per the instructions and details provided by the vu (vendor user), the process will begin by by inserting the role in the database, then, you will be updated by another comment
         let update_data = {
             name: req.body.name
         };
 
         let record;
-        await global_vars.knex('groups')
+        await global_vars.knex('roles')
             .where('vendor_id', '=', vu.vendor.id)
-            .where('id', '=', req.body.service_id)
+            .where('id', '=', req.body.role_id)
             .then((rows) => {
 
                 record = rows[0];
@@ -354,7 +344,7 @@ router.post('/vendor/groups/get', async function (req, res, next) {
                 console.log(err);
             });
 
-        return_data['group'] = await format_mod.format_group(record);
+        return_data['role'] = await format_mod.format_role(record);
 
 
     } else {

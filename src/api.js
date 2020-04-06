@@ -5,6 +5,7 @@ const port = 1061
 require('dotenv').config()
 const {attachPaginate} = require('knex-paginate');
 const socket_mod = require('./modules/socket_mod');
+var log4js = require('log4js');
 
 // set expressjs settings
 app.use(bodyParser.json({limit: '50mb'}));
@@ -35,12 +36,18 @@ attachPaginate();
 // socket.io
 const server = app.listen(port, () => console.log(`Video CC API listening on port ${port}!`))
 
-var io = require('socket.io')(server);
+let io = require('socket.io')(server);
+
+// setup the logger
+let logger = log4js.getLogger();
+logger.level = process.env.MODE == 'development' ? 'debug' : 'default';
+
 
 // var global variables to pass
-var global_vars = {
+let global_vars = {
     knex: knex,
-    socket_io: io
+    socket_io: io,
+    logger: logger
 };
 
 // init modules
@@ -58,16 +65,16 @@ let master = require('./routes/master.js')(global_vars)
 let agent = require('./routes/agent.js')(global_vars)
 // let files = require('./routes/files.js')(global_vars)
 
-let vendor = require('./routes/vendor.js')(global_vars)
-let vendor_groups = require('./routes/vendor_groups.js')(global_vars)
-let vendor_services = require('./routes/vendor_services.js')(global_vars)
-let vendor_users = require('./routes/vendor_users.js')(global_vars)
-let vendor_calls = require('./routes/vendor_calls.js')(global_vars)
-let vendor_custom_fields = require('./routes/vendor_custom_fields.js')(global_vars)
-let vendor_logs = require('./routes/vendor_logs.js')(global_vars)
-let vendor_roles = require('./routes/vendor_roles.js')(global_vars)
-let vendor_permissions = require('./routes/vendor_permissions.js')(global_vars)
-let vendor_reports = require('./routes/vendor_reports.js')(global_vars)
+let vendor = require('./routes/vendor/vendor.js')(global_vars)
+let vendor_groups = require('./routes/vendor/vendor_groups.js')(global_vars)
+let vendor_services = require('./routes/vendor/vendor_services.js')(global_vars)
+let vendor_users = require('./routes/vendor/vendor_users.js')(global_vars)
+let vendor_calls = require('./routes/vendor/vendor_calls.js')(global_vars)
+let vendor_custom_fields = require('./routes/vendor/vendor_custom_fields.js')(global_vars)
+let vendor_logs = require('./routes/vendor/vendor_logs.js')(global_vars)
+let vendor_roles = require('./routes/vendor/vendor_roles.js')(global_vars)
+let vendor_permissions = require('./routes/vendor/vendor_permissions.js')(global_vars)
+let vendor_reports = require('./routes/vendor/vendor_reports.js')(global_vars)
 
 // guests
 app.get('/guest', guest);
@@ -82,6 +89,7 @@ app.post('/calls/request_update', calls);
 app.post('/calls/end_call', calls);
 app.post('/calls/submit_rating', calls);
 app.post('/calls/send_message', calls);
+app.post('/calls/request_call', calls);
 app.post('/calls/test', calls);
 
 // agent
@@ -128,6 +136,7 @@ app.post('/vendor/users/get', vendor_users);
 app.post('/vendor/calls/list', vendor_calls);
 app.post('/vendor/calls/get', vendor_calls);
 app.post('/vendor/calls/get_recording', vendor_calls);
+app.post('/vendor/calls/schedule', vendor_calls);
 
 // vendors users
 app.post('/vendor/custom_fields/create', vendor_custom_fields);

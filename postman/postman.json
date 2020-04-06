@@ -954,6 +954,34 @@
 								}
 							},
 							"response": []
+						},
+						{
+							"name": "Schedule a Call",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"vu_token\": \"{{vu_token}}\",\n\t\"service_id\": 39,\n\t\"phone_number\": \"36722368\",\n\t\"send_sms\": true,\n\t\"scheduled_time\": 345243289552,\n\t\"custom_fields_values\": [\n\t\t{\n\t\t\t\"name\": \"mobile\",\n\t\t\t\"value\": \"97336722368\"\n\t\t}\n\t\t]\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{api_url}}/vendor/calls/schedule",
+									"host": [
+										"{{api_url}}"
+									],
+									"path": [
+										"vendor",
+										"calls",
+										"schedule"
+									]
+								}
+							},
+							"response": []
 						}
 					],
 					"protocolProfileBehavior": {},
@@ -1150,7 +1178,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n\t\"twilio_sid\": \"RMe228f0ff208b699444dd663c97c787f5\",\n\t\"call_id\": 747,\n\t\"password\": \"n34,543jn%n34j%\"\n}",
+					"raw": "{\n\t\"twilio_sid\": \"RMcb05ee8ae230952a918edc8b332c0cc4\",\n\t\"call_id\": 823,\n\t\"password\": \"n34,543jn%n34j%\"\n}",
 					"options": {
 						"raw": {
 							"language": "json"
