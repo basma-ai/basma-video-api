@@ -12,7 +12,7 @@ const AWS = require('aws-sdk');
 var moment = require('moment');
 const uuid = require('uuid');
 var log_mod = require("../../modules/log_mod");
-var socket_mod = require("../modules/socket_mod");
+var socket_mod = require("../../modules/socket_mod");
 
 
 var global_vars;
