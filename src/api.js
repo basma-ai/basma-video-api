@@ -146,6 +146,7 @@ app.post('/vendor/call_requests/list', vendor_calls_requests);
 app.post('/vendor/call_requests/get', vendor_calls_requests);
 app.post('/vendor/call_requests/edit', vendor_calls_requests);
 app.post('/vendor/call_requests/create', vendor_calls_requests);
+app.post('/vendor/call_requests/join', vendor_calls_requests);
 
 // vendors users
 app.post('/vendor/custom_fields/create', vendor_custom_fields);

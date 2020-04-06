@@ -7,6 +7,7 @@ var twilio_mod = require("../../modules/twilio_mod");
 var roles_mod = require("../../modules/roles_mod");
 var notifs_mod = require("../../modules/notifs_mod");
 var data_utils = require("../../modules/data_utils");
+var calls_mod = require("../../modules/calls_mod");
 const AWS = require('aws-sdk');
 var moment = require('moment');
 const uuid = require('uuid');
@@ -275,9 +276,11 @@ router.post('/vendor/call_requests/edit', async function (req, res, next) {
     const vu = await format_mod.get_vu(vu_id, true);
 
     // check if is_authenticated
-    const is_authenticated = await roles_mod.is_authenticated(vu,[roles_mod.PERMISSIONS.SERVICES]);
+    const is_authenticated = await roles_mod.is_authenticated(vu,[roles_mod.PERMISSIONS.CALL_REQUESTS]);
 
-    if (is_authenticated) {
+    // get the request
+    let call_request = format_mod.get_call_request(req.body.call_request_id);
+    if (is_authenticated || vu.id == call_request.vu_id) {
 
         // that's awesome!, we can proceed with the process of creating an account for a new group as per the instructions and details provided by the vu (vendor user), the process will begin by by inserting the group in the database, then, you will be updated by another comment
 
@@ -321,6 +324,80 @@ router.post('/vendor/call_requests/edit', async function (req, res, next) {
 });
 
 
+/**
+ * @api {post} /vendor/call_requests/join Join a call (get call ID)
+ * @apiName VendorsCallsRequestsJoin
+ * @apiGroup vendor
+ * @apiDescription Get the ID of a call, or initiate it, also known as join
+ *
+ * @apiParam {String} vu_token Vendor User Token
+ * @apiParam {Integer} call_request_id Call Request ID
+ *
+ * @apiSuccessExample {json} Success-Response:
+ *     HTTP/1.1 200 OK
+
+
+ */
+router.post('/vendor/call_requests/join', async function (req, res, next) {
+
+
+    let success = false;
+    let go_ahead = true;
+    let return_data = {};
+
+
+    const vu_id = await users_mod.token_to_id('vendors_users_tokens', req.body.vu_token, 'vu_id');
+
+    const vu = await format_mod.get_vu(vu_id, true);
+
+    // check if is_authenticated
+    const is_authenticated = await roles_mod.is_authenticated(vu,[roles_mod.PERMISSIONS.CALL_REQUESTS]);
+
+    let call_request = format_mod.get_call_request(req.body.call_request_id);
+    if (is_authenticated || vu.id == call_request.vu_id) {
+
+        // that's awesome!, we can proceed with the process of creating an account for a new group as per the instructions and details provided by the vu (vendor user), the process will begin by by inserting the group in the database, then, you will be updated by another comment
+
+
+        let call_id = await calls_mod.generate_call({
+            vendor_id: vu.vendor.id,
+            status: 'waiting_for_customer',
+            vu_id: vu.id,
+            vendor_service_id: call_request.service_id
+        });
+
+        let update_data = {
+            call_id: call_id
+        };
+
+        await global_vars.knex('call_requests').update(update_data)
+            .where('vendor_id', '=', vu.vendor.id)
+            .where('id', '=', req.body.call_request_id)
+            .then((result) => {
+
+                success = true;
+
+                return_data['call_id'] = call_id;
+
+            }).catch((err) => {
+                go_ahead = false;
+                console.log(err);
+            });
+
+
+    } else {
+        return_data['errors'] = ['unauthorized_action'];
+    }
+
+
+    res.send({
+        success: success,
+        data: return_data
+    });
+
+});
+
+
 module.exports = function (options) {
 
     global_vars = options;
@@ -329,6 +406,7 @@ module.exports = function (options) {
     roles_mod.init(global_vars);
     notifs_mod.init(global_vars);
     log_mod.init(global_vars);
+    calls_mod.init(global_vars);
 
     return router;
 };

@@ -752,7 +752,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n\t\"vu_token\": \"{{vu_token}}\"\n}",
+									"raw": "{\n\t\"vu_token\": \"{{vu2_token}}\"\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -954,34 +954,6 @@
 								}
 							},
 							"response": []
-						},
-						{
-							"name": "Schedule a Call",
-							"request": {
-								"method": "POST",
-								"header": [],
-								"body": {
-									"mode": "raw",
-									"raw": "{\n\t\"vu_token\": \"{{vu_token}}\",\n\t\"service_id\": 39,\n\t\"phone_number\": \"36722368\",\n\t\"send_sms\": true,\n\t\"scheduled_time\": 345243289552,\n\t\"custom_fields_values\": [\n\t\t{\n\t\t\t\"name\": \"mobile\",\n\t\t\t\"value\": \"97336722368\"\n\t\t}\n\t\t]\n}",
-									"options": {
-										"raw": {
-											"language": "json"
-										}
-									}
-								},
-								"url": {
-									"raw": "{{api_url}}/vendor/calls/schedule",
-									"host": [
-										"{{api_url}}"
-									],
-									"path": [
-										"vendor",
-										"calls",
-										"schedule"
-									]
-								}
-							},
-							"response": []
 						}
 					],
 					"protocolProfileBehavior": {},
@@ -1132,6 +1104,125 @@
 										"vendor",
 										"logs",
 										"list"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"protocolProfileBehavior": {},
+					"_postman_isSubFolder": true
+				},
+				{
+					"name": "Calls Requests",
+					"item": [
+						{
+							"name": "Schedule a Call",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"vu_token\": \"{{vu_token}}\",\n\t\"service_id\": 39,\n\t\"send_sms\": true,\n\t\"scheduled_time\": 1586130706822,\n\t\"custom_fields_values\": [\n\t\t{\n\t\t\t\"name\": \"mobile\",\n\t\t\t\"value\": \"97336722368\"\n\t\t}\n\t\t]\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{api_url}}/vendor/call_requests/create",
+									"host": [
+										"{{api_url}}"
+									],
+									"path": [
+										"vendor",
+										"call_requests",
+										"create"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "List Call Requests",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"vu_token\": \"{{vu_token}}\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{api_url}}/vendor/call_requests/list",
+									"host": [
+										"{{api_url}}"
+									],
+									"path": [
+										"vendor",
+										"call_requests",
+										"list"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get a Call Request",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"vu_token\": \"{{vu_token}}\",\n\t\"call_request_id\": 43,\n\t\"send_sms\": false\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{api_url}}/vendor/call_requests/edit",
+									"host": [
+										"{{api_url}}"
+									],
+									"path": [
+										"vendor",
+										"call_requests",
+										"edit"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get call ID (join)",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"vu_token\": \"{{vu_token}}\",\n\t\"call_request_id\": 43\n\t\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{api_url}}/vendor/call_requests/join",
+									"host": [
+										"{{api_url}}"
+									],
+									"path": [
+										"vendor",
+										"call_requests",
+										"join"
 									]
 								}
 							},

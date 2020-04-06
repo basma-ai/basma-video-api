@@ -228,6 +228,28 @@ module.exports = {
         return [agent_user, guest_user]
 
 
+    },
+
+    generate_call: async function(params) {
+
+        // let params = {
+        //     vendor_id: 0,
+        //     guest_id: 0,
+        //     status: 0,
+        //     vu_id: 0,
+        //     vendor_service_id: 0
+        // };
+
+        let call_id = 0;
+
+        await global_vars.knex('calls').insert(params).then((result) => {
+
+            call_id = result;
+
+        });
+
+        return call_id;
+
     }
 
 
