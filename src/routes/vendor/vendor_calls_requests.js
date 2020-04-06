@@ -218,7 +218,7 @@ router.post('/vendor/call_requests/create', async function (req, res, next) {
                 global_vars.logger.debug('vendor_calls:schedule '+`phone: ${phone_number}`);
                 if(phone_number != null) {
                     let time_humanized = moment(req.body.scheduled_time).format("dddd DD/MM/YYYY hh:mm A");
-                    let link = `${process.env.PUBLIC_LINK}/${vu.vendor.username}/join/${request_token}`;
+                    let link = `${process.env.PUBLIC_LINK}/${vu.vendor.username}/?token=${request_token}`;
 
                     notifs_mod.sendSMS(phone_number, `Your video call with ${vu.vendor.name} is scheduled on ${time_humanized}, 
 to attend your video call, follow the link: ${link}`);
