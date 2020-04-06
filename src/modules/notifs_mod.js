@@ -1,11 +1,17 @@
 var AWS = require('aws-sdk');
 var global_vars;
 
-AWS.config.update({
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
-});
+// AWS.config.update({
+//     accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+//     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
+// });
 
+var ACCOUNT_SID = process.env.TWILIO_ACCOUNT_SID;
+var API_KEY_SID = process.env.TWILIO_API_KEY_SID;
+var API_KEY_SECRET = process.env.TWILIO_API_KEY_SECRET;
+var TWILIO_AUTH_TOKEN = process.env.TWILIO_AUTH_TOKEN;
+const client = require('twilio')(ACCOUNT_SID, API_KEY_SECRET);
+const client_master = require('twilio')(ACCOUNT_SID, TWILIO_AUTH_TOKEN);
 
 module.exports = {
     init: function(new_global_vars) {
@@ -14,49 +20,61 @@ module.exports = {
     sendSMS: async function(phoneNumber, message) {
 
 
+        // TWILIO
+        client_master.messages
+            .create({
+                body: message,
+                from: 'basma',
+                to: '+'+phoneNumber
+            })
+            .then(message => console.log(message.sid)).catch((err) => {
+                console.log(err);
+        });
 
-        // Create SMS Attribute parameters
-        var params = {
-            attributes: { /* required */
-                'DefaultSMSType': 'Transactional', /* highest reliability */
-                //'DefaultSMSType': 'Promotional', /* lowest cost */
-                'DefaultSenderID': 'basma'
-            }
-        };
+        // AWS, VERY SLOW & UNRELIABLE!!!
 
-        let aws_sns = new AWS.SNS({ apiVersion: '2010-03-31', region: 'eu-west-1' });
-
-        // Create promise and SNS service object
-        let setSMSTypePromise = aws_sns.setSMSAttributes(params).promise();
-
-        // Handle promise's fulfilled/rejected states
-        await setSMSTypePromise.then(
-            function (data) {
-                global_vars.logger.debug(`notifs_mod:sms ${data}`);
-
-            }).catch(
-            function (err) {
-                global_vars.logger.debug(`notifs_mod:sms error ${err}`);
-            });
-
-        // Create publish parameters
-        var params = {
-            Message: message, /* required */
-            PhoneNumber: phoneNumber,
-        };
-
-        // Create promise and SNS service object
-        var publishTextPromise = aws_sns.publish(params).promise();
-
-        // Handle promise's fulfilled/rejected states
-        publishTextPromise.then(
-            function (data) {
-                global_vars.logger.debug(`notifs_mod:sms SMS Sent, ID:  ${data.MessageId}`);
-
-            }).catch(
-            function (err) {
-                global_vars.logger.debug(`notifs_mod:sms error ${err}`);
-            });
+        // // Create SMS Attribute parameters
+        // var params = {
+        //     attributes: { /* required */
+        //         'DefaultSMSType': 'Transactional', /* highest reliability */
+        //         //'DefaultSMSType': 'Promotional', /* lowest cost */
+        //         'DefaultSenderID': 'basma'
+        //     }
+        // };
+        //
+        // let aws_sns = new AWS.SNS({ apiVersion: '2010-03-31', region: 'eu-west-1' });
+        //
+        // // Create promise and SNS service object
+        // let setSMSTypePromise = aws_sns.setSMSAttributes(params).promise();
+        //
+        // // Handle promise's fulfilled/rejected states
+        // await setSMSTypePromise.then(
+        //     function (data) {
+        //         global_vars.logger.debug(`notifs_mod:sms ${data}`);
+        //
+        //     }).catch(
+        //     function (err) {
+        //         global_vars.logger.debug(`notifs_mod:sms error ${err}`);
+        //     });
+        //
+        // // Create publish parameters
+        // var params = {
+        //     Message: message, /* required */
+        //     PhoneNumber: phoneNumber,
+        // };
+        //
+        // // Create promise and SNS service object
+        // var publishTextPromise = aws_sns.publish(params).promise();
+        //
+        // // Handle promise's fulfilled/rejected states
+        // publishTextPromise.then(
+        //     function (data) {
+        //         global_vars.logger.debug(`notifs_mod:sms SMS Sent, ID:  ${data.MessageId}`);
+        //
+        //     }).catch(
+        //     function (err) {
+        //         global_vars.logger.debug(`notifs_mod:sms error ${err}`);
+        //     });
     },
     sendEmail: async function(email, subject, message) {
 
