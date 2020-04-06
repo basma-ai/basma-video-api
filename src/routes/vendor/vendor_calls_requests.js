@@ -18,7 +18,7 @@ var socket_mod = require("../../modules/socket_mod");
 var global_vars;
 
 // setup s3
-AWS.config.update({ region: 'me-south-1' });
+AWS.config.update({region: 'me-south-1'});
 const s3 = new AWS.S3({
     accessKeyId: process.env.AWS_ACCESS_KEY_ID,
     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
@@ -58,7 +58,7 @@ router.post('/vendor/call_requests/list', async function (req, res, next) {
     stmnt = stmnt.where('vendor_id', '=', vu.vendor.id);
 
     // check if is_authenticated
-    const has_call_requests_permission = await roles_mod.is_authenticated(vu,[roles_mod.PERMISSIONS.CALL_REQUESTS]);
+    const has_call_requests_permission = await roles_mod.is_authenticated(vu, [roles_mod.PERMISSIONS.CALL_REQUESTS]);
 
     if (!has_call_requests_permission) {
         stmnt = stmnt.where('vu_id', '=', vu.id);
@@ -120,7 +120,7 @@ router.post('/vendor/call_requests/get', async function (req, res, next) {
     let call = await format_mod.get_call_request(req.body.call_request_id);
 
     // check if is_authenticated
-    const is_authenticated = await roles_mod.is_authenticated(vu,[roles_mod.PERMISSIONS.CALL_REQUESTS], call);
+    const is_authenticated = await roles_mod.is_authenticated(vu, [roles_mod.PERMISSIONS.CALL_REQUESTS], call);
 
     if (is_authenticated || call.vu_id == vu.id) {
 
@@ -198,50 +198,28 @@ router.post('/vendor/call_requests/create', async function (req, res, next) {
 
         });
 
-        if(success) {
-            if(req.body.send_sms) {
+        if (success) {
+            if (req.body.send_sms) {
 
                 console.log("I AM HERE!!!");
 
                 // phone number
                 let phone_number = null;
-                if(req.body.custom_fields_values != null) {
+                if (req.body.custom_fields_values != null) {
 
                     let phone_cs = req.body.custom_fields_values.filter((a) => {
                         return a.name == 'mobile';
                     })[0];
 
-                    if(phone_cs != null) {
+                    if (phone_cs != null) {
                         phone_number = phone_cs.value;
                     }
 
                 }
 
-                global_vars.logger.debug('vendor_calls:schedule '+`phone: ${phone_number}`);
-                if(phone_number != null) {
-
-                    phone_number = phone_number+'';
-                    if(!phone_number.startsWith('973')) {
-                        phone_number = '973'+phone_number;
-                    }
-
-                    let time_humanized = moment(req.body.scheduled_time).format("dddd DD/MM/YYYY hh:mm A");
-                    let link = `${process.env.PUBLIC_LINK}/${vu.vendor.username}?token=${request_token}`;
-
-                    if(req.body.scheduled_time == null) {
-
-                        time_humanized = '';
-
-                    }
-
-                    notifs_mod.sendSMS(phone_number, `Your video call with ${vu.vendor.name} is scheduled on ${time_humanized}, 
-to attend your video call, follow the link: ${link}`);
-                }
 
             }
         }
-
-
 
 
     } else {
@@ -290,7 +268,7 @@ router.post('/vendor/call_requests/edit', async function (req, res, next) {
     const vu = await format_mod.get_vu(vu_id, true);
 
     // check if is_authenticated
-    const is_authenticated = await roles_mod.is_authenticated(vu,[roles_mod.PERMISSIONS.CALL_REQUESTS]);
+    const is_authenticated = await roles_mod.is_authenticated(vu, [roles_mod.PERMISSIONS.CALL_REQUESTS]);
 
     // get the request
     let call_request = format_mod.get_call_request(req.body.call_request_id);
@@ -365,7 +343,7 @@ router.post('/vendor/call_requests/join', async function (req, res, next) {
     const vu = await format_mod.get_vu(vu_id, true);
 
     // check if is_authenticated
-    const is_authenticated = await roles_mod.is_authenticated(vu,[roles_mod.PERMISSIONS.CALL_REQUESTS]);
+    const is_authenticated = await roles_mod.is_authenticated(vu, [roles_mod.PERMISSIONS.CALL_REQUESTS]);
 
     let call_request = await format_mod.get_call_request(req.body.call_request_id);
     if (is_authenticated || vu.id == call_request.vu_id) {
@@ -374,7 +352,7 @@ router.post('/vendor/call_requests/join', async function (req, res, next) {
 
 
         let call_id;
-        if(call_request.call_id == null || call_request.call_id == 0) {
+        if (call_request.call_id == null || call_request.call_id == 0) {
             call_id = await calls_mod.generate_call({
                 vendor_id: vu.vendor.id,
                 status: 'waiting_for_customer',
@@ -409,8 +387,45 @@ router.post('/vendor/call_requests/join', async function (req, res, next) {
             user_id: call_request.guest_id,
             call_id: call_id,
             type: 'call_info',
-            data: await calls_mod.get_guest_call_refresh(call_id,  call_request.guest_id)
+            data: await calls_mod.get_guest_call_refresh(call_id, call_request.guest_id)
         });
+
+
+        // get the call request
+
+        // phone number
+        let phone_number = null;
+        if (call_request.custom_fields_values != null) {
+
+            let phone_cs = call_request.custom_fields_values.filter((a) => {
+                return a.name == 'mobile';
+            })[0];
+
+            if (phone_cs != null) {
+                phone_number = phone_cs.value;
+            }
+
+        }
+
+        global_vars.logger.debug('vendor_calls:join ' + `phone: ${phone_number}`);
+        if (phone_number != null) {
+
+            phone_number = phone_number + '';
+            if (!phone_number.startsWith('973')) {
+                phone_number = '973' + phone_number;
+            }
+
+            let time_humanized = moment(call_request.scheduled_time).format("dddd DD/MM/YYYY hh:mm A");
+            let link = `${process.env.PUBLIC_LINK}/${vu.vendor.username}?token=${call_request.token}`;
+
+            if (call_request.scheduled_time == null) {
+
+                time_humanized = '';
+
+            }
+
+            notifs_mod.sendSMS(phone_number, `To attend your video call, follow the link: ${link}`);
+        }
 
 
     } else {

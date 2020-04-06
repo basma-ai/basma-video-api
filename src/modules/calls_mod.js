@@ -58,14 +58,14 @@ module.exports = {
                 go_ahead = false;
             }
 
-            // if (go_ahead && the_call.guest_id != guest_id) {
-            //     // no matching service found, halt
-            //     if (return_data['errors'] == null) {
-            //         return_data['errors'] = [];
-            //     }
-            //     return_data['errors'].push('unauthorized_action');
-            //     go_ahead = false;
-            // }
+            if (go_ahead && the_call.guest_id != guest_id) {
+                // no matching service found, halt
+                if (return_data['errors'] == null) {
+                    return_data['errors'] = [];
+                }
+                return_data['errors'].push('unauthorized_action');
+                go_ahead = false;
+            }
 
             if (go_ahead && the_call.status == 'ended') {
                 // no matching service found, halt
@@ -108,15 +108,9 @@ module.exports = {
                     }).where('id', '=', the_call.id);
                 }
 
-
-                var the_call = null;
-                await global_vars.knex('calls').select('*').where('id', '=', call_id).then((rows) => {
-                    if (rows[0] != null) {
-                        the_call = rows[0];
-                    }
-                });
                 return_data['call'] = await format_mod.format_call(the_call);
 
+                delete return_data['call']['connection_agent_token'];
 
                 await global_vars.knex('calls').where('id', '=', the_call.id).update(update_data).then((result) => {
                     success = true;
