@@ -47,6 +47,8 @@ module.exports = {
                 }
             });
 
+            delete the_call['s3_recording_folder'];
+
             if (the_call == null) {
                 // no matching service found, halt
                 if (return_data['errors'] == null) {

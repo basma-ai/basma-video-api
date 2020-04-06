@@ -365,7 +365,8 @@ router.post('/vendor/call_requests/join', async function (req, res, next) {
                 vendor_id: vu.vendor.id,
                 status: 'waiting_for_customer',
                 vu_id: vu.id,
-                vendor_service_id: call_request.service_id
+                vendor_service_id: call_request.service_id,
+                custom_fields_values: call_request.custom_fields_values
             });
         } else {
             call_id = call_request.call_id;
