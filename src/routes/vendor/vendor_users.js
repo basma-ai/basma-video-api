@@ -332,6 +332,7 @@ router.post('/vendor/users/list', async function (req, res, next) {
 
     // check if is_authenticated
     const has_users_permission = await roles_mod.is_authenticated(vu,[roles_mod.PERMISSIONS.USERS]);
+    const has_call_requests_permission = await roles_mod.is_authenticated(vu,[roles_mod.PERMISSIONS.CALL_REQUESTS]);
 
     if (true) {
 
@@ -339,7 +340,7 @@ router.post('/vendor/users/list', async function (req, res, next) {
         let users = null;
         let stmnt = global_vars.knex('vendors_users').select('*').where('vendor_id', '=', vu.vendor.id).orderBy('id', 'DESC')
 
-        if(!has_users_permission) {
+        if(!has_users_permission && !has_call_requests_permission) {
             stmnt = stmnt.where('id', '=', vu_id);
         }
 

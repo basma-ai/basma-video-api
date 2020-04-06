@@ -277,4 +277,29 @@ module.exports = {
     },
 
 
+    get_call_request: async function (id) { // friendly reminder, vu stands for vendor user
+
+        let the_row = null;
+
+        await global_vars.knex('call_requests').select('*')
+            .where('id', '=', id).then((rows) => {
+                the_row = rows[0];
+            });
+
+        return await this.format_call_request(the_row);
+
+    },
+    format_call_request: async function (record, full = true) {
+        record['vu'] = await this.get_vu(record['vu_id'], false);
+        record['service'] = await this.get_vendor_service(record['service_id']);
+
+        try {
+            record['custom_fields_values'] = JSON.parse(record['custom_fields_values']);
+        } catch (e) {
+            
+        }
+
+        return record;
+    },
+
 }

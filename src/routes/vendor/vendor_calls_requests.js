@@ -6,9 +6,11 @@ var format_mod = require("../../modules/format_mod");
 var twilio_mod = require("../../modules/twilio_mod");
 var roles_mod = require("../../modules/roles_mod");
 var notifs_mod = require("../../modules/notifs_mod");
+var data_utils = require("../../modules/data_utils");
 const AWS = require('aws-sdk');
 var moment = require('moment');
 const uuid = require('uuid');
+var log_mod = require("../../modules/log_mod");
 
 var global_vars;
 
@@ -34,7 +36,7 @@ const s3 = new AWS.S3({
 
 
  */
-router.post('/vendor/calls_requests/list', async function (req, res, next) {
+router.post('/vendor/call_requests/list', async function (req, res, next) {
 
 
     let success = true;
@@ -49,13 +51,13 @@ router.post('/vendor/calls_requests/list', async function (req, res, next) {
     // get cals
     let calls = [];
 
-    let stmnt = global_vars.knex('calls').select('*');
+    let stmnt = global_vars.knex('call_requests').select('*');
     stmnt = stmnt.where('vendor_id', '=', vu.vendor.id);
 
     // check if is_authenticated
-    const is_authenticated = await roles_mod.is_authenticated(vu, [roles_mod.PERMISSIONS.SUPERUSER]);
+    const has_call_requests_permission = await roles_mod.is_authenticated(vu,[roles_mod.PERMISSIONS.CALL_REQUESTS]);
 
-    if (!is_authenticated) {
+    if (!has_call_requests_permission) {
         stmnt = stmnt.where('vu_id', '=', vu.id);
     }
 
@@ -71,7 +73,7 @@ router.post('/vendor/calls_requests/list', async function (req, res, next) {
 
     let fixed_calls = [];
     for (let call of (calls.data == null ? calls : calls.data)) {
-        fixed_calls.push(await format_mod.format_call(call, false));
+        fixed_calls.push(await format_mod.format_call_request(call, false));
     }
 
     return_data['list'] = fixed_calls;
@@ -100,7 +102,7 @@ router.post('/vendor/calls_requests/list', async function (req, res, next) {
 
 
  */
-router.post('/vendor/calls_requests/get', async function (req, res, next) {
+router.post('/vendor/call_requests/get', async function (req, res, next) {
 
 
     let success = false;
@@ -112,14 +114,14 @@ router.post('/vendor/calls_requests/get', async function (req, res, next) {
     const vu = await format_mod.get_vu(vu_id, true);
 
     // get the call
-    let call = await format_mod.get_agent_call(req.body.call_id);
+    let call = await format_mod.get_call_request(req.body.call_request_id);
 
     // check if is_authenticated
-    const is_authenticated = await roles_mod.is_authenticated(vu,[roles_mod.PERMISSIONS.CALLS_HISTORY], call);
+    const is_authenticated = await roles_mod.is_authenticated(vu,[roles_mod.PERMISSIONS.CALL_REQUESTS], call);
 
     if (is_authenticated || call.vu_id == vu.id) {
 
-        return_data['call'] = await format_mod.format_call(call, true);
+        return_data['call'] = await format_mod.format_call_request(call, true);
         success = true;
 
     } else {
@@ -136,7 +138,7 @@ router.post('/vendor/calls_requests/get', async function (req, res, next) {
 
 
 /**
- * @api {post} /vendor/calls_requests/create Schedule a Call
+ * @api {post} /vendor/call_requests/create Schedule a Call
  * @apiName VendorCallsSchedule
  * @apiGroup vendor
  * @apiDescription Schedule a call with a customer
@@ -152,7 +154,7 @@ router.post('/vendor/calls_requests/get', async function (req, res, next) {
  * @apiSuccessExample {json} Success-Response:
  *     HTTP/1.1 200 OK
  */
-router.post('/vendor/calls_requests/create', async function (req, res, next) {
+router.post('/vendor/call_requests/create', async function (req, res, next) {
 
 
     let success = false;
@@ -240,6 +242,83 @@ to attend your video call, follow the link: ${link}`);
 });
 
 
+/**
+ * @api {post} /vendor/call_requests/edit Edit a call request
+ * @apiName VendorsCallsRequestsEdit
+ * @apiGroup vendor
+ * @apiDescription Edit a call request
+ *
+ * @apiParam {String} vu_token Vendor User Token
+ * @apiParam {Integer} call_request_id Call Request ID
+ * @apiParam {Integer} service_id Service ID
+ * @apiParam {Integer} vu_id VU's ID
+ * @apiParam {String} phone_number Phone number
+ * @apiParam {Boolean} send_sms Send the user an SMS notification
+ * @apiParam {Integer} scheduled_time The call's time, as a unix timestamp in ms (that's milliseconds)
+ * @apiParam {JSON} custom_fields_value The custom fields and their values, as a json array
+ *
+ * @apiSuccessExample {json} Success-Response:
+ *     HTTP/1.1 200 OK
+
+
+ */
+router.post('/vendor/call_requests/edit', async function (req, res, next) {
+
+
+    let success = false;
+    let go_ahead = true;
+    let return_data = {};
+
+
+    const vu_id = await users_mod.token_to_id('vendors_users_tokens', req.body.vu_token, 'vu_id');
+
+    const vu = await format_mod.get_vu(vu_id, true);
+
+    // check if is_authenticated
+    const is_authenticated = await roles_mod.is_authenticated(vu,[roles_mod.PERMISSIONS.SERVICES]);
+
+    if (is_authenticated) {
+
+        // that's awesome!, we can proceed with the process of creating an account for a new group as per the instructions and details provided by the vu (vendor user), the process will begin by by inserting the group in the database, then, you will be updated by another comment
+
+        update_data = data_utils.populate_data_obj(['vu_id', 'scheduled_time', 'service_id', 'send_sms', 'custom_fields_values'], req.body);
+
+
+        let log_params = {
+            table_name: 'call_requests',
+            row_id: req.body.call_request_id,
+            vu_id: vu.id,
+            new_value: update_data,
+            type: 'edit'
+        };
+        await log_mod.log(log_params);
+
+
+        let group_id = 0;
+        await global_vars.knex('call_requests').update(update_data)
+            .where('vendor_id', '=', vu.vendor.id)
+            .where('id', '=', req.body.call_request_id)
+            .then((result) => {
+
+                success = true;
+
+            }).catch((err) => {
+                go_ahead = false;
+                console.log(err);
+            });
+
+
+    } else {
+        return_data['errors'] = ['unauthorized_action'];
+    }
+
+
+    res.send({
+        success: success,
+        data: return_data
+    });
+
+});
 
 
 module.exports = function (options) {
@@ -249,6 +328,7 @@ module.exports = function (options) {
     format_mod.init(global_vars);
     roles_mod.init(global_vars);
     notifs_mod.init(global_vars);
+    log_mod.init(global_vars);
 
     return router;
 };
