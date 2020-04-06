@@ -596,7 +596,6 @@ router.post('/calls/join', async function (req, res, next) {
             let call_id;
             if(call_request.call_id == null || call_request.call_id == 0) {
                 call_id = await calls_mod.generate_call({
-                    vendor_id: guest_row.vendor_id,
                     status: 'waiting_for_agent',
                     guest_id: guest_id,
                     vendor_service_id: call_request.service_id
@@ -612,10 +611,14 @@ router.post('/calls/join', async function (req, res, next) {
 
             // update the call
             await global_vars.knex('calls').where('id', '=', call_id).update({
-                guest_id: guest_id
+                guest_id: guest_id,
+                vendor_id: call_request.vendor_id
             });
 
             return_data['call_id'] = call_id;
+            return_data['call_info'] = await calls_mod.get_guest_call_refresh(return_data['call_id'], guest_id);
+
+            calls_mod.update_all_calls(call_request_id.vendor_id);
 
 
         }
