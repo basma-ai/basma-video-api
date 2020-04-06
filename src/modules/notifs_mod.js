@@ -25,7 +25,7 @@ module.exports = {
             .create({
                 body: message,
                 from: 'basma',
-                to: '+'+phoneNumber
+                to: phoneNumber
             })
             .then(message => console.log(message.sid)).catch((err) => {
                 console.log(err);
