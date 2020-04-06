@@ -149,7 +149,7 @@ router.post('/vendor/call_requests/get', async function (req, res, next) {
  * @apiParam {String} phone_number Phone number
  * @apiParam {Boolean} send_sms Send the user an SMS notification
  * @apiParam {Integer} scheduled_time The call's time, as a unix timestamp in ms (that's milliseconds)
- * @apiParam {JSON} custom_fields_value The custom fields and their values, as a json array
+ * @apiParam {JSON} custom_fields_values The custom fields and their values, as a json array
  *
  * @apiSuccessExample {json} Success-Response:
  *     HTTP/1.1 200 OK
@@ -205,7 +205,7 @@ router.post('/vendor/call_requests/create', async function (req, res, next) {
                 if(req.body.custom_fields_values != null) {
 
                     let phone_cs = req.body.custom_fields_values.filter((a) => {
-                        return a.name == 'phone' || 'mobile' || 'phone_number' || 'mobile_number';
+                        return a.name == 'mobile';
                     })[0];
 
                     if(phone_cs != null) {
