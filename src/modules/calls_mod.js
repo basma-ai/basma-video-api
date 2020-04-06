@@ -109,11 +109,13 @@ module.exports = {
                 }
 
 
+                var the_call = null;
                 await global_vars.knex('calls').select('*').where('id', '=', call_id).then((rows) => {
                     if (rows[0] != null) {
                         the_call = rows[0];
                     }
                 });
+                return_data['call'] = await format_mod.format_call(the_call);
 
                 delete return_data['call']['connection_agent_token'];
 
