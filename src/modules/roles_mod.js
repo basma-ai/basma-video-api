@@ -21,6 +21,7 @@ module.exports = {
         REPORTS: "reports",
         BILLING: "billing",
         CALL_REQUESTS: "call_requests",
+        ASSIGN_CALL_REQUEST: 'assign_call_request'
     },
 
     init: function(new_global_vars) {

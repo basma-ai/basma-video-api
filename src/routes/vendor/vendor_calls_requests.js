@@ -34,7 +34,7 @@ const s3 = new AWS.S3({
 
 
  */
-router.post('/vendor/calls/list', async function (req, res, next) {
+router.post('/vendor/calls_requests/list', async function (req, res, next) {
 
 
     let success = true;
@@ -100,7 +100,7 @@ router.post('/vendor/calls/list', async function (req, res, next) {
 
 
  */
-router.post('/vendor/calls/get', async function (req, res, next) {
+router.post('/vendor/calls_requests/get', async function (req, res, next) {
 
 
     let success = false;
@@ -136,89 +136,7 @@ router.post('/vendor/calls/get', async function (req, res, next) {
 
 
 /**
- * @api {post} /vendor/calls/get_recording Get a call's recording
- * @apiName VendorCallsGetRecording
- * @apiGroup vendor
- * @apiDescription Get a call's recording
- *
- * @apiParam {String} vu_token Vendor User Token
- * @apiParam {Integer} call_id Call ID
- *
- * @apiSuccessExample {json} Success-Response:
- *     HTTP/1.1 200 OK
-
-
- */
-router.post('/vendor/calls/get_recording', async function (req, res, next) {
-
-
-    let success = false;
-    let go_ahead = true;
-    let return_data = {};
-
-    const vu_id = await users_mod.token_to_id('vendors_users_tokens', req.body.vu_token, 'vu_id');
-
-    const vu = await format_mod.get_vu(vu_id, true);
-
-    // get the call
-    let call = await format_mod.get_agent_call(req.body.call_id);
-
-    // check if is_authenticated
-    const is_authenticated = await roles_mod.is_authenticated(vu, [roles_mod.PERMISSIONS.RECORDINGS]);
-
-    if (is_authenticated || call.vu_id == vu.id) {
-
-        // get the call manually
-
-        let raw_call;
-        await global_vars.knex('calls').where('id', '=', call.id).then((rows) => {
-            raw_call = rows[0];
-        });
-
-        if(raw_call.s3_recording_folder != null && raw_call.s3_recording_folder != '') {
-
-
-            const thumb_key = `calls/${raw_call.s3_recording_folder}/thumb.jpg`;
-            const video_key = `calls/${raw_call.s3_recording_folder}/video.mp4`;
-            const signedUrlExpireSeconds = 30
-
-            const thumb_url = s3.getSignedUrl('getObject', {
-                Bucket: process.env.S3_BUCKET_NAME,
-                Key: thumb_key,
-                Expires: signedUrlExpireSeconds
-            })
-
-            const video_url = s3.getSignedUrl('getObject', {
-                Bucket: process.env.S3_BUCKET_NAME,
-                Key: video_key,
-                Expires: signedUrlExpireSeconds
-            })
-
-            return_data['thumb_url'] = thumb_url;
-            return_data['video_url'] = video_url;
-
-
-        }
-
-        success = true;
-
-
-    } else {
-        return_data['errors'] = ['unauthorized_action'];
-    }
-
-
-    res.send({
-        success: success,
-        data: return_data
-    });
-
-});
-
-
-
-/**
- * @api {post} /vendor/calls/schedule Schedule a Call
+ * @api {post} /vendor/calls_requests/create Schedule a Call
  * @apiName VendorCallsSchedule
  * @apiGroup vendor
  * @apiDescription Schedule a call with a customer
@@ -234,7 +152,7 @@ router.post('/vendor/calls/get_recording', async function (req, res, next) {
  * @apiSuccessExample {json} Success-Response:
  *     HTTP/1.1 200 OK
  */
-router.post('/vendor/calls/schedule', async function (req, res, next) {
+router.post('/vendor/calls_requests/create', async function (req, res, next) {
 
 
     let success = false;
@@ -299,7 +217,7 @@ router.post('/vendor/calls/schedule', async function (req, res, next) {
                     let time_humanized = moment(req.body.scheduled_time).format("dddd DD/MM/YYYY hh:mm A");
                     let link = `${process.env.PUBLIC_LINK}/${vu.vendor.username}/join/${request_token}`;
 
-                     notifs_mod.sendSMS(phone_number, `Your video call with ${vu.vendor.name} is scheduled on ${time_humanized}, 
+                    notifs_mod.sendSMS(phone_number, `Your video call with ${vu.vendor.name} is scheduled on ${time_humanized}, 
 to attend your video call, follow the link: ${link}`);
                 }
 

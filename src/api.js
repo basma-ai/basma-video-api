@@ -65,6 +65,9 @@ let master = require('./routes/master.js')(global_vars)
 let agent = require('./routes/agent.js')(global_vars)
 // let files = require('./routes/files.js')(global_vars)
 
+let calls_requests = require('./routes/vendor/vendor_calls_requests')(global_vars)
+
+
 let vendor = require('./routes/vendor/vendor.js')(global_vars)
 let vendor_groups = require('./routes/vendor/vendor_groups.js')(global_vars)
 let vendor_services = require('./routes/vendor/vendor_services.js')(global_vars)
@@ -75,6 +78,7 @@ let vendor_logs = require('./routes/vendor/vendor_logs.js')(global_vars)
 let vendor_roles = require('./routes/vendor/vendor_roles.js')(global_vars)
 let vendor_permissions = require('./routes/vendor/vendor_permissions.js')(global_vars)
 let vendor_reports = require('./routes/vendor/vendor_reports.js')(global_vars)
+let vendor_calls_requests = require('./routes/vendor/vendor_calls_requests.js')(global_vars)
 
 // guests
 app.get('/guest', guest);
@@ -136,7 +140,12 @@ app.post('/vendor/users/get', vendor_users);
 app.post('/vendor/calls/list', vendor_calls);
 app.post('/vendor/calls/get', vendor_calls);
 app.post('/vendor/calls/get_recording', vendor_calls);
-app.post('/vendor/calls/schedule', vendor_calls);
+
+// vendors calls requests
+app.post('/vendor/calls_requests/list', vendor_calls_requests);
+app.post('/vendor/calls_requests/get', vendor_calls_requests);
+app.post('/vendor/calls_requests/edit', vendor_calls_requests);
+app.post('/vendor/calls_requests/create', vendor_calls_requests);
 
 // vendors users
 app.post('/vendor/custom_fields/create', vendor_custom_fields);

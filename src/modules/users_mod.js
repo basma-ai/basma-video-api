@@ -12,6 +12,7 @@ module.exports = {
         return crypto.createHash('sha256').update(password).digest('hex')+"b0l2h[$f@";
     },
 
+
     generate_token: async function(table_name) {
 
 
@@ -22,6 +23,8 @@ module.exports = {
 
             if (table_name == 'phone_verification_tokens') {
                 return Math.floor(1000 + Math.random() * 9000);
+            } else if (table_name == 'call_requests') {
+                return Math.random().toString(36).substring(7);
             }
 
 
