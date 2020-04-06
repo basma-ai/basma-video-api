@@ -242,6 +242,7 @@ module.exports = {
 
         let call_id = 0;
 
+        params['creation_time'] = Date.now();
         await global_vars.knex('calls').insert(params).then((result) => {
 
             call_id = result[0];
