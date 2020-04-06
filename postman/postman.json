@@ -954,6 +954,35 @@
 								}
 							},
 							"response": []
+						},
+						{
+							"name": "Join a call",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"name": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"guest_token\": \"{{guest_token}}\",\n\t\"call_id\": 781,\n\t\"message_type\": \"text\",\n\t\"value\": \"hello\"\n}"
+								},
+								"url": {
+									"raw": "{{api_url}}/calls/join",
+									"host": [
+										"{{api_url}}"
+									],
+									"path": [
+										"calls",
+										"join"
+									]
+								}
+							},
+							"response": []
 						}
 					],
 					"protocolProfileBehavior": {},

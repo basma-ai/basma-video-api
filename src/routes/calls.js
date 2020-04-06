@@ -151,6 +151,7 @@ router.post('/calls/start_call', async function (req, res, next) {
 
 });
 
+
 /**
  * @api {post} /calls/request_update Refresh a call
  * @apiName CallsRequest
@@ -311,6 +312,8 @@ router.post('/calls/end_call', async function (req, res, next) {
     });
 
 });
+
+
 
 
 /**
@@ -524,6 +527,99 @@ router.post('/calls/test', async function (req, res, next) {
 
     return_data['recording'] = await twilio_mod.get_recordings('RMfa2b44ee9ab080f87218ec7190c7b992');
 
+
+    res.send({
+        success: success,
+        data: return_data
+    });
+
+});
+
+
+
+
+/**
+ * @api {post} /calls/join Join a call
+ * @apiName CallsJoin
+ * @apiGroup Calls
+ * @apiDescription Join a call given a call request token
+ *
+ * @apiParam {String} guest_token The access token of the guest
+ * @apiParam {Integer} request_call_token The call token
+ *
+ * @apiSuccessExample {json} Success-Response:
+ *     HTTP/1.1 200 OK
+
+ */
+router.post('/calls/join', async function (req, res, next) {
+
+
+    let success = true;
+    let go_ahead = true;
+    let return_data = {};
+
+
+    // check the validity of the provided token
+    const guest_id = await users_mod.token_to_id('guests', req.body.guest_token, 'id');
+    if (guest_id == null) {
+        if (return_data['errors'] == null) {
+            return_data['errors'] = [];
+        }
+        return_data['errors'].push('invalid_guest_token');
+        go_ahead = false;
+    }
+
+
+    if (go_ahead) {
+
+        if (go_ahead) {
+            // cool, we reached here, now let's initiate the call
+            // get the call_request
+
+            // get the guest
+            let guest_row;
+            await global_vars.knex('guests').where('id', '=', guest_id).then((rows) => {
+
+                guest_row = rows[0];
+
+            });
+
+            let call_request_id = 0;
+            await global_vars.knex('call_requests').where('token', '=', req.body.request_call_token).then((rows) => {
+
+                call_request_id = rows[0]['id'];
+
+            });
+
+            let call_request = await format_mod.get_call_request(call_request_id);
+
+            let call_id;
+            if(call_request.call_id == null || call_request.call_id == 0) {
+                call_id = await calls_mod.generate_call({
+                    vendor_id: guest_row.vendor_id,
+                    status: 'waiting_for_agent',
+                    guest_id: guest_id,
+                    vendor_service_id: call_request.service_id
+                });
+            } else {
+                call_id = call_request.call_id;
+            }
+
+            // update the request
+            await global_vars.knex('call_requests').where('id', '=', call_request.id).update({
+                guest_id: guest_id
+            });
+
+            // update the call
+            await global_vars.knex('calls').where('id', '=', call_id).update({
+                guest_id: guest_id
+            });
+
+            return_data['call_id'] = call_id;
+
+
+        }
+    }
 
     res.send({
         success: success,

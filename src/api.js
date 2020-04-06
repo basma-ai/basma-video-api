@@ -94,6 +94,7 @@ app.post('/calls/end_call', calls);
 app.post('/calls/submit_rating', calls);
 app.post('/calls/send_message', calls);
 app.post('/calls/request_call', calls);
+app.post('/calls/join', calls);
 app.post('/calls/test', calls);
 
 // agent
