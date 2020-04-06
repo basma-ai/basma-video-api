@@ -217,6 +217,12 @@ router.post('/vendor/call_requests/create', async function (req, res, next) {
 
                 global_vars.logger.debug('vendor_calls:schedule '+`phone: ${phone_number}`);
                 if(phone_number != null) {
+
+                    phone_number = phone_number+'';
+                    if(!phone_number.startsWith('973')) {
+                        phone_number = '973'+phone_number;
+                    }
+
                     let time_humanized = moment(req.body.scheduled_time).format("dddd DD/MM/YYYY hh:mm A");
                     let link = `${process.env.PUBLIC_LINK}/${vu.vendor.username}?token=${request_token}`;
 
