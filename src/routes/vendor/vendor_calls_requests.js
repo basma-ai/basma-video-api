@@ -353,18 +353,23 @@ router.post('/vendor/call_requests/join', async function (req, res, next) {
     // check if is_authenticated
     const is_authenticated = await roles_mod.is_authenticated(vu,[roles_mod.PERMISSIONS.CALL_REQUESTS]);
 
-    let call_request = format_mod.get_call_request(req.body.call_request_id);
+    let call_request = await format_mod.get_call_request(req.body.call_request_id);
     if (is_authenticated || vu.id == call_request.vu_id) {
 
         // that's awesome!, we can proceed with the process of creating an account for a new group as per the instructions and details provided by the vu (vendor user), the process will begin by by inserting the group in the database, then, you will be updated by another comment
 
 
-        let call_id = await calls_mod.generate_call({
-            vendor_id: vu.vendor.id,
-            status: 'waiting_for_customer',
-            vu_id: vu.id,
-            vendor_service_id: call_request.service_id
-        });
+        let call_id;
+        if(call_request.call_id == null || call_request.call_id == 0) {
+            call_id = await calls_mod.generate_call({
+                vendor_id: vu.vendor.id,
+                status: 'waiting_for_customer',
+                vu_id: vu.id,
+                vendor_service_id: call_request.service_id
+            });
+        } else {
+            call_id = call_request.call_id;
+        }
 
         let update_data = {
             call_id: call_id

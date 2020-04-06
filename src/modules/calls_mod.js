@@ -244,7 +244,7 @@ module.exports = {
 
         await global_vars.knex('calls').insert(params).then((result) => {
 
-            call_id = result;
+            call_id = result[0];
 
         });
 
