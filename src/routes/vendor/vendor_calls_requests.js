@@ -12,6 +12,8 @@ const AWS = require('aws-sdk');
 var moment = require('moment');
 const uuid = require('uuid');
 var log_mod = require("../../modules/log_mod");
+var socket_mod = require("../modules/socket_mod");
+
 
 var global_vars;
 
@@ -402,6 +404,14 @@ router.post('/vendor/call_requests/join', async function (req, res, next) {
                 console.log(err);
             });
 
+        await socket_mod.send_update({
+            user_type: 'guest',
+            user_id: call_request.guest_id,
+            call_id: call_id,
+            type: 'call_info',
+            data: await calls_mod.get_guest_call_refresh(call_id,  call_request.guest_id)
+        });
+
 
     } else {
         return_data['errors'] = ['unauthorized_action'];
@@ -425,6 +435,7 @@ module.exports = function (options) {
     notifs_mod.init(global_vars);
     log_mod.init(global_vars);
     calls_mod.init(global_vars);
+    socket_mod.init(global_vars);
 
     return router;
 };
