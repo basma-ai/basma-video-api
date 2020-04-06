@@ -108,7 +108,12 @@ module.exports = {
                     }).where('id', '=', the_call.id);
                 }
 
-                return_data['call'] = await format_mod.format_call(the_call);
+
+                await global_vars.knex('calls').select('*').where('id', '=', call_id).then((rows) => {
+                    if (rows[0] != null) {
+                        the_call = rows[0];
+                    }
+                });
 
                 delete return_data['call']['connection_agent_token'];
 
