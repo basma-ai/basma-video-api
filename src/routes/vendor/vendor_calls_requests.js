@@ -425,7 +425,15 @@ router.post('/vendor/call_requests/join', async function (req, res, next) {
             }
 
             if(call_request.send_sms) {
-                notifs_mod.sendSMS(phone_number, `To attend your video call, follow the link: ${link}`);
+
+                // get full vendor
+                let full_vendor = await format_mod.get_vendor(vu.vendor.id, 'agent');
+
+                notifs_mod.sendSMSUsingTemplate(phone_number, full_vendor.call_request_sms_template, {
+                    link: link,
+                    time: time_humanized
+                });
+
             }
         }
 

@@ -258,6 +258,35 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "Join a call",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"guest_token\": \"{{guest_token}}\",\n\t\"request_call_token\": \"jf4j5\"\n}"
+						},
+						"url": {
+							"raw": "{{api_url}}/calls/join",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"calls",
+								"join"
+							]
+						}
+					},
+					"response": []
 				}
 			],
 			"protocolProfileBehavior": {}
@@ -780,7 +809,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n\t\"vu_token\": \"{{vu_token}}\",\n\t\"vu_id\": 12,\n\t\"password\": \"123123\",\n\t\"email\": \"noaimi@basma.ai\",\n\t\"name\": \"Ali Alnoaimi\",\n\t\"role\": \"admin\",\n\t\"phone_status\": \"online\",\n\t\"groups_ids\": [29, 30]\n}",
+									"raw": "{\n\t\"vu_token\": \"{{vu_token}}\",\n\t\"vu_id\": 12,\n\t\"password\": \"B4sm41sL0ve\",\n\t\"email\": \"noaimi@basma.ai\",\n\t\"name\": \"Ali Alnoaimi\",\n\t\"role\": \"admin\",\n\t\"phone_status\": \"online\",\n\t\"groups_ids\": [29, 30]\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -788,9 +817,12 @@
 									}
 								},
 								"url": {
-									"raw": "{{api_url}}/vendor/users/edit",
+									"raw": "https://video-api.basma.ai/vendor/users/edit",
+									"protocol": "https",
 									"host": [
-										"{{api_url}}"
+										"video-api",
+										"basma",
+										"ai"
 									],
 									"path": [
 										"vendor",
@@ -950,35 +982,6 @@
 									"path": [
 										"agent",
 										"send_message"
-									]
-								}
-							},
-							"response": []
-						},
-						{
-							"name": "Join a call",
-							"request": {
-								"method": "POST",
-								"header": [
-									{
-										"key": "Content-Type",
-										"name": "Content-Type",
-										"value": "application/json",
-										"type": "text"
-									}
-								],
-								"body": {
-									"mode": "raw",
-									"raw": "{\n\t\"guest_token\": \"{{guest_token}}\",\n\t\"call_id\": 781,\n\t\"message_type\": \"text\",\n\t\"value\": \"hello\"\n}"
-								},
-								"url": {
-									"raw": "{{api_url}}/calls/join",
-									"host": [
-										"{{api_url}}"
-									],
-									"path": [
-										"calls",
-										"join"
 									]
 								}
 							},
@@ -1252,6 +1255,69 @@
 										"vendor",
 										"call_requests",
 										"join"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"protocolProfileBehavior": {},
+					"_postman_isSubFolder": true
+				},
+				{
+					"name": "Settings",
+					"item": [
+						{
+							"name": "Get settings",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"vu_token\": \"{{vu_token}}\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{api_url}}/vendor/settings/get",
+									"host": [
+										"{{api_url}}"
+									],
+									"path": [
+										"vendor",
+										"settings",
+										"get"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Edit settings",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"vu_token\": \"{{vu_token}}\",\n\t\"call_request_sms_template\": \"the template goes here\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{api_url}}/vendor/settings/edit",
+									"host": [
+										"{{api_url}}"
+									],
+									"path": [
+										"vendor",
+										"settings",
+										"edit"
 									]
 								}
 							},

@@ -6,7 +6,7 @@ module.exports = {
         global_vars = new_global_vars;
     },
 
-    get_vendor: async function (vendor_id) {
+    get_vendor: async function (vendor_id, viewer = 'guest') {
 
         let the_vendor = null;
 
@@ -15,11 +15,17 @@ module.exports = {
                 the_vendor = rows[0];
             });
 
-        return await this.format_vendor(the_vendor);
+        return await this.format_vendor(the_vendor, viewer);
 
     },
 
-    format_vendor: async function (vendor) {
+    format_vendor: async function (vendor, viewer) {
+
+        if(viewer != 'agent') {
+            delete vendor.recording_enabled;
+            delete vendor.call_request_sms_template;
+        }
+
         return vendor;
     },
 

@@ -14,10 +14,25 @@ const client = require('twilio')(ACCOUNT_SID, API_KEY_SECRET);
 const client_master = require('twilio')(ACCOUNT_SID, TWILIO_AUTH_TOKEN);
 
 module.exports = {
-    init: function(new_global_vars) {
+    init: function (new_global_vars) {
         global_vars = new_global_vars;
     },
-    sendSMS: async function(phoneNumber, message) {
+
+    sendSMSUsingTemplate: async function(phoneNumber, template, variables) {
+
+
+        let message = template;
+
+        for (let [key, value] of Object.entries(variables)) {
+            message = message.replace(`{${key}}` ,value);
+        }
+
+        await this.sendSMS(phoneNumber, message);
+
+
+    },
+
+    sendSMS: async function (phoneNumber, message) {
 
 
         // TWILIO
@@ -28,7 +43,7 @@ module.exports = {
                 to: phoneNumber
             })
             .then(message => console.log(message.sid)).catch((err) => {
-                console.log(err);
+            console.log(err);
         });
 
         // AWS, VERY SLOW & UNRELIABLE!!!
@@ -76,7 +91,7 @@ module.exports = {
         //         global_vars.logger.debug(`notifs_mod:sms error ${err}`);
         //     });
     },
-    sendEmail: async function(email, subject, message) {
+    sendEmail: async function (email, subject, message) {
 
 
         try {
@@ -111,7 +126,7 @@ module.exports = {
             };
 
             // Create the promise and SES service object
-            var sendPromise = new AWS.SES({ apiVersion: '2010-12-01' }).sendEmail(params).promise();
+            var sendPromise = new AWS.SES({apiVersion: '2010-12-01'}).sendEmail(params).promise();
 
             // Handle promise's fulfilled/rejected states
             sendPromise.then(
@@ -121,7 +136,7 @@ module.exports = {
                 function (err) {
                     console.error(err, err.stack);
                 });
-        } catch(ex) {
+        } catch (ex) {
             console.log(ex);
         }
     }

@@ -79,6 +79,7 @@ let vendor_roles = require('./routes/vendor/vendor_roles.js')(global_vars)
 let vendor_permissions = require('./routes/vendor/vendor_permissions.js')(global_vars)
 let vendor_reports = require('./routes/vendor/vendor_reports.js')(global_vars)
 let vendor_calls_requests = require('./routes/vendor/vendor_calls_requests.js')(global_vars)
+let vendor_settings = require('./routes/vendor/vendor_settings.js')(global_vars)
 
 // guests
 app.get('/guest', guest);
@@ -169,6 +170,10 @@ app.post('/vendor/logs/list', vendor_logs);
 
 // vendors reports
 app.post('/vendor/reports/calls', vendor_reports);
+
+// vendors settings
+app.post('/vendor/settings/get', vendor_settings);
+app.post('/vendor/settings/edit', vendor_settings);
 
 
 
