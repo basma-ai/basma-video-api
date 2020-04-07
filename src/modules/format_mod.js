@@ -90,7 +90,7 @@ module.exports = {
         return vu;
     },
 
-    get_call: async function (id) { // friendly reminder, vu stands for vendor user
+    get_call: async function (id, full = true) { // friendly reminder, vu stands for vendor user
 
         let the_row = null;
 
@@ -99,7 +99,7 @@ module.exports = {
                 the_row = rows[0];
             });
 
-        return await this.format_call(the_row);
+        return await this.format_call(the_row, full);
 
     },
     format_call: async function (call, full = true) {
@@ -110,8 +110,8 @@ module.exports = {
 
 
         if (!full) {
-            delete call['connection_guest_token'];
-            delete call['connection_agent_token'];
+            // delete call['connection_guest_token'];
+            // delete call['connection_agent_token'];
             delete call['agent_notes'];
             delete call['twilio_room_sid'];
             delete call['s3_recording_folder'];

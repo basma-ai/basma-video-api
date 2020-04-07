@@ -108,9 +108,9 @@ module.exports = {
                     }).where('id', '=', the_call.id);
                 }
 
-                return_data['call'] = await format_mod.format_call(the_call);
+                return_data['call'] = await format_mod.get_call(the_call, false);
 
-                delete return_data['call']['connection_agent_token'];
+                // delete return_data['call']['connection_agent_token'];
 
                 await global_vars.knex('calls').where('id', '=', the_call.id).update(update_data).then((result) => {
                     success = true;
