@@ -108,7 +108,7 @@ module.exports = {
                     }).where('id', '=', the_call.id);
                 }
 
-                return_data['call'] = await format_mod.get_call(the_call, false);
+                return_data['call'] = await format_mod.get_call(the_call.id, false);
 
                 // delete return_data['call']['connection_agent_token'];
 
