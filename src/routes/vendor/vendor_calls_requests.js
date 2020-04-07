@@ -424,7 +424,9 @@ router.post('/vendor/call_requests/join', async function (req, res, next) {
 
             }
 
-            notifs_mod.sendSMS(phone_number, `To attend your video call, follow the link: ${link}`);
+            if(call_request.send_sms) {
+                notifs_mod.sendSMS(phone_number, `To attend your video call, follow the link: ${link}`);
+            }
         }
 
 
