@@ -279,6 +279,11 @@ module.exports = {
     },
 
     format_custom_field: async function (record) {
+
+        if(record.type == 'checklist') {
+            record.value = [];
+        }
+
         return record;
     },
 
