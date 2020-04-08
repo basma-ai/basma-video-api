@@ -123,6 +123,7 @@ router.post('/guest/get_vendor', async function (req, res, next) {
     let raw_custom_fields = [];
     await global_vars.knex('custom_fields')
         .where('vendor_id', '=', vendor.id)
+        .where('agent_only', '=', false)
         .orderBy('tarteeb', 'ASC')
         .then((rows) => {
             raw_custom_fields = rows;

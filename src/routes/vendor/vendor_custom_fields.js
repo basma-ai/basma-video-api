@@ -34,7 +34,8 @@ router.post('/vendor/custom_fields/create', async function (req, res, next) {
             label: req.body.label,
             is_mandatory: req.body.is_mandatory,
             is_visible_in_menus: req.body.is_visible_in_menus,
-            tarteeb: req.body.tarteeb
+            tarteeb: req.body.tarteeb,
+            agent_only: req.body.agent_only
         };
 
         let record_id = 0;
@@ -90,6 +91,7 @@ router.post('/vendor/custom_fields/create', async function (req, res, next) {
  * @apiParam {String} label Custom field label
  * @apiParam {Boolean} is_mandatory Is mandatory?
  * @apiParam {Boolean} is_visible_in_menus Is visible menus?
+ * @apiParam {Boolean} agent_only Agent only
  *
  * @apiSuccessExample {json} Success-Response:
  *     HTTP/1.1 200 OK
@@ -118,7 +120,8 @@ router.post('/vendor/custom_fields/edit', async function (req, res, next) {
             label: req.body.label,
             is_mandatory: req.body.is_mandatory,
             is_visible_in_menus: req.body.is_visible_in_menus,
-            tarteeb: req.body.tarteeb
+            tarteeb: req.body.tarteeb,
+            agent_only: req.body.agent_only
         };
 
 

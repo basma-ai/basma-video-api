@@ -46,7 +46,7 @@ router.post('/vendor/settings/edit', async function (req, res, next) {
     if (is_authenticated) {
 
         // that's awesome!, we can proceed with the process of creating an account for a new group as per the instructions and details provided by the vu (vendor user), the process will begin by by inserting the group in the database, then, you will be updated by another comment
-        let update_data = data_utils.populate_data_obj(['name', 'working_hours', 'recording_enabled', 'call_request_sms_template'], req.body);
+        let update_data = data_utils.populate_data_obj(['name', 'working_hours', 'recording_enabled', 'call_request_sms_template', 'out_of_working_hours_message'], req.body);
 
 
         let log_params = {
