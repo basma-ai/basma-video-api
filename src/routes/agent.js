@@ -143,7 +143,7 @@ router.post('/agent/list_pending_calls', async function (req, res, next) {
     var the_vu = await format_mod.get_vu(vu_id);
 
     // check if is_authenticated
-    const is_authenticated = await roles_mod.is_authenticated(the_vu,[roles_mod.PERMISSIONS.SUPERUSER]);
+    const is_authenticated = await roles_mod.is_authenticated(the_vu, [roles_mod.PERMISSIONS.SUPERUSER]);
 
     if (go_ahead) {
 
@@ -297,7 +297,7 @@ router.post('/agent/answer_call', async function (req, res, next) {
                     'connection_agent_token': twilio_agent_token.token
                 };
 
-                if(twilio_agent_token.twilio_room_sid != null) {
+                if (twilio_agent_token.twilio_room_sid != null) {
                     update_data['twilio_room_sid'] = twilio_agent_token.twilio_room_sid;
                     update_data['is_recorded'] = vendor.recording_enabled;
                 }
@@ -428,6 +428,7 @@ router.post('/agent/end_call', async function (req, res, next) {
                 duration: Date.now() - the_call['answer_time']
             };
 
+
             // return_data['call'] = the_call;
 
             await global_vars.knex('calls').where('id', '=', the_call.id).update(update_data).then((result) => {
@@ -470,6 +471,7 @@ router.post('/agent/end_call', async function (req, res, next) {
  * @apiParam {String} vu_token The access token of the agent
  * @apiParam {Integer} call_id The ID of the call
  * @apiParam {String} agent_notes Update the agent's notes
+ * @apiParam {JSON} [custom_fields_values] Custom fields values
  *
  * @apiSuccessExample {json} Success-Response:
  *     HTTP/1.1 200 OK
@@ -536,6 +538,15 @@ router.post('/agent/update_call', async function (req, res, next) {
             let update_data = {
                 agent_notes: req.body.agent_notes
             };
+
+            if (req.body.custom_fields_values != null) {
+                try {
+                    req.body.custom_fields_values = JSON.parse(req.body.custom_fields_values);
+                } catch (e) {
+
+                }
+                update_data['custom_fields_values'] = req.body.custom_fields_values;
+            }
 
             // return_data['call'] = the_call;
 
