@@ -545,7 +545,7 @@ router.post('/agent/update_call', async function (req, res, next) {
                 } catch (e) {
 
                 }
-                update_data['custom_fields_values'] = req.body.custom_fields_values;
+                update_data['custom_fields_values'] = JSON.stringify(req.body.custom_fields_values);
             }
 
             // return_data['call'] = the_call;
