@@ -411,9 +411,9 @@ router.post('/vendor/call_requests/join', async function (req, res, next) {
         if (phone_number != null) {
 
             phone_number = phone_number + '';
-            if (!phone_number.startsWith('973')) {
-                phone_number = '973' + phone_number;
-            }
+            // if (!phone_number.startsWith('973')) {
+            //     phone_number = '973' + phone_number;
+            // }
 
             let time_humanized = moment(call_request.scheduled_time).format("dddd DD/MM/YYYY hh:mm A");
             let link = `${process.env.PUBLIC_LINK}/${vu.vendor.username}?token=${call_request.token}`;

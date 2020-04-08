@@ -34,6 +34,7 @@ module.exports = {
 
     sendSMS: async function (phoneNumber, message) {
 
+        phoneNumber = phoneNumber.replace('+', '');
 
         // TWILIO
         client_master.messages
