@@ -1,6 +1,6 @@
 {
   "name": "video_cc_api",
-  "version": "1.0.0",
+  "version": "115",
   "description": "",
   "main": "src/api.js",
   "dependencies": {

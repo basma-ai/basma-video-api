@@ -9,7 +9,21 @@ var roles_mod = require("../../modules/roles_mod");
 
 var global_vars;
 
+/**
+ * @api {post} /vendor/services/create Create a service
+ * @apiName VendorServicesCreate
+ * @apiGroup vendor
+ * @apiDescription Create a service
+ *
+ * @apiParam {String} vu_token Vendor User Token
+ * @apiParam {String} name Service name
+ * @apiParam {Boolean} is_restricted Is Restricted?
+ *
+ * @apiSuccessExample {json} Success-Response:
+ *     HTTP/1.1 200 OK
 
+
+ */
 router.post('/vendor/services/create', async function (req, res, next) {
 
 
@@ -23,7 +37,7 @@ router.post('/vendor/services/create', async function (req, res, next) {
     const vu = await format_mod.get_vu(vu_id, true);
 
     // check if is_authenticated
-    const is_authenticated = await roles_mod.is_authenticated(vu,[roles_mod.PERMISSIONS.SERVICES]);
+    const is_authenticated = await roles_mod.is_authenticated(vu, [roles_mod.PERMISSIONS.SERVICES]);
 
     if (is_authenticated) {
 
@@ -35,7 +49,7 @@ router.post('/vendor/services/create', async function (req, res, next) {
 
 
         let record_id = 0;
-        await global_vars.knex('vendors_services').insert(insert_data).then((result) => {
+        await global_vars.knex('services').insert(insert_data).then((result) => {
 
             success = true;
 
@@ -48,7 +62,7 @@ router.post('/vendor/services/create', async function (req, res, next) {
 
         if (success) {
             let log_params = {
-                table_name: 'vendors_services',
+                table_name: 'services',
                 row_id: record_id,
                 vu_id: vu.id,
                 new_value: insert_data,
@@ -104,7 +118,7 @@ router.post('/vendor/services/edit', async function (req, res, next) {
     const vu = await format_mod.get_vu(vu_id, true);
 
     // check if is_authenticated
-    const is_authenticated = await roles_mod.is_authenticated(vu,[roles_mod.PERMISSIONS.SERVICES]);
+    const is_authenticated = await roles_mod.is_authenticated(vu, [roles_mod.PERMISSIONS.SERVICES]);
 
     if (is_authenticated) {
 
@@ -116,7 +130,7 @@ router.post('/vendor/services/edit', async function (req, res, next) {
 
 
         let log_params = {
-            table_name: 'vendors_services',
+            table_name: 'services',
             row_id: req.body.service_id,
             vu_id: vu.id,
             new_value: update_data,
@@ -126,7 +140,7 @@ router.post('/vendor/services/edit', async function (req, res, next) {
 
 
         let group_id = 0;
-        await global_vars.knex('vendors_services').update(update_data)
+        await global_vars.knex('services').update(update_data)
             .where('vendor_id', '=', vu.vendor.id)
             .where('id', '=', req.body.service_id)
             .then((result) => {
@@ -177,30 +191,30 @@ router.post('/vendor/services/list', async function (req, res, next) {
     const vu = await format_mod.get_vu(vu_id, true);
 
     // check if is_authenticated
-    const is_authenticated = await roles_mod.is_authenticated(vu,[roles_mod.PERMISSIONS.SERVICES]);
+    const is_authenticated = await roles_mod.is_authenticated(vu, [roles_mod.PERMISSIONS.SERVICES]);
 
     if (is_authenticated) {
 
         let raw_records = [];
         let stmnt;
 
-        const is_superuser = await roles_mod.is_authenticated(vu,[roles_mod.PERMISSIONS.SUPERUSER]);
+        const is_superuser = await roles_mod.is_authenticated(vu, [roles_mod.PERMISSIONS.SUPERUSER]);
 
         if (is_superuser) {
-            stmnt = global_vars.knex('vendors_services')
+            stmnt = global_vars.knex('services')
                 .where('vendor_id', '=', vu.vendor.id);
         } else {
             // get services which agent has access to
-            stmnt = global_vars.knex('vendors_services')
-                .select('vendors_services.*').distinct('vendors_services.id')
-                .leftJoin('groups_services_relations', 'groups_services_relations.service_id', 'vendors_services.id')
+            stmnt = global_vars.knex('services')
+                .select('services.*').distinct('services.id')
+                .leftJoin('groups_services_relations', 'groups_services_relations.service_id', 'services.id')
                 .leftJoin('groups', 'groups.id', 'groups_services_relations.group_id')
                 .leftJoin('vu_groups_relations', 'vu_groups_relations.group_id', 'groups.id')
                 .where(function () {
                     this.where('vu_groups_relations.vu_id', '=', vu.id)
-                        .orWhere('vendors_services.is_restricted', '=', false);
-                }).andWhere('vendors_services.vendor_id', '=', vu.vendor.id)
-                .orderBy('vendors_services.id', 'DESC');
+                        .orWhere('services.is_restricted', '=', false);
+                }).andWhere('services.vendor_id', '=', vu.vendor.id)
+                .orderBy('services.id', 'DESC');
         }
 
         if (req.body.per_page != null && req.body.page != null) {
@@ -239,7 +253,6 @@ router.post('/vendor/services/list', async function (req, res, next) {
 
 });
 
-
 /**
  * @api {post} /vendor/services/get Get a service
  * @apiName VendorServicesGet
@@ -266,7 +279,7 @@ router.post('/vendor/services/get', async function (req, res, next) {
     const vu = await format_mod.get_vu(vu_id, true);
 
     // check if is_authenticated
-    const is_authenticated = await roles_mod.is_authenticated(vu,[roles_mod.PERMISSIONS.SERVICES]);
+    const is_authenticated = await roles_mod.is_authenticated(vu, [roles_mod.PERMISSIONS.SERVICES]);
 
     if (is_authenticated) {
 
@@ -276,7 +289,7 @@ router.post('/vendor/services/get', async function (req, res, next) {
         };
 
         let record;
-        await global_vars.knex('vendors_services')
+        await global_vars.knex('services')
             .where('vendor_id', '=', vu.vendor.id)
             .where('id', '=', req.body.service_id)
             .then((rows) => {
@@ -303,6 +316,83 @@ router.post('/vendor/services/get', async function (req, res, next) {
 });
 
 
+/**
+ * @api {post} /vendor/services/delete Delete a service
+ * @apiName VendorServicesDelete
+ * @apiGroup vendor
+ * @apiDescription Delete a service
+ *
+ * @apiParam {String} vu_token Vendor User Token
+ * @apiParam {Integer} service_id Service ID
+ *
+ * @apiSuccessExample {json} Success-Response:
+ *     HTTP/1.1 200 OK
+
+
+ */
+router.post('/vendor/services/delete', async function (req, res, next) {
+
+
+    let success = false;
+    let go_ahead = true;
+    let return_data = {};
+
+
+    const vu_id = await users_mod.token_to_id('vendors_users_tokens', req.body.vu_token, 'vu_id');
+
+    const vu = await format_mod.get_vu(vu_id, true);
+
+    // check if is_authenticated
+    const is_authenticated = await roles_mod.is_authenticated(vu, [roles_mod.PERMISSIONS.SERVICES]);
+
+    if (is_authenticated) {
+
+        let log_params = {
+            table_name: 'services',
+            row_id: req.body.service_id,
+            vu_id: vu.id,
+            type: 'delete'
+        };
+        await log_mod.log(log_params);
+
+
+        // delete the groups_services_relations relations
+        await global_vars.knex('groups_services_relations')
+            .delete()
+            .where('vendor_id', '=', vu.vendor.id)
+            .where('id', '=', req.body.service_id)
+            .then(() => {
+
+            });
+
+        await global_vars.knex('services').update({
+            'is_deleted': true
+        })
+            .where('vendor_id', '=', vu.vendor.id)
+            .where('id', '=', req.body.service_id)
+            .then((result) => {
+
+                success = true;
+
+            }).catch((err) => {
+                go_ahead = false;
+                console.log(err);
+            });
+
+
+    } else {
+        return_data['errors'] = ['unauthorized_action'];
+    }
+
+
+    res.send({
+        success: success,
+        data: return_data
+    });
+
+});
+
+
 module.exports = function (options) {
 
     global_vars = options;
@@ -310,6 +400,6 @@ module.exports = function (options) {
     format_mod.init(global_vars);
     log_mod.init(global_vars);
     roles_mod.init(global_vars);
-    
+
     return router;
 };

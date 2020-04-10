@@ -153,16 +153,16 @@ router.post('/agent/list_pending_calls', async function (req, res, next) {
             // get the services the vu has access to
 
             // get services which agent has access to
-            let services_stmnt = global_vars.knex('vendors_services')
-                .select('vendors_services.*').distinct('vendors_services.id')
-                .leftJoin('groups_services_relations', 'groups_services_relations.service_id', 'vendors_services.id')
+            let services_stmnt = global_vars.knex('services')
+                .select('services.*').distinct('services.id')
+                .leftJoin('groups_services_relations', 'groups_services_relations.service_id', 'services.id')
                 .leftJoin('groups', 'groups.id', 'groups_services_relations.group_id')
                 .leftJoin('vu_groups_relations', 'vu_groups_relations.group_id', 'groups.id')
                 .where(function () {
                     this.where('vu_groups_relations.vu_id', '=', the_vu.id)
-                        .orWhere('vendors_services.is_restricted', '=', false);
-                }).andWhere('vendors_services.vendor_id', '=', the_vu.vendor.id)
-                .orderBy('vendors_services.id', 'DESC');
+                        .orWhere('services.is_restricted', '=', false);
+                }).andWhere('services.vendor_id', '=', the_vu.vendor.id)
+                .orderBy('services.id', 'DESC');
 
             let service_ids = [];
             await services_stmnt.then((rows) => {

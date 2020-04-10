@@ -163,7 +163,7 @@ module.exports = {
 
         let the_row = null;
 
-        await global_vars.knex('vendors_services').select('*')
+        await global_vars.knex('services').select('*')
             .where('id', '=', id).then((rows) => {
                 the_row = rows[0];
             });

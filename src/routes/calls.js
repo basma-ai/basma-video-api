@@ -45,7 +45,7 @@ router.post('/calls/get_services', async function (req, res, next) {
 
     if (go_ahead) {
         // and now, do the insertion
-        await global_vars.knex('vendors_services').select('*').where('vendor_id', '=', req.body.vendor_id).then((rows) => {
+        await global_vars.knex('services').select('*').where('vendor_id', '=', req.body.vendor_id).then((rows) => {
             return_data['services'] = rows;
             success = true;
         });
@@ -99,7 +99,7 @@ router.post('/calls/start_call', async function (req, res, next) {
     if (go_ahead) {
         // get the service
         var the_service = null;
-        await global_vars.knex('vendors_services').select('*').where('id', '=', req.body.service_id).then((rows) => {
+        await global_vars.knex('services').select('*').where('id', '=', req.body.service_id).then((rows) => {
             if (rows[0] != null) {
                 the_service = rows[0];
             }

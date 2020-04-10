@@ -131,6 +131,7 @@ app.post('/vendor/services/create', vendor_services);
 app.post('/vendor/services/edit', vendor_services);
 app.post('/vendor/services/list', vendor_services);
 app.post('/vendor/services/get', vendor_services);
+app.post('/vendor/services/delete', vendor_services);
 
 // vendors users
 app.post('/vendor/users/create', vendor_users);
