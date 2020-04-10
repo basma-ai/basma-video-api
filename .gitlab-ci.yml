@@ -1,0 +1,17 @@
+image: node:latest
+
+stages:
+  - production
+  
+production:
+  type: deploy
+  stage: production
+  image: ruby:latest
+  script:
+    - git pull
+    - npm i
+    - pm2 stop video-api
+    - pm2 start video-api
+    - dpl --provider=heroku --app=node-heroku-dpl --api-key=$HEROKU_API_KEY
+  only:
+    - prod
