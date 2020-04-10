@@ -125,6 +125,7 @@ app.post('/vendor/groups/create', vendor_groups);
 app.post('/vendor/groups/edit', vendor_groups);
 app.post('/vendor/groups/list', vendor_groups);
 app.post('/vendor/groups/get', vendor_groups);
+app.post('/vendor/groups/delete', vendor_groups);
 
 // vendors services
 app.post('/vendor/services/create', vendor_services);
@@ -138,6 +139,7 @@ app.post('/vendor/users/create', vendor_users);
 app.post('/vendor/users/edit', vendor_users);
 app.post('/vendor/users/list', vendor_users);
 app.post('/vendor/users/get', vendor_users);
+app.post('/vendor/users/delete', vendor_users);
 
 // vendors calls
 app.post('/vendor/calls/list', vendor_calls);
@@ -156,12 +158,14 @@ app.post('/vendor/custom_fields/create', vendor_custom_fields);
 app.post('/vendor/custom_fields/edit', vendor_custom_fields);
 app.post('/vendor/custom_fields/list', vendor_custom_fields);
 app.post('/vendor/custom_fields/get', vendor_custom_fields);
+app.post('/vendor/custom_fields/delete', vendor_custom_fields);
 
 // vendors roles
 app.post('/vendor/roles/create', vendor_roles);
 app.post('/vendor/roles/edit', vendor_roles);
 app.post('/vendor/roles/list', vendor_roles);
 app.post('/vendor/roles/get', vendor_roles);
+app.post('/vendor/roles/delete', vendor_roles);
 
 // vendors permissions
 app.post('/vendor/permissions/list', vendor_permissions);

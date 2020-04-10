@@ -110,7 +110,7 @@ module.exports = {
     },
     format_call: async function (call, full = true) {
         call['vu'] = await this.get_vu(call['vu_id'], false);
-        call['vendor_service'] = await this.get_vendor_service(call['vendor_service_id']);
+        call['vendor_service'] = await this.get_service(call['vendor_service_id']);
 
         call['custom_fields_values'] = JSON.parse(call['custom_fields_values']);
 
@@ -150,7 +150,7 @@ module.exports = {
     },
     format_agent_call: async function (call, full = true) {
         call['vu'] = await this.get_vu(call['vu_id'], false);
-        call['vendor_service'] = await this.get_vendor_service(call['vendor_service_id']);
+        call['vendor_service'] = await this.get_service(call['vendor_service_id']);
 
         // if (!full) {
             delete call['connection_guest_token'];
@@ -159,7 +159,7 @@ module.exports = {
         return call;
     },
 
-    get_vendor_service: async function (id) {
+    get_service: async function (id) {
 
         let the_row = null;
 
@@ -168,10 +168,11 @@ module.exports = {
                 the_row = rows[0];
             });
 
-        return await this.format_vendor_service(the_row);
+        return await this.format_service(the_row);
 
     },
-    format_vendor_service: async function (vendor_service) {
+    format_service: async function (vendor_service) {
+        delete vendor_service.is_deleted;
         return vendor_service;
     },
 
@@ -218,10 +219,12 @@ module.exports = {
                     });
 
                 for (let service_raw of services_raw) {
-                    the_row['services'].push(await this.get_vendor_service(service_raw.service_id));
+                    the_row['services'].push(await this.get_service(service_raw.service_id));
                 }
             }
         }
+
+        delete the_row.is_deleted;
 
         return the_row;
     },
@@ -302,7 +305,7 @@ module.exports = {
     },
     format_call_request: async function (record, full = true) {
         record['vu'] = await this.get_vu(record['vu_id'], false);
-        record['service'] = await this.get_vendor_service(record['service_id']);
+        record['service'] = await this.get_service(record['service_id']);
 
         try {
             record['custom_fields_values'] = JSON.parse(record['custom_fields_values']);

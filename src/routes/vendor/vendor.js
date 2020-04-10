@@ -94,7 +94,7 @@ router.post('/vendor/dashboard_numbers', async function (req, res, next) {
 
     return_data['top_services'] = [];
     for (let service of top_services) {
-        return_data['top_services'].push(await format_mod.get_vendor_service(service.vendor_service_id));
+        return_data['top_services'].push(await format_mod.get_service(service.vendor_service_id));
     }
 
     // Most active agent

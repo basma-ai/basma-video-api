@@ -619,6 +619,34 @@
 								}
 							},
 							"response": []
+						},
+						{
+							"name": "Delete a group",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"vu_token\": \"{{vu_token}}\",\n\t\"group_id\": \"45\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{api_url}}/vendor/groups/delete",
+									"host": [
+										"{{api_url}}"
+									],
+									"path": [
+										"vendor",
+										"groups",
+										"delete"
+									]
+								}
+							},
+							"response": []
 						}
 					],
 					"protocolProfileBehavior": {},
@@ -734,6 +762,34 @@
 										"vendor",
 										"services",
 										"get"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete a service",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"vu_token\": \"{{vu_token}}\",\n\t\"service_id\": \"41\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{api_url}}/vendor/services/delete",
+									"host": [
+										"{{api_url}}"
+									],
+									"path": [
+										"vendor",
+										"services",
+										"delete"
 									]
 								}
 							},
@@ -1302,7 +1358,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n\t\"vu_token\": \"{{vu_token}}\",\n\t\"call_request_sms_template\": \"the template goes here\"\n}",
+									"raw": "{\n\t\"vu_token\": \"{{vu_token}}\",\n\t\"call_request_sms_template\": \"To join the call {link}, the agent is waiting for you, the call is schedueled for {time}\"\n}",
 									"options": {
 										"raw": {
 											"language": "json"

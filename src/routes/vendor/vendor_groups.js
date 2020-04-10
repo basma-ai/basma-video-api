@@ -266,12 +266,15 @@ router.post('/vendor/groups/list', async function (req, res, next) {
         let stmnt = global_vars.knex('groups')
             .where('vendor_id', '=', vu.vendor.id)
 
+        stmnt = stmnt.where('is_deleted', '=', false);
+
         if (req.body.per_page != null && req.body.page != null) {
             stmnt = stmnt.paginate({
                 perPage: req.body.per_page == null ? 20 : req.body.per_page,
                 currentPage: req.body.page == null ? 0 : req.body.page
             });
         }
+
 
         await stmnt.then((rows) => {
 
@@ -303,7 +306,6 @@ router.post('/vendor/groups/list', async function (req, res, next) {
     });
 
 });
-
 
 /**
  * @api {post} /vendor/groups/get Get a group
@@ -369,6 +371,90 @@ router.post('/vendor/groups/get', async function (req, res, next) {
 
 });
 
+/**
+ * @api {post} /vendor/groups/delete Delete a group
+ * @apiName VendorGroupsDelete
+ * @apiGroup vendor
+ * @apiDescription Delete a group
+ *
+ * @apiParam {String} vu_token Vendor User Token
+ * @apiParam {Integer} group_id Group ID
+ *
+ * @apiSuccessExample {json} Success-Response:
+ *     HTTP/1.1 200 OK
+
+
+ */
+router.post('/vendor/groups/delete', async function (req, res, next) {
+
+
+    let success = false;
+    let go_ahead = true;
+    let return_data = {};
+
+
+    const vu_id = await users_mod.token_to_id('vendors_users_tokens', req.body.vu_token, 'vu_id');
+
+    const vu = await format_mod.get_vu(vu_id, true);
+
+    // check if is_authenticated
+    const is_authenticated = await roles_mod.is_authenticated(vu, [roles_mod.PERMISSIONS.SERVICES]);
+
+    if (is_authenticated) {
+
+        let log_params = {
+            table_name: 'groups',
+            row_id: req.body.group_id,
+            vu_id: vu.id,
+            type: 'delete'
+        };
+        await log_mod.log(log_params);
+
+
+        // delete the groups_services_relations relations
+        await global_vars.knex('groups_services_relations')
+            .delete()
+            .where('vendor_id', '=', vu.vendor.id)
+            .where('group_id', '=', req.body.group_id)
+            .then(() => {
+
+            });
+
+        // delete the groups_services_relations relations
+        await global_vars.knex('vu_groups_relations')
+            .delete()
+            .where('vendor_id', '=', vu.vendor.id)
+            .where('group_id', '=', req.body.group_id)
+            .then(() => {
+
+            });
+
+        await global_vars.knex('groups').update({
+            'is_deleted': true
+        })
+            .where('vendor_id', '=', vu.vendor.id)
+            .where('id', '=', req.body.group_id)
+            .then((result) => {
+
+                success = true;
+
+            }).catch((err) => {
+                go_ahead = false;
+                console.log(err);
+            });
+
+
+    } else {
+        return_data['errors'] = ['unauthorized_action'];
+    }
+
+
+    res.send({
+        success: success,
+        data: return_data
+    });
+
+});
 
 module.exports = function (options) {
 

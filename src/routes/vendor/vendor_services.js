@@ -73,7 +73,7 @@ router.post('/vendor/services/create', async function (req, res, next) {
             log_mod.log(log_params);
         }
 
-        return_data['service'] = await format_mod.get_vendor_service(record_id);
+        return_data['service'] = await format_mod.get_service(record_id);
 
     } else {
 
@@ -143,6 +143,7 @@ router.post('/vendor/services/edit', async function (req, res, next) {
         await global_vars.knex('services').update(update_data)
             .where('vendor_id', '=', vu.vendor.id)
             .where('id', '=', req.body.service_id)
+            .where('is_deleted', '=', false)
             .then((result) => {
 
                 success = true;
@@ -224,6 +225,8 @@ router.post('/vendor/services/list', async function (req, res, next) {
             });
         }
 
+        stmnt = stmnt.where('is_deleted', '=', false);
+
         await stmnt.then((rows) => {
 
             raw_records = rows;
@@ -236,7 +239,7 @@ router.post('/vendor/services/list', async function (req, res, next) {
 
         let list = [];
         for (let raw_service of (raw_records.data == null ? raw_records : raw_records.data)) {
-            list.push(await format_mod.format_vendor_service(raw_service));
+            list.push(await format_mod.format_service(raw_service));
         }
 
         return_data['list'] = list;
@@ -301,7 +304,7 @@ router.post('/vendor/services/get', async function (req, res, next) {
                 console.log(err);
             });
 
-        return_data['service'] = await format_mod.format_vendor_service(record);
+        return_data['service'] = await format_mod.format_service(record);
 
 
     } else {
@@ -360,7 +363,7 @@ router.post('/vendor/services/delete', async function (req, res, next) {
         await global_vars.knex('groups_services_relations')
             .delete()
             .where('vendor_id', '=', vu.vendor.id)
-            .where('id', '=', req.body.service_id)
+            .where('service_id', '=', req.body.service_id)
             .then(() => {
 
             });
