@@ -97,7 +97,7 @@ module.exports = {
                         'twilio_guest_token': twilio_guest_token.token
                     };
 
-                    if(twilio_guest_token.twilio_room_sid != null) {
+                    if (twilio_guest_token.twilio_room_sid != null) {
                         update_data['twilio_room_sid'] = twilio_guest_token.twilio_room_sid;
                     }
 
@@ -135,7 +135,7 @@ module.exports = {
                     .whereNotNull('duration')
                     .where('duration', '<>', 0)
                     .limit(20)
-                    .orderBy('id','DESC')
+                    .orderBy('id', 'DESC')
                     .then((result) => {
                         average_call_duration = result[0]['average_duration'];
                         // console.log(result);
@@ -185,21 +185,34 @@ module.exports = {
             vus_raw = rows;
         });
 
-        for(let the_vu of vus_raw) {
+        for (let the_vu of vus_raw) {
 
-            this.get_agent_pending_calls({
-                vu_id: the_vu.id,
-                // services_ids: []
-            }).then((pending_calls) => {
-                // send them an updated calls list
-                socket_mod.send_update({
-                    user_type: 'vu',
-                    user_id: the_vu.id,
-                    type: 'pending_list',
-                    data: pending_calls
-                });
-            })
+            let sockets_ids = await global_vars.socket_mod.get_socket_ids('vu', the_vu.id, null);
 
+            let the_socket = global_vars.socket_mod.get_socket_data(sockets_ids[0])
+
+            if (the_socket != null) {
+
+                let services_ids = null;
+                try {
+                    services_ids = JSON.parse(the_socket.services_ids)
+                } catch (e) {
+
+                }
+
+                this.get_agent_pending_calls({
+                    vu_id: the_vu.id,
+                    services_ids: services_ids
+                }).then((pending_calls) => {
+                    // send them an updated calls list
+                    socket_mod.send_update({
+                        user_type: 'vu',
+                        user_id: the_vu.id,
+                        type: 'pending_list',
+                        data: pending_calls
+                    });
+                })
+            }
 
 
         }
@@ -207,7 +220,7 @@ module.exports = {
 
     },
 
-    end_call_stuff: async function(call_id) {
+    end_call_stuff: async function (call_id) {
 
         let the_call;
         await global_vars.knex('calls').where('id', '=', call_id).then((rows) => {
@@ -216,7 +229,7 @@ module.exports = {
 
         // get the vendor of the call
 
-        if(the_call.is_recorded) {
+        if (the_call.is_recorded) {
             console.log("recordings are enabled, trigger video processing service");
 
             await global_vars.knex('calls').where('id', '=', call_id).update({
@@ -241,13 +254,9 @@ module.exports = {
         }
 
 
-
-
-
-
     },
 
-    get_participants: async function(call_id) {
+    get_participants: async function (call_id) {
 
         let raw_call;
         await global_vars.knex('calls').where('id', '=', call_id).then((rows) => {
@@ -270,7 +279,7 @@ module.exports = {
 
     },
 
-    generate_call: async function(params) {
+    generate_call: async function (params) {
 
         // let params = {
         //     vendor_id: 0,
@@ -293,7 +302,7 @@ module.exports = {
 
     },
 
-    get_agent_pending_calls: async function(params) {
+    get_agent_pending_calls: async function (params) {
         let success = false;
         let go_ahead = true;
         let return_data = {};

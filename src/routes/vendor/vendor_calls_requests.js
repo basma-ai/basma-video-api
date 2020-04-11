@@ -58,7 +58,7 @@ router.post('/vendor/call_requests/list', async function (req, res, next) {
     stmnt = stmnt.where('vendor_id', '=', vu.vendor.id);
 
     // check if is_authenticated
-    const has_call_requests_permission = await roles_mod.is_authenticated(vu, [roles_mod.PERMISSIONS.CALL_REQUESTS]);
+    const has_call_requests_permission = await roles_mod.is_authenticated(vu, [roles_mod.PERMISSIONS.ASSIGN_CALL_REQUEST]);
 
     if (!has_call_requests_permission) {
         stmnt = stmnt.where('vu_id', '=', vu.id);

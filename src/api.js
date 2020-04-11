@@ -188,7 +188,6 @@ app.post('/vendor/settings/get', vendor_settings);
 app.post('/vendor/settings/edit', vendor_settings);
 
 
-
 // files
 // app.post('/files/get', files);
 // app.post('/files/upload', files);
@@ -212,7 +211,7 @@ io.on('connection', function (socket) {
 
         try {
             data = JSON.parse(data);
-        } catch(ex) {
+        } catch (ex) {
             // console.log(ex);
         }
         data.socket_id = socket.id;
@@ -247,11 +246,36 @@ io.on('connection', function (socket) {
     // check socket status, for testing purposes
     socket.on('services_list_update', async function (data) {
 
-        await global_vars.knex('sockets').update({
-            services_ids: JSON.stringify(data.services_ids)
-        }).where('socket_id', '=', socket.id);
 
-    });
+            await global_vars.knex('sockets').update({
+                services_ids: JSON.stringify(data.services_ids)
+            }).where('socket_id', '=', socket.id).then((result) => {
+            });
+
+            // get socket data
+            let the_socket = socket_mod.get_socket_data(socket.id);
+            console.log(the_socket);
+            console.log("here 1");
+            if (the_socket.vu_id != null) {
+                console.log("found the vu");
+                calls_mod.get_agent_pending_calls({
+                    vu_id: the_socket.id,
+                    services_ids: JSON.stringify(data.services_ids)
+                }).then((pending_calls) => {
+                    console.log("sending the update");
+                    // send them an updated calls list
+                    socket_mod.send_update({
+                        user_type: 'vu',
+                        user_id: the_socket.vu_id,
+                        type: 'pending_list',
+                        data: pending_calls
+                    });
+                });
+            }
+
+
+        }
+    );
 
     socket.on('disconnect', async function () {
 
