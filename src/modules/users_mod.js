@@ -89,7 +89,13 @@ module.exports = {
             }
         });
 
-        return the_result[col_name];
+        try {
+            return the_result[col_name];
+        } catch (e) {
+
+        }
+
+        return null;
 
 
     }

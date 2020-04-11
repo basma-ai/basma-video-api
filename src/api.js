@@ -113,6 +113,7 @@ app.post('/agent/answer_call', agent);
 app.post('/agent/end_call', agent);
 app.post('/agent/update_call', agent);
 app.post('/agent/send_message', agent);
+app.post('/agent/check_token', agent);
 
 // master
 app.get('/master', master);

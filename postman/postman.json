@@ -343,7 +343,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n\t\"vendor_id\": 1,\n\t\"username\": \"ali.bh\",\n\t\"password\": \"123123\"\n}",
+							"raw": "{\n\t\"vendor_id\": 1,\n\t\"username\": \"ali.bh\",\n\t\"password\": \"B4sm41sL0ve\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -494,6 +494,40 @@
 							"path": [
 								"agent",
 								"update_call"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Check agent token",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"vendor_id\": 1,\n\t\"vu_token\": \"40ee57f1becb99e2b0ff7762c4361e42a359df3e3f22d6173c6a2572839ad6ff\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{api_url}}/agent/request_token",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"agent",
+								"request_token"
 							]
 						}
 					},
@@ -1169,7 +1203,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n\t\"vu_token\": \"{{vu_token}}\",\n\t\"custom_field_id\": \"1\"\n}",
+									"raw": "{\n\t\"vu_token\": \"{{vu_token}}\",\n\t\"custom_field_id\": 1\n}\n",
 									"options": {
 										"raw": {
 											"language": "json"

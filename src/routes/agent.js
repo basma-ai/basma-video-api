@@ -104,6 +104,66 @@ router.post('/agent/request_token', async function (req, res, next) {
 });
 
 /**
+ * @api {post} /agent/check_token Check token
+ * @apiName AgentTokenCheck
+ * @apiGroup Agent
+ * @apiDescription Check the validity of the token
+ *
+ * @apiParam {Integer} vendor_id Vendor ID
+ * @apiParam {String} access_token Access Token
+ *
+ * @apiSuccessExample {json} Success-Response:
+ *     HTTP/1.1 200 OK
+
+ */
+router.post('/agent/check_token', async function (req, res, next) {
+
+
+    let success = false;
+    let go_ahead = true;
+    let return_data = {};
+
+
+    var the_vendor = null;
+    await global_vars.knex('vendors').select('*').where('id', '=', req.body.vendor_id).then((rows) => {
+        if (rows[0] != null) {
+            the_vendor = rows[0];
+        }
+    });
+
+    if (the_vendor == null) {
+        // no matching service found, halt
+        if (return_data['errors'] == null) {
+            return_data['errors'] = [];
+        }
+        return_data['errors'].push('invalid_vendor_id');
+        go_ahead = false;
+    }
+
+    // check the validity of the provided token
+    const vu_id = await users_mod.token_to_id('vendors_users_tokens', req.body.vu_token, 'vu_id');
+    if (vu_id == null) {
+        if (return_data['errors'] == null) {
+            return_data['errors'] = [];
+        }
+        return_data['errors'].push('invalid_vu_token');
+        go_ahead = false;
+    } else {
+        return_data['vu'] = await format_mod.get_vu(vu_id);
+        success = true;
+    }
+
+
+
+    res.send({
+        success: success,
+        data: return_data
+    });
+
+});
+
+
+/**
  * @api {post} /agent/list_pending_calls List pending calls
  * @apiName AgentListPendingCalls
  * @apiGroup Agent
