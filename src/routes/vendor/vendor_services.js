@@ -218,6 +218,8 @@ router.post('/vendor/services/list', async function (req, res, next) {
                 .orderBy('services.id', 'DESC');
         }
 
+        stmnt = stmnt.where('is_deleted', '=', false);
+
         if (req.body.per_page != null && req.body.page != null) {
             stmnt = stmnt.paginate({
                 perPage: req.body.per_page == null ? 20 : req.body.per_page,
@@ -225,7 +227,6 @@ router.post('/vendor/services/list', async function (req, res, next) {
             });
         }
 
-        stmnt = stmnt.where('is_deleted', '=', false);
 
         await stmnt.then((rows) => {
 

@@ -45,7 +45,10 @@ router.post('/calls/get_services', async function (req, res, next) {
 
     if (go_ahead) {
         // and now, do the insertion
-        await global_vars.knex('services').select('*').where('vendor_id', '=', req.body.vendor_id).then((rows) => {
+        await global_vars.knex('services').select('*')
+            .where('vendor_id', '=', req.body.vendor_id)
+            .where('is_deleted', '=', false)
+            .then((rows) => {
             return_data['services'] = rows;
             success = true;
         });
