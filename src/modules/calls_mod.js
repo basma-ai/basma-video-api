@@ -6,6 +6,7 @@ let users_mod = require("../modules/users_mod");
 let format_mod = require("../modules/format_mod");
 let twilio_mod = require("../modules/twilio_mod");
 var socket_mod = require("./socket_mod");
+var roles_mod = require("./roles_mod");
 
 module.exports = {
 
@@ -18,6 +19,7 @@ module.exports = {
 
         users_mod.init(global_vars);
         format_mod.init(global_vars);
+        roles_mod.init(global_vars);
     },
 
     get_guest_call_refresh: async function (call_id, guest_id) {
@@ -158,14 +160,50 @@ module.exports = {
         });
 
         for (let call of calls) {
-            socket_mod.send_update({
-                user_type: 'guest',
-                user_id: call.guest_id,
-                call_id: call.id,
-                type: 'call_info',
-                data: await this.get_guest_call_refresh(call.id, call.guest_id)
-            });
+            this.get_guest_call_refresh(call.id, call.guest_id).then((call_info) => {
+                socket_mod.send_update({
+                    user_type: 'guest',
+                    user_id: call.guest_id,
+                    call_id: call.id,
+                    type: 'call_info',
+                    data: call_info
+                });
+            })
+
         }
+
+        // send active agents the new pending calls list
+        // get active VUs
+        let get_vus_stmnt = global_vars.knex('vendors_users')
+            .select('vendors_users.*')
+            .leftJoin('sockets', 'sockets.vu_id', 'vendors_users.id')
+            .where('vendors_users.vendor_id', '=', vendor_id)
+            .where('sockets.socket_id', '<>', 'null');
+
+        let vus_raw = [];
+        await get_vus_stmnt.then((rows) => {
+            vus_raw = rows;
+        });
+
+        for(let the_vu of vus_raw) {
+
+            this.get_agent_pending_calls({
+                vu_id: the_vu.id,
+                // services_ids: []
+            }).then((pending_calls) => {
+                // send them an updated calls list
+                socket_mod.send_update({
+                    user_type: 'vu',
+                    user_id: the_vu.id,
+                    type: 'pending_list',
+                    data: pending_calls
+                });
+            })
+
+
+
+        }
+
 
     },
 
@@ -253,6 +291,91 @@ module.exports = {
 
         return call_id;
 
+    },
+
+    get_agent_pending_calls: async function(params) {
+        let success = false;
+        let go_ahead = true;
+        let return_data = {};
+
+        // delete calls with 5 seconds of no refresh
+        // let last_time = Date.now() - (60 * 60 * 5);
+        // await global_vars.knex('calls').where('last_refresh_time', '<', last_time).where('status', '=', 'calling').update({
+        //     status: 'missed'
+        // });
+
+
+        // check the validity of the provided token
+        // const vu_id = await users_mod.token_to_id('vendors_users_tokens', params.vu_token, 'vu_id');
+        // if (vu_id == null) {
+        //     if (return_data['errors'] == null) {
+        //         return_data['errors'] = [];
+        //     }
+        //     return_data['errors'].push('invalid_vu_token');
+        //     go_ahead = false;
+        // }
+
+        var the_vu = await format_mod.get_vu(params.vu_id);
+
+        // check if is_authenticated
+        const is_authenticated = await roles_mod.is_authenticated(the_vu, [roles_mod.PERMISSIONS.SUPERUSER]);
+
+        if (go_ahead) {
+
+            let stmnt = global_vars.knex('calls').select('*');
+
+            if (!is_authenticated) {
+                // get the services the vu has access to
+
+                // get services which agent has access to
+                let services_stmnt = global_vars.knex('services')
+                    .select('services.*').distinct('services.id')
+                    .leftJoin('groups_services_relations', 'groups_services_relations.service_id', 'services.id')
+                    .leftJoin('groups', 'groups.id', 'groups_services_relations.group_id')
+                    .leftJoin('vu_groups_relations', 'vu_groups_relations.group_id', 'groups.id')
+                    .where(function () {
+                        this.where('vu_groups_relations.vu_id', '=', the_vu.id)
+                            .orWhere('services.is_restricted', '=', false);
+                    }).andWhere('services.vendor_id', '=', the_vu.vendor.id)
+                    .orderBy('services.id', 'DESC');
+
+                let service_ids = [];
+                await services_stmnt.then((rows) => {
+                    for (let row of rows) {
+                        service_ids.push(row.id);
+                    }
+                });
+
+                // if(req.body.services_ids) {
+                //     service_ids = service_ids.filter((a) => {
+                //         return req.body.services_ids.includes(a);
+                //     });
+                // }
+
+                stmnt.whereIn('vendor_service_id', service_ids);
+            }
+
+            if (params.services_ids != null) {
+                stmnt.whereIn('vendor_service_id', params.services_ids);
+            }
+
+            // and now, do the insertion
+            let pre_rows = null;
+            await stmnt.where('status', '=', 'calling').where('vendor_id', '=', the_vu.vendor.id).orderBy('creation_time', 'ASC').then((rows) => {
+                pre_rows = rows;
+                success = true;
+            });
+
+            let final_rows = [];
+
+            for (let row of pre_rows) {
+                final_rows.push(await format_mod.format_call(row));
+            }
+
+            return_data['pending_calls_list'] = final_rows;
+        }
+
+        return return_data;
     }
 
 

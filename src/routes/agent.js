@@ -119,86 +119,8 @@ router.post('/agent/request_token', async function (req, res, next) {
 router.post('/agent/list_pending_calls', async function (req, res, next) {
 
 
-    let success = false;
-    let go_ahead = true;
-    let return_data = {};
-
-    // delete calls with 5 seconds of no refresh
-    // let last_time = Date.now() - (60 * 60 * 5);
-    // await global_vars.knex('calls').where('last_refresh_time', '<', last_time).where('status', '=', 'calling').update({
-    //     status: 'missed'
-    // });
-
-
-    // check the validity of the provided token
-    const vu_id = await users_mod.token_to_id('vendors_users_tokens', req.body.vu_token, 'vu_id');
-    if (vu_id == null) {
-        if (return_data['errors'] == null) {
-            return_data['errors'] = [];
-        }
-        return_data['errors'].push('invalid_vu_token');
-        go_ahead = false;
-    }
-
-    var the_vu = await format_mod.get_vu(vu_id);
-
-    // check if is_authenticated
-    const is_authenticated = await roles_mod.is_authenticated(the_vu, [roles_mod.PERMISSIONS.SUPERUSER]);
-
-    if (go_ahead) {
-
-        let stmnt = global_vars.knex('calls').select('*');
-
-        if (!is_authenticated) {
-            // get the services the vu has access to
-
-            // get services which agent has access to
-            let services_stmnt = global_vars.knex('services')
-                .select('services.*').distinct('services.id')
-                .leftJoin('groups_services_relations', 'groups_services_relations.service_id', 'services.id')
-                .leftJoin('groups', 'groups.id', 'groups_services_relations.group_id')
-                .leftJoin('vu_groups_relations', 'vu_groups_relations.group_id', 'groups.id')
-                .where(function () {
-                    this.where('vu_groups_relations.vu_id', '=', the_vu.id)
-                        .orWhere('services.is_restricted', '=', false);
-                }).andWhere('services.vendor_id', '=', the_vu.vendor.id)
-                .orderBy('services.id', 'DESC');
-
-            let service_ids = [];
-            await services_stmnt.then((rows) => {
-                for (let row of rows) {
-                    service_ids.push(row.id);
-                }
-            });
-
-            // if(req.body.services_ids) {
-            //     service_ids = service_ids.filter((a) => {
-            //         return req.body.services_ids.includes(a);
-            //     });
-            // }
-
-            stmnt.whereIn('vendor_service_id', service_ids);
-        }
-
-        if (req.body.services_ids != null) {
-            stmnt.whereIn('vendor_service_id', req.body.services_ids);
-        }
-
-        // and now, do the insertion
-        let pre_rows = null;
-        await stmnt.where('status', '=', 'calling').where('vendor_id', '=', the_vu.vendor.id).orderBy('creation_time', 'ASC').then((rows) => {
-            pre_rows = rows;
-            success = true;
-        });
-
-        let final_rows = [];
-
-        for (let row of pre_rows) {
-            final_rows.push(await format_mod.format_call(row));
-        }
-
-        return_data['pending_calls_list'] = final_rows;
-    }
+    let success = true;
+    let return_data = "Use SOCKETS!";
 
     res.send({
         success: success,
@@ -342,7 +264,6 @@ router.post('/agent/answer_call', async function (req, res, next) {
 
 });
 
-
 /**
  * @api {post} /agent/end_call End a call
  * @apiName AgentEndCall
@@ -461,7 +382,6 @@ router.post('/agent/end_call', async function (req, res, next) {
 
 });
 
-
 /**
  * @api {post} /agent/update_call Update call info
  * @apiName AgentCallUpdate
@@ -573,7 +493,6 @@ router.post('/agent/update_call', async function (req, res, next) {
     });
 
 });
-
 
 /**
  * @api {post} /agent/send_message Send a message
