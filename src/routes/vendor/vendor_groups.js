@@ -196,6 +196,7 @@ router.post('/vendor/groups/edit', async function (req, res, next) {
             .update(update_data)
             .where('vendor_id', '=', vu.vendor.id)
             .where('id', '=', req.body.group_id)
+            .where('is_deleted', '=', false)
             .then((result) => {
 
                 success = true;
@@ -398,7 +399,7 @@ router.post('/vendor/groups/delete', async function (req, res, next) {
     const vu = await format_mod.get_vu(vu_id, true);
 
     // check if is_authenticated
-    const is_authenticated = await roles_mod.is_authenticated(vu, [roles_mod.PERMISSIONS.SERVICES]);
+    const is_authenticated = await roles_mod.is_authenticated(vu, [roles_mod.PERMISSIONS.GROUPS]);
 
     if (is_authenticated) {
 

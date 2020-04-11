@@ -144,6 +144,7 @@ router.post('/vendor/custom_fields/edit', async function (req, res, next) {
         await global_vars.knex('custom_fields').update(update_data)
             .where('vendor_id', '=', vu.vendor.id)
             .where('id', '=', req.body.custom_field_id)
+            .where('is_deleted', '=', false)
             .then((result) => {
 
                 success = true;
@@ -204,6 +205,7 @@ router.post('/vendor/custom_fields/list', async function (req, res, next) {
         stmnt = global_vars.knex('custom_fields')
             .where('vendor_id', '=', vu.vendor.id).orderBy('tarteeb', 'ASC');
 
+        stmnt = stmnt.where('is_deleted', '=', false);
         if (req.body.per_page != null && req.body.page != null) {
             stmnt = stmnt.paginate({
                 perPage: req.body.per_page == null ? 20 : req.body.per_page,
@@ -296,6 +298,75 @@ router.post('/vendor/custom_fields/get', async function (req, res, next) {
             });
 
         return_data['custom_field'] = await format_mod.format_custom_field(record);
+
+
+    } else {
+        return_data['errors'] = ['unauthorized_action'];
+    }
+
+
+    res.send({
+        success: success,
+        data: return_data
+    });
+
+});
+
+
+
+/**
+ * @api {post} /vendor/custom_fields/delete Delete a custom field
+ * @apiName VendorCustomFieldsDelete
+ * @apiGroup vendor
+ * @apiDescription Delete a custom fields
+ *
+ * @apiParam {String} vu_token Vendor User Token
+ * @apiParam {Integer} custom_field_id Custom Field ID
+ *
+ * @apiSuccessExample {json} Success-Response:
+ *     HTTP/1.1 200 OK
+
+
+ */
+router.post('/vendor/custom_fields/delete', async function (req, res, next) {
+
+
+    let success = false;
+    let go_ahead = true;
+    let return_data = {};
+
+
+    const vu_id = await users_mod.token_to_id('vendors_users_tokens', req.body.vu_token, 'vu_id');
+
+    const vu = await format_mod.get_vu(vu_id, true);
+
+    // check if is_authenticated
+    const is_authenticated = await roles_mod.is_authenticated(vu, [roles_mod.PERMISSIONS.CUSTOM_FIELDS]);
+
+    if (is_authenticated) {
+
+        let log_params = {
+            table_name: 'custom_fields',
+            row_id: req.body.custom_field_id,
+            vu_id: vu.id,
+            type: 'delete'
+        };
+        await log_mod.log(log_params);
+
+
+        await global_vars.knex('custom_fields').update({
+            'is_deleted': true
+        })
+            .where('vendor_id', '=', vu.vendor.id)
+            .where('id', '=', req.body.custom_field_id)
+            .then((result) => {
+
+                success = true;
+
+            }).catch((err) => {
+                go_ahead = false;
+                console.log(err);
+            });
 
 
     } else {
