@@ -123,7 +123,9 @@ router.post('/vendor/logs/list', async function (req, res, next) {
                     break;
             }
 
-            name_to_show = name_to_show.replace('_', ' ').capit
+            name_to_show = name_to_show.replace('_', ' ');
+
+            log_row.table_name = name_to_show;
 
 
         } catch (ex) {
