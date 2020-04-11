@@ -5,6 +5,7 @@ const port = 1061
 require('dotenv').config()
 const {attachPaginate} = require('knex-paginate');
 const socket_mod = require('./modules/socket_mod');
+const calls_mod = require('./modules/calls_mod');
 var log4js = require('log4js');
 
 // set expressjs settings
@@ -42,16 +43,22 @@ let io = require('socket.io')(server);
 let logger = log4js.getLogger();
 logger.level = process.env.MODE == 'development' ? 'debug' : 'default';
 
-
 // var global variables to pass
 let global_vars = {
     knex: knex,
     socket_io: io,
-    logger: logger
+    logger: logger,
+    socket_mod: socket_mod,
+    calls_mod: calls_mod
 };
 
 // init modules
 socket_mod.init(global_vars);
+calls_mod.init(global_vars);
+
+global_vars['socket_mod'] = socket_mod;
+global_vars['calls_mod'] = calls_mod;
+
 
 // index page 
 app.get('/', function (req, res) {
