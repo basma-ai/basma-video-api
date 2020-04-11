@@ -132,6 +132,25 @@ module.exports = {
                 status: 'missed',
                 missed_time: Date.now()
             });
+
+            let the_call = await format_mod.get_call(socket_data['call_id'], false);
+            await global_vars.knex('calls').where('id', '=', socket_data['call_id']).where('status', '=', 'started').update({
+                status: 'ended',
+                missed_time: Date.now()
+            });
+
+            global_vars.calls_mod.get_agent_pending_calls({
+                vu_id: the_call.vu.id,
+                // services_ids: []
+            }).then((pending_calls) => {
+                // send them an updated calls list
+                global_vars.socket_mod.send_update({
+                    user_type: 'vu',
+                    user_id: the_call.vu.id,
+                    type: 'pending_list',
+                    data: pending_calls
+                });
+            })
         }
 
         await global_vars.knex('sockets').where('socket_id', '=', socket_id).delete();
