@@ -244,6 +244,15 @@ io.on('connection', function (socket) {
 
     });
 
+    // check socket status, for testing purposes
+    socket.on('services_list_update', async function (data) {
+
+        await global_vars.knex('sockets').update({
+            services_ids: JSON.stringify(data.services_ids)
+        }).where('socket_id', '=', socket.id);
+
+    });
+
     socket.on('disconnect', async function () {
 
         console.log("disconnect triggered");
