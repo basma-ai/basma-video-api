@@ -151,6 +151,20 @@ module.exports = {
                     data: pending_calls
                 });
             })
+
+            format_mod.get_call(the_call.id, true).then((call_info) => {
+
+                global_vars.socket_mod.send_update({
+                    user_type: 'vu',
+                    user_id: call_info.vu.id,
+                    call_id: call_info.id,
+                    type: 'call_info',
+                    data: call_info
+                })
+
+            })
+
+
         }
 
         await global_vars.knex('sockets').where('socket_id', '=', socket_id).delete();

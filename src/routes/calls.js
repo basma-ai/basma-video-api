@@ -303,13 +303,16 @@ router.post('/calls/end_call', async function (req, res, next) {
                 success = true;
             });
 
-            await socket_mod.send_update({
-                user_type: 'vu',
-                user_id: the_call.vu_id,
-                call_id: the_call.id,
-                type: 'call_info',
-                data: await format_mod.get_call(the_call.id, true)
-            });
+
+            format_mod.get_call(the_call.id, true).then((call_info) => {
+                socket_mod.send_update({
+                    user_type: 'vu',
+                    user_id: the_call.vu_id,
+                    call_id: the_call.id,
+                    type: 'call_info',
+                    data: call_info
+                })
+            })
 
 
             calls_mod.update_all_calls(the_call.vendor_id);
