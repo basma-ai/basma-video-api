@@ -113,6 +113,18 @@ router.post('/vendor/logs/list', async function (req, res, next) {
             delete log_row.user_fullname;
             delete log_row.user_role;
 
+            let name_to_show;
+            switch(log_row.table_name) {
+                case 'vendors':
+                    name_to_show = 'settings';
+                    break;
+                default:
+                    name_to_show = log_row.table_name;
+                    break;
+            }
+
+            name_to_show = name_to_show.replace('_', ' ').capit
+
 
         } catch (ex) {
             console.log(ex);
