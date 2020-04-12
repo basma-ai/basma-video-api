@@ -208,7 +208,7 @@ router.post('/vendor/call_requests/create', async function (req, res, next) {
                 if (req.body.custom_fields_values != null) {
 
                     let phone_cs = req.body.custom_fields_values.filter((a) => {
-                        return a.name == 'mobile';
+                        return a.type == 'mobile';
                     })[0];
 
                     if (phone_cs != null) {
