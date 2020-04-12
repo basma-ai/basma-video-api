@@ -110,7 +110,10 @@ module.exports = {
     },
     format_call: async function (call, full = true) {
         call['vu'] = await this.get_vu(call['vu_id'], false);
-        call['vendor_service'] = await this.get_service(call['vendor_service_id']);
+
+        if (call['vendor_service_id'] != null) {
+            call['vendor_service'] = await this.get_service(call['vendor_service_id']);
+        }
 
         call['custom_fields_values'] = JSON.parse(call['custom_fields_values']);
 

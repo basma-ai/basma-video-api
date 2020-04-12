@@ -398,7 +398,7 @@ router.post('/vendor/call_requests/join', async function (req, res, next) {
         if (call_request.custom_fields_values != null) {
 
             let phone_cs = call_request.custom_fields_values.filter((a) => {
-                return a.name == 'mobile';
+                return a.type == 'mobile';
             })[0];
 
             if (phone_cs != null) {
