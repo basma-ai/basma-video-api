@@ -175,7 +175,12 @@ module.exports = {
 
     },
     format_service: async function (vendor_service) {
-        delete vendor_service.is_deleted;
+            try {
+                delete vendor_service.is_deleted;
+            } catch(e) {
+                
+            }
+        }
         return vendor_service;
     },
 
