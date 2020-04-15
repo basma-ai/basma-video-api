@@ -17,8 +17,8 @@ let global_vars;
  * @apiGroup Onboarding
  * @apiDescription Join a vendor
  *
- * @apiParam {String} [organization_name] The ID of the vendor to list their services
- * @apiParam {String} [organization_username] The ID of the vendor to list their services
+ * @apiParam {String} [vendor_name] The ID of the vendor to list their services
+ * @apiParam {String} [vendor_username] The ID of the vendor to list their services
  *
  * @apiParam {String} [email] The ID of the vendor to list their services
  * @apiParam {String} [name] The ID of the vendor to list their services
@@ -34,10 +34,14 @@ router.post('/onboarding/join', async function (req, res, next) {
     let success = false;
     let go_ahead = true;
     let return_data = {};
-
+    let errors = [];
 
     // data validity checks
-
+    // -- check if the organization name is valid
+    await global_vars.knex('vendors').count('id as total').where('username', req.body.vendor_username).then((result) => {
+        console.log("join vendors count");
+        console.log(result);
+    });
 
     res.send({
         success: success,

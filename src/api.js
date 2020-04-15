@@ -75,6 +75,8 @@ let agent = require('./routes/agent.js')(global_vars)
 let calls_requests = require('./routes/vendor/vendor_calls_requests')(global_vars)
 
 
+let onboarding = require('./routes/onboarding.js')(global_vars)
+
 let vendor = require('./routes/vendor/vendor.js')(global_vars)
 let vendor_groups = require('./routes/vendor/vendor_groups.js')(global_vars)
 let vendor_services = require('./routes/vendor/vendor_services.js')(global_vars)
@@ -87,6 +89,11 @@ let vendor_permissions = require('./routes/vendor/vendor_permissions.js')(global
 let vendor_reports = require('./routes/vendor/vendor_reports.js')(global_vars)
 let vendor_calls_requests = require('./routes/vendor/vendor_calls_requests.js')(global_vars)
 let vendor_settings = require('./routes/vendor/vendor_settings.js')(global_vars)
+
+
+// onboarding
+app.post('/onboarding/join', onboarding);
+
 
 // guests
 app.get('/guest', guest);
