@@ -133,11 +133,13 @@ module.exports = {
                 missed_time: Date.now()
             });
 
-            let the_call = await format_mod.get_call(socket_data['call_id'], false);
-            await global_vars.knex('calls').where('id', '=', socket_data['call_id']).where('status', '=', 'started').update({
-                status: 'ended',
-                missed_time: Date.now()
-            });
+            if(socket_data.vu_id != null) {
+                let the_call = await format_mod.get_call(socket_data['call_id'], false);
+                await global_vars.knex('calls').where('id', '=', socket_data['call_id']).where('status', '=', 'started').update({
+                    status: 'ended',
+                    missed_time: Date.now()
+                });
+            }
 
             global_vars.calls_mod.get_agent_pending_calls({
                 vu_id: the_call.vu.id,
