@@ -41,6 +41,7 @@ module.exports = {
             return is_authenticated;
         }
 
+
         await global_vars.knex('vu_roles_relations')
             .where('vendor_id', '=', vu.vendor.id)
             .where('vu_id', '=', vu.id).then((rows) => {

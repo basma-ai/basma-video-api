@@ -28,7 +28,11 @@ router.post('/vendor/dashboard_numbers', async function (req, res, next) {
     let go_ahead = true;
     let return_data = {};
 
+
     const vu_id = await users_mod.token_to_id('vendors_users_tokens', req.body.vu_token, 'vu_id');
+
+    console.log(`vu_id: ${vu_id}`);
+
     const vu = await format_mod.get_vu(vu_id);
 
     // check if is_authenticated

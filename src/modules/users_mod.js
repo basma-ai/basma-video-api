@@ -82,7 +82,7 @@ module.exports = {
 
 
         // get the token
-        var the_result = null;
+        let the_result = null;
         await global_vars.knex(table_name).select('*').where('token','=',token).then((result) => {
             if(result.length > 0) {
                 the_result = result[0];
