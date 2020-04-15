@@ -197,7 +197,7 @@ module.exports = {
             's3_original_path': original_url,
             'time': Date.now() / 1000
         }).then(function (result) {
-            console.log("data inserted");
+            // console.log("data inserted");
             fileId = result[0];
         })
             .catch((err) => {

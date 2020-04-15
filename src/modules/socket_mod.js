@@ -124,49 +124,82 @@ module.exports = {
 
     disconnect_socket: async function(socket_id) {
 
-        // get the call pending, if any
-        let socket_data = await this.get_socket_data(socket_id);
-        socket_data = socket_data[0];
-        if(socket_data != undefined && socket_data['call_id'] != null) {
-            await global_vars.knex('calls').where('id', '=', socket_data['call_id']).where('status', '=', 'calling').update({
-                status: 'missed',
-                missed_time: Date.now()
-            });
+        console.log("in disconnect_socket");
 
-            if(socket_data.vu_id != null) {
-                let the_call = await format_mod.get_call(socket_data['call_id'], false);
-                await global_vars.knex('calls').where('id', '=', socket_data['call_id']).where('status', '=', 'started').update({
-                    status: 'ended',
+        // get the call pending, if any
+        let socket_datas = await this.get_socket_data(socket_id);
+
+        for(let socket_data of socket_datas) {
+
+            // console.log("the socket data");
+
+            // console.log(socket_data);
+
+            if (socket_data != undefined && socket_data['call_id'] != null) {
+                await global_vars.knex('calls').where('id', '=', socket_data['call_id']).where('status', '=', 'calling').update({
+                    status: 'missed',
                     missed_time: Date.now()
                 });
-            }
 
-            global_vars.calls_mod.get_agent_pending_calls({
-                vu_id: the_call.vu.id,
-                // services_ids: []
-            }).then((pending_calls) => {
-                // send them an updated calls list
-                global_vars.socket_mod.send_update({
-                    user_type: 'vu',
-                    user_id: the_call.vu.id,
-                    type: 'pending_list',
-                    data: pending_calls
-                });
-            })
+                let the_call = await format_mod.get_call(socket_data['call_id'], false);
 
-            format_mod.get_call(the_call.id, true).then((call_info) => {
 
-                global_vars.socket_mod.send_update({
-                    user_type: 'vu',
-                    user_id: call_info.vu.id,
-                    call_id: call_info.id,
-                    type: 'call_info',
-                    data: call_info
+                if (socket_data['vu_id'] != null) {
+                    console.log("it's a vu");
+                    await global_vars.knex('calls').where('id', '=', socket_data['call_id']).where('status', '=', 'started').update({
+                        status: 'ended',
+                        missed_time: Date.now()
+                    });
+
+                    global_vars.socket_mod.send_update({
+                        user_type: 'guest',
+                        user_id: the_call.guest_id,
+                        call_id: the_call.id,
+                        type: 'call_info',
+                        data: JSON.parse(JSON.stringify(the_call))
+                    });
+
+                    // console.log("socket data");
+                    // console.log({
+                    //     user_type: 'guest',
+                    //     user_id: the_call.guest_id,
+                    //     call_id: the_call.id,
+                    //     type: 'call_info',
+                    //     data: JSON.parse(JSON.stringify(the_call))
+                    // });
+
+                }
+
+
+
+                global_vars.calls_mod.get_agent_pending_calls({
+                    vu_id: the_call.vu.id,
+                    // services_ids: []
+                }).then((pending_calls) => {
+                    // send them an updated calls list
+                    global_vars.socket_mod.send_update({
+                        user_type: 'vu',
+                        user_id: the_call.vu.id,
+                        type: 'pending_list',
+                        data: pending_calls
+                    });
+
                 })
 
-            })
+                format_mod.get_call(the_call.id, true).then((call_info) => {
+
+                    global_vars.socket_mod.send_update({
+                        user_type: 'vu',
+                        user_id: call_info.vu.id,
+                        call_id: call_info.id,
+                        type: 'call_info',
+                        data: call_info
+                    })
+
+                })
 
 
+            }
         }
 
         await global_vars.knex('sockets').where('socket_id', '=', socket_id).delete();

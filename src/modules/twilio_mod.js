@@ -29,7 +29,7 @@ module.exports = {
 
         let twilio_room_sid = null;
 
-        console.log("inside generate_twilio_token");
+        // console.log("inside generate_twilio_token");
         await client_master.video.rooms.create({
             uniqueName: room_id,
             recordParticipantsOnConnect: record

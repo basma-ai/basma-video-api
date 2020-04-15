@@ -202,7 +202,7 @@ io.on('connection', function (socket) {
     // iniating a socket by frontend
     socket.on('start_socket', function (data) {
 
-        console.log("I am here");
+        // console.log("I am here");
 
         // let data = {
         //     user_type: "guest or agent",
@@ -256,7 +256,7 @@ io.on('connection', function (socket) {
             // get socket data
             let the_socket = socket_mod.get_socket_data(socket.id);
             console.log(the_socket);
-            console.log("here 1");
+            // console.log("here 1");
             if (the_socket.vu_id != null) {
                 console.log("found the vu");
                 calls_mod.get_agent_pending_calls({

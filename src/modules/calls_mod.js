@@ -230,7 +230,7 @@ module.exports = {
         // get the vendor of the call
 
         if (the_call.is_recorded) {
-            console.log("recordings are enabled, trigger video processing service");
+            // console.log("recordings are enabled, trigger video processing service");
 
             await global_vars.knex('calls').where('id', '=', call_id).update({
                 recording_status: 'pending'
