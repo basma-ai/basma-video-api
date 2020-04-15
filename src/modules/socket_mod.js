@@ -159,7 +159,9 @@ module.exports = {
                         user_id: the_call.guest_id,
                         call_id: the_call.id,
                         type: 'call_info',
-                        data: JSON.parse(JSON.stringify(the_call))
+                        data: {
+                            call: JSON.parse(JSON.stringify(the_call))
+                        }
                     });
 
                     // console.log("socket data");
