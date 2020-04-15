@@ -21,7 +21,7 @@ module.exports = {
 
     format_vendor: async function (vendor, viewer) {
 
-        if(viewer != 'agent') {
+        if (viewer != 'agent') {
             delete vendor.recording_enabled;
             delete vendor.call_request_sms_template;
         }
@@ -64,14 +64,14 @@ module.exports = {
                 .select('groups.*')
                 .where('vu_groups_relations.vendor_id', '=', vu.vendor.id)
                 .where('vu_groups_relations.vu_id', '=', vu.id)
-                .leftJoin('groups','groups.id', 'vu_groups_relations.group_id')
+                .leftJoin('groups', 'groups.id', 'vu_groups_relations.group_id')
                 .then((rows) => {
                     raw_groups = rows;
                 })
 
             let groups = [];
             for (let raw_group of raw_groups) {
-                    groups.push(await this.format_group(raw_group, true));
+                groups.push(await this.format_group(raw_group, true));
             }
             vu['groups'] = groups;
 
@@ -81,7 +81,7 @@ module.exports = {
                 .select('roles.*')
                 .where('vu_roles_relations.vendor_id', '=', vu.vendor.id)
                 .where('vu_roles_relations.vu_id', '=', vu.id)
-                .leftJoin('roles','roles.id', 'vu_roles_relations.role_id')
+                .leftJoin('roles', 'roles.id', 'vu_roles_relations.role_id')
                 .then((rows) => {
                     raw_roles = rows;
                 })
@@ -126,11 +126,11 @@ module.exports = {
             delete call['s3_recording_folder'];
         }
 
-        if(full) {
+        if (full) {
             // get rating
             let rating = 'no_rating';
             await global_vars.knex('ratings').where('call_id', '=', call.id).then((rows) => {
-                if(rows.length > 0) {
+                if (rows.length > 0) {
                     rating = rows[0];
                 }
             });
@@ -156,8 +156,8 @@ module.exports = {
         call['vendor_service'] = await this.get_service(call['vendor_service_id']);
 
         // if (!full) {
-            delete call['connection_guest_token'];
-            delete call['connection_agent_token'];
+        delete call['connection_guest_token'];
+        delete call['connection_agent_token'];
         // }
         return call;
     },
@@ -178,8 +178,9 @@ module.exports = {
         try {
             delete vendor_service.is_deleted;
         } catch (e) {
-            
+
         }
+
         return vendor_service;
     },
 
@@ -211,7 +212,7 @@ module.exports = {
     format_group: async function (the_row, full = true) {
 
         // get its services
-        if(full) {
+        if (full) {
             the_row['services'] = [];
             if (the_row != null) {
 
@@ -251,7 +252,7 @@ module.exports = {
 
 
         // get its services
-        if(full) {
+        if (full) {
             the_row['permissions'] = [];
             if (the_row != null) {
 
@@ -290,7 +291,7 @@ module.exports = {
 
     format_custom_field: async function (record) {
 
-        if(record.type == 'checklist') {
+        if (record.type == 'checklist') {
             record.value = [];
         }
 
@@ -317,7 +318,7 @@ module.exports = {
         try {
             record['custom_fields_values'] = JSON.parse(record['custom_fields_values']);
         } catch (e) {
-            
+
         }
 
         return record;
