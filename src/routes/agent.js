@@ -419,13 +419,20 @@ router.post('/agent/end_call', async function (req, res, next) {
 
             return_data['call'] = await format_mod.get_call(the_call.id);
 
+
+            // get the small call
+
             await socket_mod.send_update({
                 user_type: 'guest',
                 user_id: the_call.guest_id,
                 call_id: the_call.id,
                 type: 'call_info',
-                data: await calls_mod.get_guest_call_refresh(the_call.id, the_call.guest_id)
+                data: {
+                    call: JSON.parse(JSON.stringify(return_data['call']))
+                }
             });
+
+
 
             calls_mod.update_all_calls(the_call.vendor_id);
             calls_mod.end_call_stuff(the_call.id);
