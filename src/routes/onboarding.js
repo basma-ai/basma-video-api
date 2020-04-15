@@ -18,7 +18,11 @@ let global_vars;
  * @apiDescription Join a vendor
  *
  * @apiParam {String} [organization_name] The ID of the vendor to list their services
- * @apiParam {String} [organization_name] The ID of the vendor to list their services
+ * @apiParam {String} [organization_username] The ID of the vendor to list their services
+ *
+ * @apiParam {String} [email] The ID of the vendor to list their services
+ * @apiParam {String} [name] The ID of the vendor to list their services
+ * @apiParam {String} [phone_number] The ID of the vendor to list their services
  *
  * @apiSuccessExample {json} Success-Response:
  *     HTTP/1.1 200 OK
@@ -32,27 +36,8 @@ router.post('/onboarding/join', async function (req, res, next) {
     let return_data = {};
 
 
-    // check the validity of the provided token
-    const guest_id = await users_mod.token_to_id('guests', req.body.guest_token, 'id');
-    if (guest_id == null) {
-        if (return_data['errors'] == null) {
-            return_data['errors'] = [];
-        }
-        return_data['errors'].push('invalid_guest_token');
-        go_ahead = false;
-    }
+    // data validity checks
 
-
-    if (go_ahead) {
-        // and now, do the insertion
-        await global_vars.knex('services').select('*')
-            .where('vendor_id', '=', req.body.vendor_id)
-            .where('is_deleted', '=', false)
-            .then((rows) => {
-            return_data['services'] = rows;
-            success = true;
-        });
-    }
 
     res.send({
         success: success,

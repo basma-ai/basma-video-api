@@ -635,7 +635,7 @@ router.post('/calls/join', async function (req, res, next) {
 
             // get the call
             let call_data = await format_mod.get_call(return_data['call_id'], true);
-            return_data['show_rating'] = call_data.rating == 'no_rating' ? false : true;
+            return_data['show_rating'] = call_data.rating;
 
             return_data['call_info'] = await calls_mod.get_guest_call_refresh(return_data['call_id'], guest_id);
 
