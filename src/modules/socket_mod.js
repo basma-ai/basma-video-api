@@ -151,6 +151,9 @@ module.exports = {
                         missed_time: Date.now()
                     });
 
+                    the_call = await format_mod.get_call(socket_data['call_id'], false);
+
+
                     global_vars.socket_mod.send_update({
                         user_type: 'guest',
                         user_id: the_call.guest_id,
