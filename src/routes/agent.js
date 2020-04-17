@@ -70,13 +70,16 @@ router.post('/agent/request_token', async function (req, res, next) {
     if (go_ahead) {
         // check the validity of the username and password
 
-        await global_vars.knex('vendors_users').select('*')
-            .where('username', '=', req.body.username).where('password', '=', users_mod.encrypt_password(req.body.password))
-            .where('vendor_id', '=', req.body.vendor_id)
+        await global_vars.knex('vendors_users')
+            .select('vendors_users.*', 'vendors.phone_verified')
+            .leftJoin('vendors', 'vendors_users.vendor_id', 'vendors.id')
+            .where('vendors_users.username', '=', req.body.username).where('password', '=', users_mod.encrypt_password(req.body.password))
+            .where('vendors_users.vendor_id', '=', req.body.vendor_id)
             .then((rows) => {
                 the_vu = rows[0];
             });
 
+        console.log(the_vu);
         if (the_vu == null) {
             if (return_data['errors'] == null) {
                 return_data['errors'] = [];
@@ -84,6 +87,16 @@ router.post('/agent/request_token', async function (req, res, next) {
             return_data['errors'].push('invalid_credentials');
             go_ahead = false;
         }
+
+        if(go_ahead && !the_vu.phone_verified) {
+            if (return_data['errors'] == null) {
+                return_data['errors'] = [];
+            }
+            return_data['errors'].push('vendor_pending_verification');
+            return_data['vendor_id'] = the_vu.vendor_id;
+            go_ahead = false;
+        }
+
 
 
     }

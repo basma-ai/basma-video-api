@@ -2,11 +2,6 @@ var global_vars = null;
 
 const axios = require('axios');
 
-let users_mod = require("../modules/users_mod");
-let format_mod = require("../modules/format_mod");
-let twilio_mod = require("../modules/twilio_mod");
-var socket_mod = require("./socket_mod");
-var roles_mod = require("./roles_mod");
 
 module.exports = {
 
@@ -14,15 +9,142 @@ module.exports = {
 
         global_vars = new_global_vars;
 
-        socket_mod.init(global_vars);
 
-
-        users_mod.init(global_vars);
-        format_mod.init(global_vars);
-        roles_mod.init(global_vars);
     },
 
-    create_vendor: async function(params) {
+    create_vendor: async function (params) {
+
+        // data validity checks
+        // -- check if the organization name is valid
+        let go_ahead = true;
+
+        await global_vars.knex('vendors').count('id as total').where('username', params.org_username).then((result) => {
+            if(result[0]['total'] > 0) {
+                go_ahead = false;
+            }
+        });
+        if(!go_ahead) {
+            return "org_username_taken";
+        }
+
+        if(go_ahead) {
+
+            let working_hours_template = '{"sunday":[{"open":"24hrs","close":"24hrs","id":"5ca5578b0c5c7","isOpen":true}],"monday":[{"open":"24hrs","close":"24hrs","id":"5ca5578b0c5d1","isOpen":true}],"tuesday":[{"open":"24hrs","close":"24hrs","id":"5ca5578b0c5d8","isOpen":true}],"wednesday":[{"open":"24hrs","close":"24hrs","id":"5ca5578b0c5df","isOpen":true}],"thursday":[{"open":"24hrs","close":"24hrs","id":"5ca5578b0c5e6","isOpen":true}],"friday":[{"open":"24hrs","close":"24hrs","id":"5ca5578b0c5ec","isOpen":true}],"saturday":[{"open":"0000","close":"1200","id":"5ca5578b0c5f8","isOpen":true}]}';
+
+            let vendor_id = 0;
+
+            // create the vendor
+            await global_vars.knex('vendors').insert({
+                name: params.org_name,
+                username: params.org_username,
+                working_hours: working_hours_template,
+                recording_enabled: false,
+                call_request_sms_template: 'Click at the link below to join the call: {{link}}',
+                out_of_working_hours_message: 'We are closed right now',
+                is_customer_view_enabled: true,
+                phone_verified: false
+            }).then((result) => {
+                vendor_id = result;
+            }).catch((err) => {
+                global_vars.logger.error(err);
+            });
+
+            let vu_id = 0;
+            if(vendor_id != 0) {
+                // cool, the vendor now exists, let's create the user
+                await global_vars.knex('vendors_users').insert({
+                    vendor_id: vendor_id,
+                    username: params.username,
+                    name: params.name,
+                    password: global_vars.users_mod.encrypt_password(params.password),
+                    creation_time: Date.now(),
+                    role: 'admin',
+                    email: params.email,
+                    is_archived: false
+                }).then((result) => {
+                    vu_id = result
+                }).catch((err) => {
+
+                });
+            }
+
+            let admin_role_id = 0;
+            if(vu_id != 0) {
+                // the vendor user is now created, we gotta create a role now
+                await global_vars.knex('roles').insert({
+                    vendor_id: vendor_id,
+                    name: 'Admin'
+                }).then((result) => {
+                    admin_role_id = result
+                }).catch((err) => {
+
+                });
+            }
+
+            // add permissions to the admin_role
+            await global_vars.knex('roles_permissions_relations').insert({
+                vendor_id: vendor_id,
+                role_id: admin_role_id,
+                permission_id: 1 // superuser
+            }).then().catch();
+
+            // create an agent role
+            let agent_role_id = 0;
+            if(admin_role_id != 0) {
+                // the vendor user is now created, we gotta create a role now
+                await global_vars.knex('roles').insert({
+                    vendor_id: vendor_id,
+                    name: 'Agent'
+                }).then((result) => {
+                    agent_role_id = result
+                }).catch((err) => {
+
+                });
+            }
+
+            // add permissions to the agent_role
+            let agent_perms = [2, 3, 15, 16];
+            for(let agent_perm of agent_perms) {
+                await global_vars.knex('roles_permissions_relations').insert({
+                    vendor_id: vendor_id,
+                    role_id: agent_role_id,
+                    permission_id: agent_perm // superuser
+                }).then().catch();
+            }
+
+            // add the admin role to the vu
+            let done = false;
+            if(admin_role_id != 0) {
+                // the vendor user is now created, we gotta create a role now
+                await global_vars.knex('vu_roles_relations').insert({
+                    vendor_id: vendor_id,
+                    vu_id: vu_id,
+                    role_id: admin_role_id,
+                    vendor_id: vendor_id
+                }).then((result) => {
+                    done = true
+                }).catch((err) => {
+
+                });
+            }
+
+            if(done) {
+
+                // create and sms the phone verification token
+                let token = await global_vars.users_mod.create_token('vendors_phone_tokens', 'vendor_id', vendor_id);
+
+                // send sms
+                await global_vars.notifs_mod.sendSMS(params.phone_number, `${token} is you verification pin`);
+
+                let user = await global_vars.format_mod.get_vu(vu_id, true);
+
+                return user;
+            }
+
+            return 'error';
+
+        }
+
 
 
 

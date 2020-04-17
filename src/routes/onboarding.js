@@ -7,6 +7,8 @@ let twilio_mod = require("../modules/twilio_mod");
 var socket_mod = require("../modules/socket_mod");
 var calls_mod = require("../modules/calls_mod");
 var messages_mod = require("../modules/messages_mod");
+var onboarding_mod = require("../modules/onboarding_mod");
+const {check, validationResult} = require('express-validator');
 
 let global_vars;
 
@@ -17,31 +19,143 @@ let global_vars;
  * @apiGroup Onboarding
  * @apiDescription Join a vendor
  *
- * @apiParam {String} [vendor_name] The ID of the vendor to list their services
- * @apiParam {String} [vendor_username] The ID of the vendor to list their services
+ * @apiParam {String} org_name
+ * @apiParam {String} org_username
  *
- * @apiParam {String} [email] The ID of the vendor to list their services
- * @apiParam {String} [name] The ID of the vendor to list their services
- * @apiParam {String} [phone_number] The ID of the vendor to list their services
+ * @apiParam {String} username
+ * @apiParam {String} email
+ * @apiParam {String} name
+ * @apiParam {String} phone_number
+ * @apiParam {String} password
  *
  * @apiSuccessExample {json} Success-Response:
  *     HTTP/1.1 200 OK
 
  */
-router.post('/onboarding/join', async function (req, res, next) {
+router.post('/onboarding/join', [
+    check('org_name').isLength({min: 5}),
+    check('org_username').isLength({min: 4}),
+    check('username').isLength({min: 3}),
+    check('name').isLength({min: 3}),
+    check('email')
+        .isEmail()
+        .normalizeEmail(),
+    check('phone_number')
+        .isMobilePhone(),
+    check('password').isLength({min: 6})
+], async function (req, res, next) {
+
+
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(422).json({success:false, data: { errors: errors.array() }});
+    }
+
+    let success = false;
+    let go_ahead = true;
+    let return_data = {};
+
+    let do_join = await onboarding_mod.create_vendor(req.body);
+
+    if(do_join == "org_username_taken") {
+        success = false;
+        return_data['errors'] = [do_join];
+    } else {
+        success = true;
+        return_data['join'] = do_join;
+    }
+
+
+
+    res.send({
+        success: success,
+        data: return_data
+    });
+
+});
+
+
+
+
+/**
+ * @api {post} /onboarding/verify_otp Verify OTP
+ * @apiName OnboardingVerify
+ * @apiGroup Onboarding
+ * @apiDescription Verify OTP (vendor)
+ *
+ * @apiParam {Integer} vendor_id
+ * @apiParam {Integer} pin
+ *
+ * @apiSuccessExample {json} Success-Response:
+ *     HTTP/1.1 200 OK
+
+ */
+router.post('/onboarding/verify_otp', [
+    check('vendor_id').isInt(),
+    check('pin').isLength({min: 4}),
+], async function (req, res, next) {
+
+
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(422).json({success:false, data: { errors: errors.array() }});
+    }
+
 
 
     let success = false;
     let go_ahead = true;
     let return_data = {};
-    let errors = [];
 
-    // data validity checks
-    // -- check if the organization name is valid
-    await global_vars.knex('vendors').count('id as total').where('username', req.body.vendor_username).then((result) => {
-        console.log("join vendors count");
-        console.log(result);
-    });
+    // find it in the tokens
+    let found = false;
+    let already_verified = false;
+    await global_vars.knex('vendors_phone_tokens')
+        .select('vendors_phone_tokens.*', 'vendors.phone_verified')
+        .leftJoin('vendors', 'vendors.id', 'vendors_phone_tokens.vendor_id')
+        .where('vendors_phone_tokens.vendor_id', req.body.vendor_id)
+        .where('vendors_phone_tokens.token', req.body.pin)
+        .then((rows) => {
+
+            if(rows.length > 0) {
+                found = true;
+
+                if(rows[0]['phone_verified']) {
+
+
+                    already_verified = true;
+                    go_ahead = false;
+                }
+            }
+        }).catch((err) => {
+            console.log(err);
+        });
+
+    if(found && go_ahead) {
+
+
+        // update it
+        let updated = false;
+        await global_vars.knex('vendors')
+            .where('id', req.body.vendor_id)
+            .update({
+                phone_verified: true
+            }).then((result) => {
+                updated = true;
+                success = true;
+            }).catch((err) => {
+                console.log(err);
+            });
+
+
+    }
+
+    if(already_verified) {
+        success = false;
+        return_data['errors'] = ['already_verified'];
+    }
+
+
 
     res.send({
         success: success,
@@ -59,6 +173,7 @@ module.exports = function (options) {
     socket_mod.init(global_vars);
     calls_mod.init(global_vars);
     messages_mod.init(global_vars);
+    onboarding_mod.init(global_vars);
 
     return router;
 };

@@ -21,7 +21,7 @@ module.exports = {
 
         while (goAhead) {
 
-            if (table_name == 'phone_verification_tokens') {
+            if (table_name == 'phone_verification_tokens' || table_name == 'vendors_phone_tokens') {
                 return Math.floor(1000 + Math.random() * 9000);
             } else if (table_name == 'call_requests') {
                 return Math.random().toString(36).substring(7);

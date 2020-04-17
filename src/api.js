@@ -6,6 +6,9 @@ require('dotenv').config()
 const {attachPaginate} = require('knex-paginate');
 const socket_mod = require('./modules/socket_mod');
 const calls_mod = require('./modules/calls_mod');
+const users_mod = require('./modules/users_mod');
+const format_mod = require('./modules/format_mod');
+const notifs_mod = require('./modules/notifs_mod');
 var log4js = require('log4js');
 
 // set expressjs settings
@@ -55,9 +58,15 @@ let global_vars = {
 // init modules
 socket_mod.init(global_vars);
 calls_mod.init(global_vars);
+users_mod.init(global_vars);
+format_mod.init(global_vars);
+notifs_mod.init(notifs_mod);
 
 global_vars['socket_mod'] = socket_mod;
 global_vars['calls_mod'] = calls_mod;
+global_vars['users_mod'] = users_mod;
+global_vars['format_mod'] = format_mod;
+global_vars['notifs_mod'] = notifs_mod;
 
 
 // index page 
@@ -93,6 +102,7 @@ let vendor_settings = require('./routes/vendor/vendor_settings.js')(global_vars)
 
 // onboarding
 app.post('/onboarding/join', onboarding);
+app.post('/onboarding/verify_otp', onboarding);
 
 
 // guests
