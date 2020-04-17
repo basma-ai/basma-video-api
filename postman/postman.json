@@ -343,7 +343,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n\t\"vendor_id\": 1,\n\t\"username\": \"ali.bh\",\n\t\"password\": \"B4sm41sL0ve\"\n}",
+							"raw": "{\n\t\"vendor_id\": 1,\n\t\"username\": \"support\",\n\t\"password\": \"B4sm41sL0ve\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -513,7 +513,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n\t\"vendor_id\": 1,\n\t\"vu_token\": \"40ee57f1becb99e2b0ff7762c4361e42a359df3e3f22d6173c6a2572839ad6ff\"\n}",
+							"raw": "{\n\t\"vendor_id\": 1,\n\t\"vu_token\": \"40ee57f1becb99e2b0ff7762c4361e42a359df3e3f22d6173c6a2572839ad6ffk\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -521,13 +521,13 @@
 							}
 						},
 						"url": {
-							"raw": "{{api_url}}/agent/request_token",
+							"raw": "{{api_url}}/agent/check_token",
 							"host": [
 								"{{api_url}}"
 							],
 							"path": [
 								"agent",
-								"request_token"
+								"check_token"
 							]
 						}
 					},
@@ -1467,6 +1467,66 @@
 							"path": [
 								"vendor",
 								"dashboard_numbers"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"protocolProfileBehavior": {}
+		},
+		{
+			"name": "Onboarding",
+			"item": [
+				{
+					"name": "Join",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"org_name\": \"Somewhere\",\n\t\"org_username\": \"somewhere4\",\n\t\"email\": \"the-ghost@live.com\",\n\t\"username\": \"theghost\",\n\t\"phone_number\": \"+97336722368\",\n\t\"name\": \"His Supreme Highness Mr. Ali\",\n\t\"password\": \"a verycool pass\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{api_url}}/onboarding/join",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"onboarding",
+								"join"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify OTP",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"vendor_id\": 343,\n\t\"pin\": 3425\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{api_url}}/onboarding/verify_otp",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"onboarding",
+								"verify_otp"
 							]
 						}
 					},
