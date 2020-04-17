@@ -60,7 +60,8 @@ module.exports = {
                     creation_time: Date.now(),
                     role: 'admin',
                     email: params.email,
-                    is_archived: false
+                    is_archived: false,
+                    phone_number: params.phone_number
                 }).then((result) => {
                     vu_id = result
                 }).catch((err) => {
