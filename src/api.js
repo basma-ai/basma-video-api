@@ -104,6 +104,7 @@ let vendor_settings = require('./routes/vendor/vendor_settings.js')(global_vars)
 app.post('/onboarding/join', onboarding);
 app.post('/onboarding/verify_otp', onboarding);
 app.post('/onboarding/resend_otp', onboarding);
+app.post('/onboarding/check_org_username', onboarding);
 
 
 // guests

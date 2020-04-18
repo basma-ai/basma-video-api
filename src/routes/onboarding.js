@@ -266,6 +266,52 @@ router.post('/onboarding/resend_otp', [
 });
 
 
+/**
+ * @api {post} /onboarding/check_org_username Check organization username
+ * @apiName OnboardingCheckUsername
+ * @apiGroup Onboarding
+ * @apiDescription Check kif organization username is available
+ *
+ * @apiParam {String} org_username
+ *
+ * @apiSuccessExample {json} Success-Response:
+ *     HTTP/1.1 200 OK
+
+ */
+router.post('/onboarding/check_org_username', [
+    check('org_username').isLength({min: 1}),
+], async function (req, res, next) {
+
+
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.json({success: false, data: {errors: errors.array()}});
+    }
+
+
+    let success = true;
+    let go_ahead = true;
+    let return_data = {};
+
+    await global_vars.knex('vendors')
+        .select('username')
+        .where('username', req.body.org_username)
+        .then((rows) => {
+            if(rows.length > 0) {
+                success = false
+            }
+        }).catch();
+
+
+    res.send({
+        success: success,
+        data: return_data
+    });
+
+});
+
+
+
 module.exports = function (options) {
 
     global_vars = options;
