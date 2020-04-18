@@ -49,28 +49,34 @@ router.post('/onboarding/join', [
     recaptcha.middleware.verify
 ], async function (req, res, next) {
 
-    const errors_of_captcha = validationResult(req);
-    if (!errors_of_captcha.isEmpty()) {
-        return res.json({success: false, data: {errors: errors_of_captcha.array()}});
-    }
 
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         return res.json({success: false, data: {errors: errors.array()}});
     }
 
+
     let success = false;
     let go_ahead = true;
     let return_data = {};
 
-    let do_join = await onboarding_mod.create_vendor(req.body);
 
-    if (do_join == "org_username_taken") {
+    if (req.recaptcha.error) {
+        go_ahead = false;
         success = false;
-        return_data['errors'] = [do_join];
-    } else {
-        success = true;
-        return_data['join'] = do_join;
+        return_data['errors'] = ['invalid_captcha'];
+    }
+
+    if (go_ahead) {
+        let do_join = await onboarding_mod.create_vendor(req.body);
+
+        if (do_join == "org_username_taken") {
+            success = false;
+            return_data['errors'] = [do_join];
+        } else {
+            success = true;
+            return_data['join'] = do_join;
+        }
     }
 
 
@@ -118,54 +124,62 @@ router.post('/onboarding/verify_otp', [
     let go_ahead = true;
     let return_data = {};
 
+    if (req.recaptcha.error) {
+        go_ahead = false;
+        success = false;
+        return_data['errors'] = ['invalid_captcha'];
+    }
+
     // find it in the tokens
-    let found = false;
-    let already_verified = false;
-    await global_vars.knex('vendors_phone_tokens')
-        .select('vendors_phone_tokens.*', 'vendors.phone_verified')
-        .leftJoin('vendors', 'vendors.id', 'vendors_phone_tokens.vendor_id')
-        .where('vendors_phone_tokens.vendor_id', req.body.vendor_id)
-        .where('vendors_phone_tokens.token', req.body.pin)
-        .then((rows) => {
+    if (go_ahead) {
+        let found = false;
+        let already_verified = false;
+        await global_vars.knex('vendors_phone_tokens')
+            .select('vendors_phone_tokens.*', 'vendors.phone_verified')
+            .leftJoin('vendors', 'vendors.id', 'vendors_phone_tokens.vendor_id')
+            .where('vendors_phone_tokens.vendor_id', req.body.vendor_id)
+            .where('vendors_phone_tokens.token', req.body.pin)
+            .then((rows) => {
 
-            if (rows.length > 0) {
-                found = true;
+                if (rows.length > 0) {
+                    found = true;
 
-                if (rows[0]['phone_verified']) {
+                    if (rows[0]['phone_verified']) {
 
 
-                    already_verified = true;
-                    go_ahead = false;
+                        already_verified = true;
+                        go_ahead = false;
+                    }
                 }
-            }
-        }).catch((err) => {
-            console.log(err);
-        });
-
-    if (found && go_ahead) {
-
-
-        // update it
-        let updated = false;
-        await global_vars.knex('vendors')
-            .where('id', req.body.vendor_id)
-            .update({
-                phone_verified: true
-            }).then((result) => {
-                updated = true;
-                success = true;
             }).catch((err) => {
                 console.log(err);
             });
 
 
-    }
+        if (found && go_ahead) {
 
-    if (already_verified) {
-        success = false;
-        return_data['errors'] = ['already_verified'];
-    }
 
+            // update it
+            let updated = false;
+            await global_vars.knex('vendors')
+                .where('id', req.body.vendor_id)
+                .update({
+                    phone_verified: true
+                }).then((result) => {
+                    updated = true;
+                    success = true;
+                }).catch((err) => {
+                    console.log(err);
+                });
+
+
+        }
+
+        if (already_verified) {
+            success = false;
+            return_data['errors'] = ['already_verified'];
+        }
+    }
 
     res.send({
         success: success,
@@ -311,13 +325,13 @@ router.post('/onboarding/check_org_username', [
 
     return_data['username_exists'] = false;
 
-    if(req.recaptcha.error) {
+    if (req.recaptcha.error) {
         go_ahead = false;
         success = false;
         return_data['errors'] = ['invalid_captcha'];
     }
 
-    if(go_ahead) {
+    if (go_ahead) {
         await global_vars.knex('vendors')
             .select('username')
             .where('username', req.body.org_username)
@@ -336,7 +350,6 @@ router.post('/onboarding/check_org_username', [
     });
 
 });
-
 
 
 module.exports = function (options) {
