@@ -45,9 +45,14 @@ router.post('/onboarding/join', [
         .normalizeEmail(),
     check('phone_number')
         .isMobilePhone(),
-    check('password').isLength({min: 6})
+    check('password').isLength({min: 6}),
+    recaptcha.middleware.verify
 ], async function (req, res, next) {
 
+    const errors_of_captcha = validationResult(req);
+    if (!errors_of_captcha.isEmpty()) {
+        return res.json({success: false, data: {errors: errors_of_captcha.array()}});
+    }
 
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -93,7 +98,14 @@ router.post('/onboarding/join', [
 router.post('/onboarding/verify_otp', [
     check('vendor_id').isInt(),
     check('pin').isLength({min: 4}),
+    recaptcha.middleware.verify
 ], async function (req, res, next) {
+
+
+    const errors_of_captcha = validationResult(req);
+    if (!errors_of_captcha.isEmpty()) {
+        return res.json({success: false, data: {errors: errors_of_captcha.array()}});
+    }
 
 
     const errors = validationResult(req);
