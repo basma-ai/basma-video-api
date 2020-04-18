@@ -48,7 +48,7 @@ router.post('/onboarding/join', [
 
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-        return res.status(422).json({success: false, data: {errors: errors.array()}});
+        return res.json({success: false, data: {errors: errors.array()}});
     }
 
     let success = false;
@@ -95,7 +95,7 @@ router.post('/onboarding/verify_otp', [
 
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-        return res.status(422).json({success: false, data: {errors: errors.array()}});
+        return res.json({success: false, data: {errors: errors.array()}});
     }
 
 
@@ -179,7 +179,7 @@ router.post('/onboarding/resend_otp', [
 
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-        return res.status(422).json({success: false, data: {errors: errors.array()}});
+        return res.json({success: false, data: {errors: errors.array()}});
     }
 
 
