@@ -9,6 +9,9 @@ var calls_mod = require("../modules/calls_mod");
 var messages_mod = require("../modules/messages_mod");
 var onboarding_mod = require("../modules/onboarding_mod");
 const {check, validationResult} = require('express-validator');
+var Recaptcha = require('express-recaptcha').RecaptchaV3;
+//import Recaptcha from 'express-recaptcha'
+var recaptcha = new Recaptcha(process.env.RECAPTCHA_SITE_KEY, process.env.RECAPTCHA_SECRET_KEY);
 
 let global_vars;
 
@@ -280,6 +283,7 @@ router.post('/onboarding/resend_otp', [
  */
 router.post('/onboarding/check_org_username', [
     check('org_username').isLength({min: 1}),
+    recaptcha.middleware.verify
 ], async function (req, res, next) {
 
 
@@ -293,14 +297,22 @@ router.post('/onboarding/check_org_username', [
     let go_ahead = true;
     let return_data = {};
 
-    await global_vars.knex('vendors')
-        .select('username')
-        .where('username', req.body.org_username)
-        .then((rows) => {
-            if(rows.length > 0) {
-                success = false
-            }
-        }).catch();
+    if(req.recaptcha.error) {
+        go_ahead = false;
+        success = false;
+        return_data['errors'] = ['invalid_captcha'];
+    }
+
+    if(go_ahead) {
+        await global_vars.knex('vendors')
+            .select('username')
+            .where('username', req.body.org_username)
+            .then((rows) => {
+                if (rows.length > 0) {
+                    success = false
+                }
+            }).catch();
+    }
 
 
     res.send({

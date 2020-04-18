@@ -12,7 +12,7 @@ const notifs_mod = require('./modules/notifs_mod');
 var log4js = require('log4js');
 
 // set expressjs settings
-app.use(bodyParser.json({limit: '50mb'}));
+app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({limit: '50mb', extended: true}));
 app.use(express.static('public'))
 app.use(function (req, res, next) {
@@ -20,6 +20,7 @@ app.use(function (req, res, next) {
     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
     next();
 });
+
 
 // establish database connection, using knex
 var knex = require('knex')({

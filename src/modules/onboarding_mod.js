@@ -29,7 +29,9 @@ module.exports = {
 
         if(go_ahead) {
 
-            let working_hours_template = '{"sunday":[{"open":"24hrs","close":"24hrs","id":"5ca5578b0c5c7","isOpen":true}],"monday":[{"open":"24hrs","close":"24hrs","id":"5ca5578b0c5d1","isOpen":true}],"tuesday":[{"open":"24hrs","close":"24hrs","id":"5ca5578b0c5d8","isOpen":true}],"wednesday":[{"open":"24hrs","close":"24hrs","id":"5ca5578b0c5df","isOpen":true}],"thursday":[{"open":"24hrs","close":"24hrs","id":"5ca5578b0c5e6","isOpen":true}],"friday":[{"open":"24hrs","close":"24hrs","id":"5ca5578b0c5ec","isOpen":true}],"saturday":[{"open":"0000","close":"1200","id":"5ca5578b0c5f8","isOpen":true}]}';
+            // let working_hours_template = '{"sunday":[{"open":"24hrs","close":"24hrs","id":"5ca5578b0c5c7","isOpen":true}],"monday":[{"open":"24hrs","close":"24hrs","id":"5ca5578b0c5d1","isOpen":true}],"tuesday":[{"open":"24hrs","close":"24hrs","id":"5ca5578b0c5d8","isOpen":true}],"wednesday":[{"open":"24hrs","close":"24hrs","id":"5ca5578b0c5df","isOpen":true}],"thursday":[{"open":"24hrs","close":"24hrs","id":"5ca5578b0c5e6","isOpen":true}],"friday":[{"open":"24hrs","close":"24hrs","id":"5ca5578b0c5ec","isOpen":true}],"saturday":[{"open":"0000","close":"1200","id":"5ca5578b0c5f8","isOpen":true}]}';
+
+            let working_hours_template = '{"sunday":[{"open":"24hrs","close":"24hrs","id":"5ca5578b0c5c7","isOpen":true}],"monday":[{"open":"24hrs","close":"24hrs","id":"5ca5578b0c5d1","isOpen":true}],"tuesday":[{"open":"24hrs","close":"24hrs","id":"5ca5578b0c5d8","isOpen":true}],"wednesday":[{"open":"24hrs","close":"24hrs","id":"5ca5578b0c5df","isOpen":true}],"thursday":[{"open":"24hrs","close":"24hrs","id":"5ca5578b0c5e6","isOpen":true}],"friday":[{"open":"24hrs","close":"24hrs","id":"5ca5578b0c5ec","isOpen":true}],"saturday":[{"open":"24hrs","close":"24hrs","id":"5ca5578b0c5f8","isOpen":true}]}';
 
             let vendor_id = 0;
 
