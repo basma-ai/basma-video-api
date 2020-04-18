@@ -293,9 +293,11 @@ router.post('/onboarding/check_org_username', [
     }
 
 
-    let success = true;
+    let success = false;
     let go_ahead = true;
     let return_data = {};
+
+    return_data['username_exists'] = false;
 
     if(req.recaptcha.error) {
         go_ahead = false;
@@ -308,8 +310,9 @@ router.post('/onboarding/check_org_username', [
             .select('username')
             .where('username', req.body.org_username)
             .then((rows) => {
+                success = true;
                 if (rows.length > 0) {
-                    success = false
+                    return_data['username_exists'] = true;
                 }
             }).catch();
     }
