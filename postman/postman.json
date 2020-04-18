@@ -1,460 +1,21 @@
 {
 	"info": {
-		"_postman_id": "e71b8834-40e5-4b83-a335-f942e37d76ee",
-		"name": "Shura AVRGS",
+		"_postman_id": "e009fcef-b609-4baf-bef3-25d39b46d05d",
+		"name": "Video CC",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
 		{
-			"name": "Sessions",
+			"name": "Guests",
 			"item": [
 				{
-					"name": "Upsert Session",
+					"name": "Request Guest Token",
 					"request": {
 						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"name": "Content-Type",
-								"value": "application/json",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n\t\"source_id\": 209,\n\t\"title\": \"جلسة تجريبية\"\n}"
-						},
-						"url": {
-							"raw": "{{api_url}}/sessions/upsert",
-							"host": [
-								"{{api_url}}"
-							],
-							"path": [
-								"sessions",
-								"upsert"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Get Session",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"name": "Content-Type",
-								"value": "application/json",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n\t\"session_id\": 24\n}"
-						},
-						"url": {
-							"raw": "{{api_url}}/sessions/get",
-							"host": [
-								"{{api_url}}"
-							],
-							"path": [
-								"sessions",
-								"get"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "List sessions",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"name": "Content-Type",
-								"value": "application/json",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": ""
-						},
-						"url": {
-							"raw": "{{api_url}}/sessions/list",
-							"host": [
-								"{{api_url}}"
-							],
-							"path": [
-								"sessions",
-								"list"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Get Session video cut data",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"name": "Content-Type",
-								"value": "application/json",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n\t\"session_id\": 29\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{api_url}}/sessions/video_cut_data",
-							"host": [
-								"{{api_url}}"
-							],
-							"path": [
-								"sessions",
-								"video_cut_data"
-							]
-						}
-					},
-					"response": []
-				}
-			],
-			"protocolProfileBehavior": {}
-		},
-		{
-			"name": "Delegates",
-			"item": [
-				{
-					"name": "Upsert Delegate",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"name": "Content-Type",
-								"value": "application/json",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n\t\"source_id\": 209,\n\t\"name\": \"اسم العضو\",\n\t\"source_raw\": \"no raw data here\"\n}"
-						},
-						"url": {
-							"raw": "{{api_url}}/delegates/upsert",
-							"host": [
-								"{{api_url}}"
-							],
-							"path": [
-								"delegates",
-								"upsert"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Get delegate",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"name": "Content-Type",
-								"value": "application/json",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n\t\"delegate_id\": 297\n}"
-						},
-						"url": {
-							"raw": "{{api_url}}/delegates/get",
-							"host": [
-								"{{api_url}}"
-							],
-							"path": [
-								"delegates",
-								"get"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "List delegates",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"name": "Content-Type",
-								"value": "application/json",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n\t\"delegate_id\": 297\n}"
-						},
-						"url": {
-							"raw": "{{api_url}}/delegates/list",
-							"host": [
-								"{{api_url}}"
-							],
-							"path": [
-								"delegates",
-								"list"
-							]
-						}
-					},
-					"response": []
-				}
-			],
-			"protocolProfileBehavior": {}
-		},
-		{
-			"name": "Events",
-			"item": [
-				{
-					"name": "Upsert event",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"name": "Content-Type",
-								"value": "application/json",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n        \"source_id\": 300,\n        \"delegate_id\": 0,\n        \"session_id\": 24,\n        \"type\": \"topic\",\n        \"start_time\": 1581253662879,\n        \"end_time\": 1581253962379,\n        \"source_raw\": \"nothing for now\",\n        \"value\": \"nothing as well for now\",\n        \"title\": \"تجربة واحد اثنان ثلاثة اربعة خمسة\",\n        \"parent_event_id\": 0\n\n}"
-						},
-						"url": {
-							"raw": "{{api_url}}/events/upsert",
-							"host": [
-								"{{api_url}}"
-							],
-							"path": [
-								"events",
-								"upsert"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Get event",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"name": "Content-Type",
-								"value": "application/json",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n        \"event_id\": 2102\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{api_url}}/events/get",
-							"host": [
-								"{{api_url}}"
-							],
-							"path": [
-								"events",
-								"get"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "List events",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"name": "Content-Type",
-								"value": "application/json",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n        \"wheres\": [\n        \t\n        \t{\n        \t\t\"column\":\"session_id\",\n        \t\t\"operator\": \"=\",\n        \t\t\"value\":244\n        \t}\n        \t\t\n        ]\n}"
-						},
-						"url": {
-							"raw": "{{api_url}}/events/list",
-							"host": [
-								"{{api_url}}"
-							],
-							"path": [
-								"events",
-								"list"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Get Session video cut data",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"name": "Content-Type",
-								"value": "application/json",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n\t\"session_id\": 29\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{api_url}}/events/video_cut_data",
-							"host": [
-								"{{api_url}}"
-							],
-							"path": [
-								"events",
-								"video_cut_data"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "List Madbata",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"name": "Content-Type",
-								"value": "application/json",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n\t\"session_id\": 38\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{api_url}}/madbata/list",
-							"host": [
-								"{{api_url}}"
-							],
-							"path": [
-								"madbata",
-								"list"
-							]
-						}
-					},
-					"response": []
-				}
-			],
-			"protocolProfileBehavior": {}
-		},
-		{
-			"name": "Search",
-			"item": [
-				{
-					"name": "Search",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"name": "Content-Type",
-								"value": "application/json",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n        \"query\": \"محمد\"\n}"
-						},
-						"url": {
-							"raw": "{{api_url}}/search/search",
-							"host": [
-								"{{api_url}}"
-							],
-							"path": [
-								"search",
-								"search"
-							]
-						}
-					},
-					"response": []
-				}
-			],
-			"protocolProfileBehavior": {}
-		},
-		{
-			"name": "Reports",
-			"item": [
-				{
-					"name": "Longest discussed topics",
-					"request": {
-						"method": "GET",
 						"header": [],
-						"url": {
-							"raw": ""
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Topics by number of speeches",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"name": "Content-Type",
-								"value": "application/json",
-								"type": "text"
-							}
-						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n\t\"session_id\": 26\n}",
+							"raw": "{\n\t\"first_name\": \"Ali\",\n\t\"last_name\": \"Last\",\n\t\"phone\": \"0097336722368\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -462,20 +23,20 @@
 							}
 						},
 						"url": {
-							"raw": "{{api_url}}/reports/topic_by_no_of_speeches",
+							"raw": "{{api_url}}/guest/request_token",
 							"host": [
 								"{{api_url}}"
 							],
 							"path": [
-								"reports",
-								"topic_by_no_of_speeches"
+								"guest",
+								"request_token"
 							]
 						}
 					},
 					"response": []
 				},
 				{
-					"name": "Members by total speech duration",
+					"name": "Get vendor",
 					"request": {
 						"method": "POST",
 						"header": [
@@ -488,7 +49,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n\t\"session_id\": 26\n}",
+							"raw": "{\n\t\"vendor_id\": 1\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -496,115 +57,13 @@
 							}
 						},
 						"url": {
-							"raw": "{{api_url}}/reports/members_total_speech_duration",
+							"raw": "{{api_url}}/guest/get_vendor",
 							"host": [
 								"{{api_url}}"
 							],
 							"path": [
-								"reports",
-								"members_total_speech_duration"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Members by total speeches count",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"name": "Content-Type",
-								"value": "application/json",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n\t\"session_id\": 26\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{api_url}}/reports/members_by_speeches_count",
-							"host": [
-								"{{api_url}}"
-							],
-							"path": [
-								"reports",
-								"members_by_speeches_count"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Session numbers",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"name": "Content-Type",
-								"value": "application/json",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n\t\"session_id\": 30\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{api_url}}/reports/session_numbers",
-							"host": [
-								"{{api_url}}"
-							],
-							"path": [
-								"reports",
-								"session_numbers"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Home stats",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"name": "Content-Type",
-								"value": "application/json",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{api_url}}/reports/home_stats",
-							"host": [
-								"{{api_url}}"
-							],
-							"path": [
-								"reports",
-								"home_stats"
+								"guest",
+								"get_vendor"
 							]
 						}
 					},
@@ -614,10 +73,10 @@
 			"protocolProfileBehavior": {}
 		},
 		{
-			"name": "Data",
+			"name": "Calls",
 			"item": [
 				{
-					"name": "Import data",
+					"name": "Get services",
 					"request": {
 						"method": "POST",
 						"header": [
@@ -630,7 +89,36 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n\t\"fa9l\": 1,\n\t\"dawr\": 1,\n\t\"session_number\": 1,\n\t\"log_data\": \"...\"\n}",
+							"raw": "{\n\t\"vendor_id\": 1,\n\t\"guest_token\": \"6e8437e93def1196aa029cebe18214ea5df8138e3e6619b67d26891268da1880\"\n}"
+						},
+						"url": {
+							"raw": "{{api_url}}/calls/get_services",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"calls",
+								"get_services"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Start a call",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"guest_token\": \"{{guest_token}}\",\n\t\"service_id\": 22\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -638,13 +126,163 @@
 							}
 						},
 						"url": {
-							"raw": "{{api_url}}/data/import",
+							"raw": "{{api_url}}/calls/start_call",
 							"host": [
 								"{{api_url}}"
 							],
 							"path": [
-								"data",
-								"import"
+								"calls",
+								"start_call"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Refresh a call",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"guest_token\": \"cf6dc255705a657763b1ec632276e9ed5684511cc8089c2061bdd5a6f71776ce\",\n\t\"call_id\": 2\n}"
+						},
+						"url": {
+							"raw": "{{api_url}}/calls/refresh_call",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"calls",
+								"refresh_call"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "End call",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"guest_token\": \"cf6dc255705a657763b1ec632276e9ed5684511cc8089c2061bdd5a6f71776ce\",\n\t\"call_id\": 2\n}"
+						},
+						"url": {
+							"raw": "{{api_url}}/calls/end_call",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"calls",
+								"end_call"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Submit rating",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"guest_token\": \"49667443923e8c109bfbb404476103642d8a0703916c43e6738ef120dd89e2cb\",\n\t\"call_id\": 458,\n\t\"rating\": 4.5,\n\t\"feedback_text\": \"hello there, I loved the service, thank you!\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{api_url}}/calls/submit_rating",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"calls",
+								"submit_rating"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Send a message",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"guest_token\": \"{{guest_token}}\",\n\t\"call_id\": 781,\n\t\"message_type\": \"text\",\n\t\"value\": \"hello\"\n}"
+						},
+						"url": {
+							"raw": "{{api_url}}/calls/send_message",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"calls",
+								"send_message"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Join a call",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"guest_token\": \"{{guest_token}}\",\n\t\"request_call_token\": \"jf4j5\"\n}"
+						},
+						"url": {
+							"raw": "{{api_url}}/calls/join",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"calls",
+								"join"
 							]
 						}
 					},
@@ -654,44 +292,264 @@
 			"protocolProfileBehavior": {}
 		},
 		{
-			"name": "Admin",
+			"name": "Master",
 			"item": [
 				{
-					"name": "Madbata",
+					"name": "Create a vendor user",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"master_secret\": \"kj23@#4j23$@#K$L@34\",\n\t\"vendor_id\": 1,\n\t\"name\": \"Ali Alnoaimi\",\n\t\"username\": \"ali.bh\",\n\t\"password\": \"123456\"\n}"
+						},
+						"url": {
+							"raw": "{{api_url}}/master/create_vendor_user",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"master",
+								"create_vendor_user"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"protocolProfileBehavior": {}
+		},
+		{
+			"name": "Agent",
+			"item": [
+				{
+					"name": "Request agent token",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"vendor_id\": 1,\n\t\"username\": \"support\",\n\t\"password\": \"B4sm41sL0ve\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{api_url}}/agent/request_token",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"agent",
+								"request_token"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List pending calls",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"vu_token\": \"{{vu_token}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{api_url}}/agent/list_pending_calls",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"agent",
+								"list_pending_calls"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Answer call",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"vu_token\": \"{{vu_token}}\",\n\t\"call_id\": 3\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{api_url}}/agent/answer_call",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"agent",
+								"answer_call"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "End call",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"vu_token\": \"{{vu_token}}\",\n\t\"call_id\": 5\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{api_url}}/agent/end_call",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"agent",
+								"end_call"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update call",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"vu_token\": \"{{vu_token}}\",\n\t\"call_id\": 489,\n\t\"agent_notes\": \"some notes go here\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{api_url}}/agent/update_call",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"agent",
+								"update_call"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Check agent token",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"vendor_id\": 1,\n\t\"vu_token\": \"40ee57f1becb99e2b0ff7762c4361e42a359df3e3f22d6173c6a2572839ad6ffk\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{api_url}}/agent/check_token",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"agent",
+								"check_token"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"protocolProfileBehavior": {}
+		},
+		{
+			"name": "Vendors",
+			"item": [
+				{
+					"name": "Groups",
 					"item": [
 						{
-							"name": "Import Madbata",
+							"name": "Create group",
 							"request": {
 								"method": "POST",
-								"header": [
-									{
-										"key": "Content-Type",
-										"name": "Content-Type",
-										"value": "application/json",
-										"type": "text"
-									}
-								],
+								"header": [],
 								"body": {
-									"mode": "formdata",
-									"formdata": [
-										{
-											"key": "access_token",
-											"value": "765e9f26ada4136eed0b2c2dbd2d9b4f1c03db6f12b93036004a246eeca2095a",
-											"contentType": "",
-											"type": "text"
-										},
-										{
-											"key": "madbata_file",
-											"type": "file",
-											"src": "/Users/ali/Documents/Projects/Shura Council/avrgs/data_lab/madbata playground/17.docx"
-										},
-										{
-											"key": "session_id",
-											"value": "38",
-											"contentType": "",
-											"type": "text"
-										}
-									],
+									"mode": "raw",
+									"raw": "{\n\t\"vu_token\": \"{{vu_token}}\",\n\t\"name\": \"Legends\",\n\t\"service_ids\": []\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -699,21 +557,499 @@
 									}
 								},
 								"url": {
-									"raw": "{{api_url}}/admin/madbata/import",
+									"raw": "{{api_url}}/vendor/groups/create",
 									"host": [
 										"{{api_url}}"
 									],
 									"path": [
-										"admin",
-										"madbata",
-										"import"
+										"vendor",
+										"groups",
+										"create"
 									]
 								}
 							},
 							"response": []
 						},
 						{
-							"name": "List Madbata",
+							"name": "Edit group",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"vu_token\": \"{{vu_token}}\",\n    \"group_id\": 38,\n    \"name\": \"Legends 452\",\n    \"service_ids\": []\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{api_url}}/vendor/groups/edit",
+									"host": [
+										"{{api_url}}"
+									],
+									"path": [
+										"vendor",
+										"groups",
+										"edit"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "List groups",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"vu_token\": \"{{vu_token}}\",\n\t\"per_page\": 1,\n\t\"page\": 1\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{api_url}}/vendor/groups/list",
+									"host": [
+										"{{api_url}}"
+									],
+									"path": [
+										"vendor",
+										"groups",
+										"list"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get a group",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"vu_token\": \"{{vu_token}}\",\n\t\"service_id\": 29\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{api_url}}/vendor/groups/get",
+									"host": [
+										"{{api_url}}"
+									],
+									"path": [
+										"vendor",
+										"groups",
+										"get"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete a group",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"vu_token\": \"{{vu_token}}\",\n\t\"group_id\": \"45\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{api_url}}/vendor/groups/delete",
+									"host": [
+										"{{api_url}}"
+									],
+									"path": [
+										"vendor",
+										"groups",
+										"delete"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"protocolProfileBehavior": {},
+					"_postman_isSubFolder": true
+				},
+				{
+					"name": "Services",
+					"item": [
+						{
+							"name": "Create service",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"vu_token\": \"{{vu_token}}\",\n\t\"name\": \"Test Service\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{api_url}}/vendor/services/create",
+									"host": [
+										"{{api_url}}"
+									],
+									"path": [
+										"vendor",
+										"services",
+										"create"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Edit service",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"vu_token\": \"{{vu_token}}\",\n\t\"service_id\": \"41\",\n\t\"name\": \"The new test service - edited 2 454\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{api_url}}/vendor/services/edit",
+									"host": [
+										"{{api_url}}"
+									],
+									"path": [
+										"vendor",
+										"services",
+										"edit"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "List services",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"vu_token\": \"{{vu_token}}\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{api_url}}/vendor/services/list",
+									"host": [
+										"{{api_url}}"
+									],
+									"path": [
+										"vendor",
+										"services",
+										"list"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get a service",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"vu_token\": \"{{vu_token}}\",\n\t\"service_id\": 18\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{api_url}}/vendor/services/get",
+									"host": [
+										"{{api_url}}"
+									],
+									"path": [
+										"vendor",
+										"services",
+										"get"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete a service",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"vu_token\": \"{{vu_token}}\",\n\t\"service_id\": \"41\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{api_url}}/vendor/services/delete",
+									"host": [
+										"{{api_url}}"
+									],
+									"path": [
+										"vendor",
+										"services",
+										"delete"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"protocolProfileBehavior": {},
+					"_postman_isSubFolder": true
+				},
+				{
+					"name": "Users",
+					"item": [
+						{
+							"name": "Create user",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"vu_token\": \"{{vu_token}}\",\n\t\"username\": \"ali.bh2\",\n\t\"password\": \"123123\",\n\t\"email\": \"noaimi@basma.ai\",\n\t\"name\": \"Ali 2\",\n\t\"role\": \"agent\",\n\t\"groups_ids\": [29, 30]\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{api_url}}/vendor/users/create",
+									"host": [
+										"{{api_url}}"
+									],
+									"path": [
+										"vendor",
+										"users",
+										"create"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "List users",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"vu_token\": \"{{vu2_token}}\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{api_url}}/vendor/users/list",
+									"host": [
+										"{{api_url}}"
+									],
+									"path": [
+										"vendor",
+										"users",
+										"list"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Edit user",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"vu_token\": \"{{vu_token}}\",\n\t\"vu_id\": 12,\n\t\"password\": \"B4sm41sL0ve\",\n\t\"email\": \"noaimi@basma.ai\",\n\t\"name\": \"Ali Alnoaimi\",\n\t\"role\": \"admin\",\n\t\"phone_status\": \"online\",\n\t\"groups_ids\": [29, 30]\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "https://video-api.basma.ai/vendor/users/edit",
+									"protocol": "https",
+									"host": [
+										"video-api",
+										"basma",
+										"ai"
+									],
+									"path": [
+										"vendor",
+										"users",
+										"edit"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get user",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"vu_token\": \"{{vu_token}}\",\n\t\"vu_id\": 12\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{api_url}}/vendor/users/get",
+									"host": [
+										"{{api_url}}"
+									],
+									"path": [
+										"vendor",
+										"users",
+										"get"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"protocolProfileBehavior": {},
+					"_postman_isSubFolder": true
+				},
+				{
+					"name": "Calls",
+					"item": [
+						{
+							"name": "Calls list",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"vu_token\": \"{{vu_token}}\",\n\t\"page\": 1,\n\t\"per_page\": 10\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{api_url}}/vendor/calls/list",
+									"host": [
+										"{{api_url}}"
+									],
+									"path": [
+										"vendor",
+										"calls",
+										"list"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get a call",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"vu_token\": \"{{vu_token}}\",\n\t\"call_id\": 753\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "https://video-api.basma.ai/vendor/calls/get",
+									"protocol": "https",
+									"host": [
+										"video-api",
+										"basma",
+										"ai"
+									],
+									"path": [
+										"vendor",
+										"calls",
+										"get"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get a recording",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"vu_token\": \"{{vu_token}}\",\n\t\"call_id\": 753\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "https://video-api.basma.ai/vendor/calls/get_recording",
+									"protocol": "https",
+									"host": [
+										"video-api",
+										"basma",
+										"ai"
+									],
+									"path": [
+										"vendor",
+										"calls",
+										"get_recording"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Send a message (vendor)",
 							"request": {
 								"method": "POST",
 								"header": [
@@ -726,7 +1062,36 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n\t\"access_token\": \"765e9f26ada4136eed0b2c2dbd2d9b4f1c03db6f12b93036004a246eeca2095a\",\n\t\"session_id\": 38\n}",
+									"raw": "{\n\t\"guest_token\": \"{{vu_token}}\",\n\t\"call_id\": 781,\n\t\"message_type\": \"text\",\n\t\"value\": \"hello\"\n}"
+								},
+								"url": {
+									"raw": "{{api_url}}/agent/send_message",
+									"host": [
+										"{{api_url}}"
+									],
+									"path": [
+										"agent",
+										"send_message"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"protocolProfileBehavior": {},
+					"_postman_isSubFolder": true
+				},
+				{
+					"name": "Custom Fields",
+					"item": [
+						{
+							"name": "Create a custom field",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"vu_token\": \"{{vu_token}}\",\n\t\"name\": \"area\",\n\t\"label\": \"Area Name\",\n\t\"is_mandatory\": false,\n\t\"tarteeb\": 5,\n\t\"type\": \"text\"\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -734,13 +1099,160 @@
 									}
 								},
 								"url": {
-									"raw": "{{api_url}}/admin/madbata/list",
+									"raw": "{{api_url}}/vendor/custom_fields/create",
 									"host": [
 										"{{api_url}}"
 									],
 									"path": [
-										"admin",
-										"madbata",
+										"vendor",
+										"custom_fields",
+										"create"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Edit a custom field",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"vu_token\": \"{{vu_token}}\",\n\t\"custom_field_id\": 4,\n\t\"name\": \"area\",\n\t\"label\": \"Area Name 2\",\n\t\"is_mandatory\": false,\n\t\"tarteeb\": 5,\n\t\"type\": \"text\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{api_url}}/vendor/custom_fields/edit",
+									"host": [
+										"{{api_url}}"
+									],
+									"path": [
+										"vendor",
+										"custom_fields",
+										"edit"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "List custom fields",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"vu_token\": \"{{vu_token}}\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{api_url}}/vendor/custom_fields/list",
+									"host": [
+										"{{api_url}}"
+									],
+									"path": [
+										"vendor",
+										"custom_fields",
+										"list"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get a custom field",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"vu_token\": \"{{vu_token}}\",\n\t\"custom_field_id\": 1\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{api_url}}/vendor/custom_fields/get",
+									"host": [
+										"{{api_url}}"
+									],
+									"path": [
+										"vendor",
+										"custom_fields",
+										"get"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete a custom field",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"vu_token\": \"{{vu_token}}\",\n\t\"custom_field_id\": 1\n}\n",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{api_url}}/vendor/custom_fields/delete",
+									"host": [
+										"{{api_url}}"
+									],
+									"path": [
+										"vendor",
+										"custom_fields",
+										"delete"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"protocolProfileBehavior": {},
+					"_postman_isSubFolder": true
+				},
+				{
+					"name": "Logs",
+					"item": [
+						{
+							"name": "List logs",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"vu_token\": \"{{vu_token}}\",\n\t\"page\": 1,\n\t\"per_page\": 10\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{api_url}}/vendor/logs/list",
+									"host": [
+										"{{api_url}}"
+									],
+									"path": [
+										"vendor",
+										"logs",
 										"list"
 									]
 								}
@@ -752,20 +1264,195 @@
 					"_postman_isSubFolder": true
 				},
 				{
-					"name": "Auth",
+					"name": "Calls Requests",
+					"item": [
+						{
+							"name": "Schedule a Call",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"vu_token\": \"{{vu_token}}\",\n\t\"service_id\": 39,\n\t\"send_sms\": true,\n\t\"scheduled_time\": 1586130706822,\n\t\"custom_fields_values\": [\n\t\t{\n\t\t\t\"name\": \"mobile\",\n\t\t\t\"value\": \"97336722368\"\n\t\t}\n\t\t]\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{api_url}}/vendor/call_requests/create",
+									"host": [
+										"{{api_url}}"
+									],
+									"path": [
+										"vendor",
+										"call_requests",
+										"create"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "List Call Requests",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"vu_token\": \"{{vu_token}}\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{api_url}}/vendor/call_requests/list",
+									"host": [
+										"{{api_url}}"
+									],
+									"path": [
+										"vendor",
+										"call_requests",
+										"list"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get a Call Request",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"vu_token\": \"{{vu_token}}\",\n\t\"call_request_id\": 43,\n\t\"send_sms\": false\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{api_url}}/vendor/call_requests/edit",
+									"host": [
+										"{{api_url}}"
+									],
+									"path": [
+										"vendor",
+										"call_requests",
+										"edit"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get call ID (join)",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"vu_token\": \"{{vu_token}}\",\n\t\"call_request_id\": 43\n\t\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{api_url}}/vendor/call_requests/join",
+									"host": [
+										"{{api_url}}"
+									],
+									"path": [
+										"vendor",
+										"call_requests",
+										"join"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"protocolProfileBehavior": {},
+					"_postman_isSubFolder": true
+				},
+				{
+					"name": "Settings",
+					"item": [
+						{
+							"name": "Get settings",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"vu_token\": \"{{vu_token}}\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{api_url}}/vendor/settings/get",
+									"host": [
+										"{{api_url}}"
+									],
+									"path": [
+										"vendor",
+										"settings",
+										"get"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Edit settings",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"vu_token\": \"{{vu_token}}\",\n\t\"call_request_sms_template\": \"To join the call {link}, the agent is waiting for you, the call is schedueled for {time}\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{api_url}}/vendor/settings/edit",
+									"host": [
+										"{{api_url}}"
+									],
+									"path": [
+										"vendor",
+										"settings",
+										"edit"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"protocolProfileBehavior": {},
+					"_postman_isSubFolder": true
+				},
+				{
+					"name": "Dashboard Numbers",
 					"request": {
 						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"name": "Content-Type",
-								"value": "application/json",
-								"type": "text"
-							}
-						],
+						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n\t\"username\": \"admin\",\n\t\"password\": \"password123123\"\n}",
+							"raw": "{\n\t\"vu_token\": \"{{vu_token}}\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -773,13 +1460,13 @@
 							}
 						},
 						"url": {
-							"raw": "{{api_url}}/admin/request_access_token",
+							"raw": "{{api_url}}/vendor/dashboard_numbers",
 							"host": [
 								"{{api_url}}"
 							],
 							"path": [
-								"admin",
-								"request_access_token"
+								"vendor",
+								"dashboard_numbers"
 							]
 						}
 					},
@@ -787,6 +1474,124 @@
 				}
 			],
 			"protocolProfileBehavior": {}
+		},
+		{
+			"name": "Onboarding",
+			"item": [
+				{
+					"name": "Join",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"org_name\": \"Somewhere\",\n\t\"org_username\": \"somewhere6\",\n\t\"email\": \"the-ghost@live.com\",\n\t\"username\": \"theghost\",\n\t\"phone_number\": \"+97336722368\",\n\t\"name\": \"His Supreme Highness Mr. Ali\",\n\t\"password\": \"a verycool pass\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{api_url}}/onboarding/join",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"onboarding",
+								"join"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify OTP",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"vendor_id\": 343,\n\t\"pin\": 3425\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{api_url}}/onboarding/verify_otp",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"onboarding",
+								"verify_otp"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Resend OTP",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"vendor_id\": 24\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{api_url}}/onboarding/resend_otp",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"onboarding",
+								"resend_otp"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"protocolProfileBehavior": {}
+		},
+		{
+			"name": "Video Processing API trigger",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"twilio_sid\": \"RMcb05ee8ae230952a918edc8b332c0cc4\",\n\t\"call_id\": 823,\n\t\"password\": \"n34,543jn%n34j%\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://15.185.101.66:1064/process_recording",
+					"protocol": "http",
+					"host": [
+						"15",
+						"185",
+						"101",
+						"66"
+					],
+					"port": "1064",
+					"path": [
+						"process_recording"
+					]
+				}
+			},
+			"response": []
 		}
 	],
 	"protocolProfileBehavior": {}
