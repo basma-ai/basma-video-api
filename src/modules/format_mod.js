@@ -26,6 +26,10 @@ module.exports = {
             delete vendor.call_request_sms_template;
         }
 
+        if(vendor.logo_url == null || vendor.logo_url == '') {
+            vendor.logo_url = 'https://basma-cdn.s3.me-south-1.amazonaws.com/assets/logo-placeholder.png';
+        }
+
         return vendor;
     },
 

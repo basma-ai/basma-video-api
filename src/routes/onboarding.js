@@ -33,10 +33,10 @@ let global_vars;
 
  */
 router.post('/onboarding/join', [
-    check('org_name').isLength({min: 5}),
-    check('org_username').isLength({min: 4}),
-    check('username').isLength({min: 3}),
-    check('name').isLength({min: 3}),
+    check('org_name').isLength({min: 5, max: 100}),
+    check('org_username').isLength({min: 4, max: 20}),
+    check('username').isLength({min: 3, max: 20}),
+    check('name').isLength({min: 3, max: 100}),
     check('email')
         .isEmail()
         .normalizeEmail(),
@@ -246,7 +246,7 @@ router.post('/onboarding/resend_otp', [
             success = true;
         }
 
-    } else if(limit_exceeded) {
+    } else if (limit_exceeded) {
         success = false;
         return_data['errors'] = ['limit_exceeded'];
     } else {
