@@ -124,11 +124,11 @@ router.post('/onboarding/verify_otp', [
     let go_ahead = true;
     let return_data = {};
 
-    if (req.recaptcha.error) {
-        go_ahead = false;
-        success = false;
-        return_data['errors'] = ['invalid_captcha'];
-    }
+    // if (req.recaptcha.error) {
+    //     go_ahead = false;
+    //     success = false;
+    //     return_data['errors'] = ['invalid_captcha'];
+    // }
 
     // find it in the tokens
     if (go_ahead) {
