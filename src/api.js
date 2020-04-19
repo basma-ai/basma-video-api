@@ -9,6 +9,7 @@ const calls_mod = require('./modules/calls_mod');
 const users_mod = require('./modules/users_mod');
 const format_mod = require('./modules/format_mod');
 const notifs_mod = require('./modules/notifs_mod');
+const packages_mod = require('./modules/packages_mod');
 var log4js = require('log4js');
 
 // set expressjs settings
@@ -67,6 +68,7 @@ global_vars['calls_mod'] = calls_mod;
 global_vars['users_mod'] = users_mod;
 global_vars['format_mod'] = format_mod;
 global_vars['notifs_mod'] = notifs_mod;
+global_vars['packages_mod'] = packages_mod;
 
 
 // index page 
