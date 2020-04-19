@@ -46,7 +46,7 @@ router.post('/onboarding/join', [
     check('phone_number')
         .isMobilePhone(),
     check('password').isLength({min: 6}),
-    // recaptcha.middleware.verify
+    recaptcha.middleware.verify
 ], async function (req, res, next) {
 
 
@@ -61,11 +61,11 @@ router.post('/onboarding/join', [
     let return_data = {};
 
 
-    // if (req.recaptcha.error) {
-    //     go_ahead = false;
-    //     success = false;
-    //     return_data['errors'] = ['invalid_captcha'];
-    // }
+    if (req.recaptcha.error) {
+        go_ahead = false;
+        success = false;
+        return_data['errors'] = ['invalid_captcha'];
+    }
 
     if (go_ahead) {
         let do_join = await onboarding_mod.create_vendor(req.body);
@@ -104,14 +104,14 @@ router.post('/onboarding/join', [
 router.post('/onboarding/verify_otp', [
     check('vendor_id').isInt(),
     check('pin').isLength({min: 4}),
-    // recaptcha.middleware.verify
+    recaptcha.middleware.verify
 ], async function (req, res, next) {
 
 
-    // const errors_of_captcha = validationResult(req);
-    // if (!errors_of_captcha.isEmpty()) {
-    //     return res.json({success: false, data: {errors: errors_of_captcha.array()}});
-    // }
+    const errors_of_captcha = validationResult(req);
+    if (!errors_of_captcha.isEmpty()) {
+        return res.json({success: false, data: {errors: errors_of_captcha.array()}});
+    }
 
 
     const errors = validationResult(req);
