@@ -38,7 +38,7 @@ let global_vars;
 router.post('/onboarding/join', [
     check('org_name').isLength({min: 5, max: 100}),
     check('org_username').isLength({min: 4, max: 20}),
-    check('username').isLength({min: 3, max: 20}),
+    check('username').isLength({min: 3, max: 50}),
     check('name').isLength({min: 3, max: 100}),
     check('email')
         .isEmail()
