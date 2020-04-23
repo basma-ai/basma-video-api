@@ -16,7 +16,7 @@ module.exports = {
 
 
         // let params = {
-        //     package_name: '',
+        //     package_id: '',
         //     vendor_id: '',
         //     table_name: '',
         //     package_field: ''
@@ -25,22 +25,37 @@ module.exports = {
 
         let package;
         // get the package
-        await global_vars.knex('packages').where('name', params.package_name).then((rows) => {
+        await global_vars.knex('packages').where('id', params.package_id).then((rows) => {
             package = rows[0];
         });
 
+
+
         let table_count = 0;
         // get the count
-        await global_vars.knex(params.table_name).where('vendor_id', params.vendor_id).where('is_deleted', false).then((rows) => {
-            table_count = rows.count;
+        await global_vars.knex(params.table_name)
+            .count('id as total')
+            .where('vendor_id', params.vendor_id)
+            .where('is_deleted', false)
+            .then((rows) => {
+
+
+            table_count = rows[0].total;
+
+
         });
 
+        let shall_allow = false;
         // check limits
-        if(table_count >= package[params.package_field]) {
-            return false;
+        if(table_count < package[params.package_field]) {
+            shall_allow = true;
         }
 
-        return true;
+        return {
+            shall_allow: shall_allow,
+            existing_count: table_count,
+            limit: package[params.package_field]
+        }
 
     }
 

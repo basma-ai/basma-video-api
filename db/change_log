@@ -5,3 +5,4 @@
 
 18/04/2020:
 - added 'private_stripe_customer_id' to 'vendors'
+- added 'package_id' to 'vendors'

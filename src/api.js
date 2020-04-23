@@ -61,7 +61,8 @@ socket_mod.init(global_vars);
 calls_mod.init(global_vars);
 users_mod.init(global_vars);
 format_mod.init(global_vars);
-notifs_mod.init(notifs_mod);
+notifs_mod.init(global_vars);
+packages_mod.init(global_vars);
 
 global_vars['socket_mod'] = socket_mod;
 global_vars['calls_mod'] = calls_mod;
