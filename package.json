@@ -20,6 +20,7 @@
     "mysql2": "^1.6.5",
     "sharp": "^0.25.2",
     "socket.io": "^2.3.0",
+    "stripe": "^8.46.0",
     "twilio": "^3.39.3"
   },
   "devDependencies": {

@@ -10,6 +10,7 @@ const users_mod = require('./modules/users_mod');
 const format_mod = require('./modules/format_mod');
 const notifs_mod = require('./modules/notifs_mod');
 const packages_mod = require('./modules/packages_mod');
+const billing_mod = require('./modules/billing_mod');
 var log4js = require('log4js');
 
 // set expressjs settings
@@ -63,6 +64,7 @@ users_mod.init(global_vars);
 format_mod.init(global_vars);
 notifs_mod.init(global_vars);
 packages_mod.init(global_vars);
+billing_mod.init(global_vars);
 
 global_vars['socket_mod'] = socket_mod;
 global_vars['calls_mod'] = calls_mod;
@@ -70,6 +72,7 @@ global_vars['users_mod'] = users_mod;
 global_vars['format_mod'] = format_mod;
 global_vars['notifs_mod'] = notifs_mod;
 global_vars['packages_mod'] = packages_mod;
+global_vars['billing_mod'] = billing_mod;
 
 
 // index page 
@@ -101,6 +104,7 @@ let vendor_permissions = require('./routes/vendor/vendor_permissions.js')(global
 let vendor_reports = require('./routes/vendor/vendor_reports.js')(global_vars)
 let vendor_calls_requests = require('./routes/vendor/vendor_calls_requests.js')(global_vars)
 let vendor_settings = require('./routes/vendor/vendor_settings.js')(global_vars)
+let vendor_billing = require('./routes/vendor/vendor_billing.js')(global_vars)
 
 
 // onboarding
@@ -108,6 +112,7 @@ app.post('/onboarding/join', onboarding);
 app.post('/onboarding/verify_otp', onboarding);
 app.post('/onboarding/resend_otp', onboarding);
 app.post('/onboarding/check_org_username', onboarding);
+app.post('/onboarding/test', onboarding);
 
 
 // guests
@@ -209,6 +214,11 @@ app.post('/vendor/reports/calls', vendor_reports);
 // vendors settings
 app.post('/vendor/settings/get', vendor_settings);
 app.post('/vendor/settings/edit', vendor_settings);
+
+// vendors billing
+app.post('/vendor/billing/payment_method_add', vendor_billing);
+app.post('/vendor/billing/payment_method_list', vendor_billing);
+app.post('/vendor/billing/payment_method_detach', vendor_billing);
 
 
 // files

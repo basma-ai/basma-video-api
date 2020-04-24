@@ -21,10 +21,22 @@ module.exports = {
 
     format_vendor: async function (vendor, viewer) {
 
-        if (viewer != 'agent') {
+        if (viewer != 'agent' && viewer != 'root') {
             delete vendor.recording_enabled;
             delete vendor.call_request_sms_template;
         }
+        if(viewer != 'root') {
+            Object.keys(vendor).filter((a) => {
+                return a.startsWith('root_');
+            }).forEach(e => delete vendor[e]);
+        }
+
+        if(viewer != 'root' && viewer != 'agent') {
+            Object.keys(vendor).filter((a) => {
+                return a.startsWith('private_');
+            }).forEach(e => delete vendor[e]);
+        }
+
 
         if(vendor.logo_url == null || vendor.logo_url == '') {
             vendor.logo_url = 'https://basma-cdn.s3.me-south-1.amazonaws.com/assets/logo-placeholder.png';

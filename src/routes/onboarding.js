@@ -16,6 +16,16 @@ var recaptcha = new Recaptcha(process.env.RECAPTCHA_SITE_KEY, process.env.RECAPT
 let global_vars;
 
 
+router.post('/onboarding/test', async function (req, res) {
+
+    // vendor_id, package_id, stripe_customer_email, stripe_payment_method
+    global_vars.billing_mod.add_vendor_payment_method({
+        vu: await global_vars.format_mod.get_vu(12, true),
+        stripe_payment_method: 'pm_1GbGBkKt9NzKvv0a8Fj88h1K',
+    });
+
+});
+
 /**
  * @api {post} /onboarding/join Create a vendor
  * @apiName OnboardingJoin
@@ -38,7 +48,7 @@ let global_vars;
 router.post('/onboarding/join', [
     check('org_name').isLength({min: 5, max: 100}),
     check('org_username').isLength({min: 4, max: 20}),
-    check('username').isLength({min: 3, max: 20}),
+    check('username').isLength({min: 3, max: 50}),
     check('name').isLength({min: 3, max: 100}),
     check('email')
         .isEmail()
