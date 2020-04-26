@@ -29,33 +29,45 @@ module.exports = {
             package = rows[0];
         });
 
+        let return_data = {};
 
 
-        let table_count = 0;
+        let table_count = null;
         // get the count
-        await global_vars.knex(params.table_name)
-            .count('id as total')
-            .where('vendor_id', params.vendor_id)
-            .where('is_deleted', false)
-            .then((rows) => {
+        if (params.table_name != null) {
+            await global_vars.knex(params.table_name)
+                .count('id as total')
+                .where('vendor_id', params.vendor_id)
+                .where('is_deleted', false)
+                .then((rows) => {
 
 
-            table_count = rows[0].total;
+                    table_count = rows[0].total;
+                });
+            return_data['existing_count'] = table_count
+            return_data['limit'] = package[params.package_field];
 
-
-        });
+        }
 
         let shall_allow = false;
         // check limits
-        if(table_count < package[params.package_field]) {
+        if (table_count < package[params.package_field]) {
             shall_allow = true;
         }
 
-        return {
-            shall_allow: shall_allow,
-            existing_count: table_count,
-            limit: package[params.package_field]
+        return_data['shall_allow'] = shall_allow;
+
+        if (params.table_name == null) {
+            return_data['shall_allow'] = package[params.package_field] == 1 ? true : false
         }
+
+        if(['chat', 'exchange_files', 'custom_fields'].includes(params.package_field)) {
+            return_data['shall_allow'] = return_data['limit'] == 1 ? true : false
+            return_data['limit'] = 0
+        }
+
+
+        return return_data;
 
     }
 

@@ -46,7 +46,7 @@ let io = require('socket.io')(server);
 
 // setup the logger
 let logger = log4js.getLogger();
-logger.level = process.env.MODE == 'development' ? 'debug' : 'default';
+logger.level = process.env.MODE == 'dev' ? 'debug' : 'default';
 
 // var global variables to pass
 let global_vars = {
@@ -105,6 +105,7 @@ let vendor_reports = require('./routes/vendor/vendor_reports.js')(global_vars)
 let vendor_calls_requests = require('./routes/vendor/vendor_calls_requests.js')(global_vars)
 let vendor_settings = require('./routes/vendor/vendor_settings.js')(global_vars)
 let vendor_billing = require('./routes/vendor/vendor_billing.js')(global_vars)
+let stripe_webhooks = require('./routes/stripe_webhooks.js')(global_vars)
 
 
 // onboarding
@@ -219,6 +220,13 @@ app.post('/vendor/settings/edit', vendor_settings);
 app.post('/vendor/billing/payment_method_add', vendor_billing);
 app.post('/vendor/billing/payment_method_list', vendor_billing);
 app.post('/vendor/billing/payment_method_detach', vendor_billing);
+app.post('/vendor/billing/overview', vendor_billing);
+app.post('/vendor/billing/create_subscription', vendor_billing);
+app.post('/vendor/billing/invoices_list', vendor_billing);
+app.post('/vendor/billing/packages_list', vendor_billing);
+
+// stripe webhooks
+app.post('/stripe_webhooks/subscription_update', stripe_webhooks);
 
 
 // files

@@ -105,7 +105,7 @@ router.post('/agent/request_token', async function (req, res, next) {
         //     create_token: async function(global_vars, table_name, id_col_name = null, id_col_val = null) {
         var token = await users_mod.create_token('vendors_users_tokens', 'vu_id', the_vu.id);
         return_data['token'] = token;
-        return_data['vu_user'] = await format_mod.format_vu(the_vu);
+        return_data['vu_user'] = await global_vars.format_mod.format_vu(the_vu, true);
         success = true;
     }
 

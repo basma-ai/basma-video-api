@@ -12,3 +12,7 @@
 - changed 'private_stripe_customer_id' to 'root_stripe_customer_id' in 'vendors_users'
 - added 'stripe_monthly_plan_id' to 'packages'
 - added 'stripe_annual_pan_id' to 'packages'
+
+26/04/2020:
+- created table 'billing_subscriptions'
+- created table 'billing_subscriptions_log'

@@ -37,6 +37,7 @@ module.exports = {
             }).forEach(e => delete vendor[e]);
         }
 
+        vendor['package'] = await this.get_package(vendor.package_id, 'vu');
 
         if(vendor.logo_url == null || vendor.logo_url == '') {
             vendor.logo_url = 'https://basma-cdn.s3.me-south-1.amazonaws.com/assets/logo-placeholder.png';
@@ -72,6 +73,7 @@ module.exports = {
 
         if (full) {
             vu['vendor'] = await this.get_vendor(vu['vendor_id']);
+
             delete vu['vendor_id'];
 
             // get groups
@@ -337,6 +339,26 @@ module.exports = {
 
         }
 
+        return record;
+    },
+
+    get_package: async function (id, viewer) { // friendly reminder, vu stands for vendor user
+
+        let the_row = null;
+
+        await global_vars.knex('packages').select('*')
+            .where('id', '=', id).then((rows) => {
+                the_row = rows[0];
+            });
+
+        return await this.format_package(the_row, viewer);
+
+    },
+    format_package: async function (record, viewer) {
+        if(viewer != 'root') {
+            delete record.stripe_annual_pan_id;
+            delete record.stripe_monthly_plan_id;
+        }
         return record;
     },
 
