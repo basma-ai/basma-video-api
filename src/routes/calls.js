@@ -131,7 +131,8 @@ router.post('/calls/start_call', async function (req, res, next) {
             };
 
 
-            let new_call = global_vars.calls_mod.generate_call(insert_data);
+            let new_call = await global_vars.calls_mod.generate_call(insert_data);
+
             return_data['call_id'] = new_call;
 
             if (new_call) {
@@ -538,7 +539,7 @@ router.post('/calls/test', async function (req, res, next) {
     });
 
     for (let vendor of vendors) {
-        console.log("reached "+vendor.name);
+        console.log("reached " + vendor.name);
         let vendor_id = vendor.id;
 
         let current_last_id = 0;

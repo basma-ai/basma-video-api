@@ -293,9 +293,11 @@ module.exports = {
 
         let call_id = 0;
 
+
+
         // get last call id from the vendor
         let last_id = 0;
-        await global_vars.knex('vendors').select('id', 'last_local_call_id').where('vendor_id', params.vendor_id).then((rows) => {
+        await global_vars.knex('vendors').select('id', 'last_local_call_id').where('id', params.vendor_id).then((rows) => {
             if(rows.length > 0) {
                 go_ahead = true;
                 last_id = rows[0]['last_local_call_id'];
@@ -309,19 +311,31 @@ module.exports = {
             return false;
         }
 
+
+        last_id++;
+
+
         // update the vendor's last call id
+
+
         await global_vars.knex('vendors')
-            .where('vendor_id', params.vendor_id)
+            .where('id', '=', params.vendor_id)
             .update({
-                last_local_call_id: last_id+1
-            }).then().catch();
+                last_local_call_id: last_id
+            }).then().catch((err) => {
+                console.log("I am here")
+                console.log(err);
+            });
 
         params['creation_time'] = Date.now();
         await global_vars.knex('calls').insert(params).then((result) => {
 
             call_id = result[0];
 
+        }).catch((err) => {
+
         });
+
 
         return call_id;
 

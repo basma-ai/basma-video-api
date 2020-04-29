@@ -119,7 +119,7 @@ module.exports = {
         }
 
 
-        console.log(sockets_ids);
+        // console.log(sockets_ids);
     },
 
     disconnect_socket: async function(socket_id) {
