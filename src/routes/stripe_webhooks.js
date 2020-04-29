@@ -59,7 +59,7 @@ router.post('/stripe_webhooks/subscription_update', async function (req, res) {
                 vendor_id: sub_record.vendor_id,
                 stripe_plan: sub_record.plan
             });
-        } else {
+        } else if(sub_object.status == 'canceled' || sub_object.status == 'ended' || sub_object.status == 'expired') {
             await global_vars.billing_mod.update_vendor_package({
                 vendor_id: sub_record.vendor_id,
                 package_id: 5

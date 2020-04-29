@@ -210,7 +210,7 @@ module.exports = {
 
                     // check the intent status
                     const intent = await stripe.paymentIntents.confirm(payment_intent_id, {
-                        return_url: 'https://dashboard.dev.basma.ai/payments/return',
+                        return_url: 'http://localhost:8080/payments/callback',
                     }).then((result) => {
                         console.log("intent success");
                         return_data['stripe_payment_intent'] = result;

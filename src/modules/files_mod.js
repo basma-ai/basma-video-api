@@ -9,8 +9,8 @@ var s3BucketName = 'basma-files'
 
 // configuring the AWS environment
 AWS.config.update({
-    accessKeyId: "AKIA3UX6FBMDUNMZ552N",
-    secretAccessKey: "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"
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
 });
 
 var s3 = new AWS.S3();

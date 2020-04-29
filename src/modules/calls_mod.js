@@ -281,6 +281,8 @@ module.exports = {
 
     generate_call: async function (params) {
 
+        let go_ahead = false;
+
         // let params = {
         //     vendor_id: 0,
         //     guest_id: 0,
@@ -290,6 +292,29 @@ module.exports = {
         // };
 
         let call_id = 0;
+
+        // get last call id from the vendor
+        let last_id = 0;
+        await global_vars.knex('vendors').select('id', 'last_local_call_id').where('vendor_id', params.vendor_id).then((rows) => {
+            if(rows.length > 0) {
+                go_ahead = true;
+                last_id = rows[0]['last_local_call_id'];
+                params['local_id'] = last_id+1;
+            }
+        }).catch((err) => {
+            go_ahead = false;
+        });
+
+        if(!go_ahead) {
+            return false;
+        }
+
+        // update the vendor's last call id
+        await global_vars.knex('vendors')
+            .where('vendor_id', params.vendor_id)
+            .update({
+                last_local_call_id: last_id+1
+            }).then().catch();
 
         params['creation_time'] = Date.now();
         await global_vars.knex('calls').insert(params).then((result) => {

@@ -16,3 +16,6 @@
 26/04/2020:
 - created table 'billing_subscriptions'
 - created table 'billing_subscriptions_log'
+
+29/04/2020:
+- added 'last_local_call_id' to 'vendors'

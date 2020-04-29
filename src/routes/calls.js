@@ -49,9 +49,9 @@ router.post('/calls/get_services', async function (req, res, next) {
             .where('vendor_id', '=', req.body.vendor_id)
             .where('is_deleted', '=', false)
             .then((rows) => {
-            return_data['services'] = rows;
-            success = true;
-        });
+                return_data['services'] = rows;
+                success = true;
+            });
     }
 
     res.send({
@@ -131,12 +131,10 @@ router.post('/calls/start_call', async function (req, res, next) {
             };
 
 
-            await global_vars.knex('calls').insert(insert_data).then((result) => {
-                success = true;
-                return_data['call_id'] = result[0];
-            });
+            let new_call = global_vars.calls_mod.generate_call(insert_data);
+            return_data['call_id'] = new_call;
 
-            if(success){
+            if (new_call) {
                 return_data['call_info'] = await calls_mod.get_guest_call_refresh(return_data['call_id'], guest_id);
 
                 calls_mod.update_all_calls(the_service.vendor_id);
@@ -329,8 +327,6 @@ router.post('/calls/end_call', async function (req, res, next) {
 });
 
 
-
-
 /**
  * @api {post} /calls/submit_rating Submit rating
  * @apiName CallsSubmitRating
@@ -407,7 +403,6 @@ router.post('/calls/submit_rating', async function (req, res, next) {
         }
 
 
-
         if (go_ahead) {
 
             // cool, we reached here, now let's initiate the call
@@ -433,7 +428,6 @@ router.post('/calls/submit_rating', async function (req, res, next) {
     });
 
 });
-
 
 
 /**
@@ -527,7 +521,6 @@ router.post('/calls/send_message', async function (req, res, next) {
 });
 
 
-
 router.post('/calls/test', async function (req, res, next) {
 
 
@@ -538,9 +531,38 @@ router.post('/calls/test', async function (req, res, next) {
 
     // var twilio_token = twilio_mod.generate_twilio_token('clientname2323', 'thetestroom32423');
 
+    // get all vendors
+    let vendors;
+    await global_vars.knex('vendors').then((rows) => {
+        vendors = rows;
+    });
 
+    for (let vendor of vendors) {
+        console.log("reached "+vendor.name);
+        let vendor_id = vendor.id;
 
-    return_data['recording'] = await twilio_mod.get_recordings('RMfa2b44ee9ab080f87218ec7190c7b992');
+        let current_last_id = 0;
+        // loop calls
+        let calls;
+        await global_vars.knex('calls')
+            .where('vendor_id', vendor_id)
+            .orderBy('id', 'ASC')
+            .then((rows) => {
+                calls = rows;
+            });
+
+        for (let call of calls) {
+            console.log(`call ${call.id} of ${calls.length}`)
+            current_last_id++;
+            await global_vars.knex('calls')
+                .where('vendor_id', vendor_id)
+                .where('id', call.id)
+                .update({
+                    local_id: current_last_id
+                })
+                .then().catch();
+        }
+    }
 
 
     res.send({
@@ -549,8 +571,6 @@ router.post('/calls/test', async function (req, res, next) {
     });
 
 });
-
-
 
 
 /**
@@ -609,7 +629,7 @@ router.post('/calls/join', async function (req, res, next) {
             let call_request = await format_mod.get_call_request(call_request_id);
 
             let call_id;
-            if(call_request.call_id == null || call_request.call_id == 0) {
+            if (call_request.call_id == null || call_request.call_id == 0) {
                 call_id = await calls_mod.generate_call({
                     status: 'waiting_for_agent',
                     guest_id: guest_id,
