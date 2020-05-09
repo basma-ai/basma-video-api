@@ -8,7 +8,7 @@ const AWS = require('aws-sdk');
 
 var global_vars;
 
-AWS.config.update({ region: 'me-south-1' });
+AWS.config.update({region: 'me-south-1'});
 const s3 = new AWS.S3({
     accessKeyId: process.env.AWS_ACCESS_KEY_ID,
     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
@@ -31,7 +31,6 @@ router.post('/files/get', async function (req, res, next) {
     let user_id
 
 
-
     if (req.body.vu_token != null) {
 
 
@@ -50,7 +49,7 @@ router.post('/files/get', async function (req, res, next) {
         user_id = guest_id
 
     }
-    if(user_id == null) {
+    if (user_id == null) {
         go_ahead = false;
     }
 
@@ -59,8 +58,7 @@ router.post('/files/get', async function (req, res, next) {
 
 
     // get the file
-    if(go_ahead) {
-
+    if (go_ahead) {
 
 
         await global_vars.knex('files')
@@ -77,16 +75,26 @@ router.post('/files/get', async function (req, res, next) {
         }
     }
 
-    if(go_ahead) {
+    if (go_ahead) {
         // check permissions
 
-        if(file_raw.owner_type != user_type || file_raw.owner_id != user_id) {
+        if (file_raw.owner_type != user_type || file_raw.owner_id != user_id) {
             go_ahead = false
             errors.push("unauthroized_action")
         }
+
+
+        if (file_raw.belongs_to == 'calls') {
+            let call = await global_vars.format_mod.get_call(file_raw.belongs_to_id, true)
+
+            if (call.guest_id == call.guest_id) {
+                go_ahead = true
+            }
+
+        }
     }
 
-    if(go_ahead) {
+    if (go_ahead) {
         success = true
 
         // generate signed url
@@ -101,7 +109,7 @@ router.post('/files/get', async function (req, res, next) {
     }
 
 
-    if(!success && errors.length > 0) {
+    if (!success && errors.length > 0) {
         return_data['errors'] = errors
     }
     res.send({
@@ -160,7 +168,6 @@ router.post('/files/upload', async function (req, res, next) {
     }
 
     if (go_ahead) {
-
 
 
         let file = await files_mod.upload(`vendor_${vendor.id}`, req.body.file_base64, req.body.filename);
