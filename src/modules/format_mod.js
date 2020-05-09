@@ -42,8 +42,8 @@ module.exports = {
         }
 
         if(viewer == 'guest') {
-            delete vendor.package_id
-            delete vendor.phone_verified
+            // delete vendor.package_id
+            // delete vendor.phone_verified
         }
 
 

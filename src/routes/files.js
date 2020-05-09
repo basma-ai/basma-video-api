@@ -9,7 +9,86 @@ var global_vars;
 
 router.post('/files/get', async function (req, res, next) {
 
-    
+    // let params = {
+    //     vu_token: '',
+    //     guest_token: '',
+    //     file_id: '',
+    // };
+
+    let go_ahead = true
+    let success = false
+    let errors = []
+    let return_data = {}
+
+    let user_type
+    let user_id
+
+
+
+    if (req.body.vu_token != null) {
+
+
+        const vu_id = await users_mod.token_to_id('vendors_users_tokens', req.body.vu_token, 'vu_id')
+        vu = await format_mod.get_vu(vu_id, true)
+
+        user_type = 'vu'
+        user_id = vu_id
+
+    } else if (req.body.guest_token != null) {
+
+        const guest_id = await users_mod.token_to_id('guests', req.body.guest_token, 'id')
+        guest = await format_mod.get_guest(guest_id, true)
+
+        user_type = 'guest'
+        user_id = guest_id
+
+    }
+    if(user_id == null) {
+        go_ahead = false;
+    }
+
+
+    let file_raw
+
+
+    // get the file
+    if(go_ahead) {
+
+
+
+        await global_vars.knex('files')
+            .select('*')
+            .where('id', req.body.file_id)
+            .then((rows) => {
+                file_raw = rows[0];
+            }).catch((err) => {
+
+            })
+        if (file_raw == null) {
+            go_ahead = false
+            errors.push('file_not_found')
+        }
+    }
+
+    if(go_ahead) {
+        // check permissions
+
+        console.log(file_raw)
+        if(true) {
+
+        }
+    }
+
+
+    if(!success && errors.length > 0) {
+        return_data['errors'] = errors
+    }
+    res.send({
+        success: success,
+        data: return_data
+    });
+
+
 });
 
 router.post('/files/upload', async function (req, res, next) {
@@ -18,8 +97,8 @@ router.post('/files/upload', async function (req, res, next) {
     let return_data = {}
 
     // let params = {
-    //     user_type: '',
-    //     user_token: '',
+    //     vu_token: '',
+    //     guest_token: '',
     //     model_name: '',
     //     record_id: '',
     //     filename: '',
@@ -33,17 +112,17 @@ router.post('/files/upload', async function (req, res, next) {
     let vnedor
     let user_id
 
-    if(req.body.user_type == 'vu') {
+    if (req.body.vu_token != null) {
 
-        const vu_id = await users_mod.token_to_id('vendors_users_tokens', req.body.user_token, 'vu_id')
+        const vu_id = await users_mod.token_to_id('vendors_users_tokens', req.body.vu_token, 'vu_id')
         const vu = await format_mod.get_vu(vu_id, true)
         vendor = await format_mod.get_vendor(vu.vendor.id, 'guest')
 
         user_id = vu_id
 
-    } else if(req.body.user_type == 'guest') {
+    } else if (req.body.guest_token != null) {
 
-        const guest_id = await users_mod.token_to_id('guests', req.body.user_token, 'id')
+        const guest_id = await users_mod.token_to_id('guests', req.body.guest_token, 'id')
         const guest = await format_mod.get_guest(guest_id, true)
 
         vendor = guest.vendor
@@ -52,11 +131,11 @@ router.post('/files/upload', async function (req, res, next) {
 
     }
 
-    if(vendor != null) {
+    if (vendor != null) {
         go_ahead = true
     }
 
-    if(go_ahead) {
+    if (go_ahead) {
 
         let file = await files_mod.upload(`vendor_${vendor.id}`, req.body.file_base64, req.body.filename);
 
@@ -72,7 +151,7 @@ router.post('/files/upload', async function (req, res, next) {
             belongs_to_id: req.body.belongs_to_id,
             s3_original_path: file
         }).then((result) => {
-            file_id = result
+            file_id = result[0]
             success = true
             return_data['file_id'] = file_id
         }).catch((err) => {

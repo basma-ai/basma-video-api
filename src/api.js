@@ -4,6 +4,7 @@ const bodyParser = require('body-parser');
 const port = 1061
 require('dotenv').config()
 const {attachPaginate} = require('knex-paginate');
+const socket_mod = require('./modules/socket_mod');
 const calls_mod = require('./modules/calls_mod');
 const users_mod = require('./modules/users_mod');
 const format_mod = require('./modules/format_mod');
@@ -62,11 +63,12 @@ format_mod.init(global_vars);
 notifs_mod.init(global_vars);
 packages_mod.init(global_vars);
 billing_mod.init(global_vars);
+socket_mod.init(global_vars);
 
-global_vars['socket_mod'] = require('./modules/socket_mod').init(global_vars);
+global_vars['socket_mod'] = socket_mod;
 global_vars['calls_mod'] = calls_mod;
 global_vars['users_mod'] = users_mod;
-global_vars['format_mod'] = require('./modules/format_mod').init(global_vars);;
+global_vars['format_mod'] = format_mod;
 global_vars['notifs_mod'] = notifs_mod;
 global_vars['packages_mod'] = packages_mod;
 global_vars['billing_mod'] = billing_mod;
@@ -225,7 +227,7 @@ app.post('/stripe_webhooks/subscription_update', stripe_webhooks);
 
 
 // files
-// app.post('/files/get', files);
+app.post('/files/get', files);
 app.post('/files/upload', files);
 
 io.on('connection', function (socket) {
@@ -319,7 +321,7 @@ io.on('connection', function (socket) {
 
         console.log("disconnect triggered");
 
-        await socket_mod.disconnect_socket(socket.id);
+        await global_vars.socket_mod.disconnect_socket(socket.id);
 
     });
 });
