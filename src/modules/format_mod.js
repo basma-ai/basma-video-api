@@ -37,7 +37,15 @@ module.exports = {
             }).forEach(e => delete vendor[e]);
         }
 
-        vendor['package'] = await this.get_package(vendor.package_id, 'vu');
+        if(viewer != 'guest') {
+            vendor['package'] = await this.get_package(vendor.package_id, 'vu');
+        }
+
+        if(viewer == 'guest') {
+            delete vendor.package_id
+            delete vendor.phone_verified
+        }
+
 
         if(vendor.logo_url == null || vendor.logo_url == '') {
             vendor.logo_url = 'https://basma-cdn.s3.me-south-1.amazonaws.com/assets/logo-placeholder.png';
@@ -59,6 +67,23 @@ module.exports = {
 
     },
 
+    get_guest: async function (record_id, full = false) { // friendly reminder, vu stands for vendor user
+
+        let the_record = null;
+
+        await global_vars.knex('guests').select('*')
+            .where('id', '=', record_id).then((rows) => {
+                the_record = rows[0];
+            });
+
+        if(full) {
+            the_record['vendor'] = await this.get_vendor(the_record.vendor_id, 'guest')
+        }
+
+        return the_record;
+
+    },
+
     format_vu: async function (vu, full = true) {
 
         if (vu == null) {
@@ -74,7 +99,7 @@ module.exports = {
         if (full) {
             vu['vendor'] = await this.get_vendor(vu['vendor_id']);
 
-            delete vu['vendor_id'];
+            // delete vu['vendor_id'];
 
             // get groups
             let raw_groups = [];

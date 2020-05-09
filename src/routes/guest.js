@@ -47,11 +47,8 @@ router.post('/guest/request_token', async function (req, res, next) {
         token: token,
         user_agent: user_agent,
         ip: ip,
-        name: req.body.first_name+' '+req.body.last_name,
-        first_name: req.body.first_name,
-        last_name: req.body.last_name,
-        phone: req.body.phone,
-        creation_time: Date.now()
+        creation_time: Date.now(),
+        vendor_id: req.body.vendor_id
     };
 
     // and now, do the insertion
@@ -102,12 +99,11 @@ router.post('/guest/get_vendor', async function (req, res, next) {
     // create a guest token
 
 
-    if(req.body.vendor_username != null) {
+    if (req.body.vendor_username != null) {
         let the_vendor = null;
 
         await global_vars.knex('vendors').select('*')
-            .where('username','=',req.body.vendor_username).
-            then((rows) => {
+            .where('username', '=', req.body.vendor_username).then((rows) => {
                 the_vendor = rows[0];
             });
 
@@ -124,12 +120,13 @@ router.post('/guest/get_vendor', async function (req, res, next) {
     await global_vars.knex('custom_fields')
         .where('vendor_id', '=', vendor.id)
         .where('agent_only', '=', false)
+        .where('is_deleted', false)
         .orderBy('tarteeb', 'ASC')
         .then((rows) => {
             raw_custom_fields = rows;
         });
     let custom_fields = [];
-    for(let raw_custom_field of raw_custom_fields) {
+    for (let raw_custom_field of raw_custom_fields) {
         custom_fields.push(await format_mod.format_custom_field(raw_custom_field));
     }
 

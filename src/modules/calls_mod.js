@@ -153,6 +153,8 @@ module.exports = {
 
     update_all_calls: async function (vendor_id) {
 
+        console.log("I am at update_all_calls");
+
         // get all calls
         let calls = [];
         await global_vars.knex('calls').where('vendor_id', '=', vendor_id).where('status', '=', 'calling').then((rows) => {
@@ -189,7 +191,7 @@ module.exports = {
 
             let sockets_ids = await global_vars.socket_mod.get_socket_ids('vu', the_vu.id, null);
 
-            let the_socket = global_vars.socket_mod.get_socket_data(sockets_ids[0])
+            let the_socket = await global_vars.socket_mod.get_socket_data(sockets_ids[0])
 
             if (the_socket != null) {
 
@@ -211,6 +213,7 @@ module.exports = {
                         type: 'pending_list',
                         data: pending_calls
                     });
+
                 })
             }
 
@@ -394,17 +397,17 @@ module.exports = {
                     }
                 });
 
-                // if(req.body.services_ids) {
-                //     service_ids = service_ids.filter((a) => {
-                //         return req.body.services_ids.includes(a);
-                //     });
-                // }
+                if(req.body.services_ids) {
+                    service_ids = service_ids.filter((a) => {
+                        return req.body.services_ids.includes(a);
+                    });
+                }
 
                 stmnt.whereIn('vendor_service_id', service_ids);
             }
 
             if (params.services_ids != null) {
-                stmnt.whereIn('vendor_service_id', params.services_ids);
+                stmnt.whereIn('vendor_service_id', JSON.parse(params.services_ids));
             }
 
             // and now, do the insertion

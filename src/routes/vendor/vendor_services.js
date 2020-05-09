@@ -258,7 +258,7 @@ router.post('/vendor/services/list', async function (req, res, next) {
 
         let list = [];
         for (let raw_service of (raw_records.data == null ? raw_records : raw_records.data)) {
-            list.push(await format_mod.format_service(raw_service));
+            list.push(await req.app.locals.global_vars.format_mod.format_service(raw_service));
         }
 
         return_data['list'] = list;

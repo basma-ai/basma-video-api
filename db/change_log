@@ -19,3 +19,10 @@
 
 29/04/2020:
 - added 'last_local_call_id' to 'vendors'
+
+05/05/2020:
+- added 'vendor_id' to 'sockets'
+- added 'vendor_id' to 'guests'
+
+09/095/2020:
+- added some stuff to 'files' table

@@ -185,7 +185,7 @@ router.post('/calls/start_call', async function (req, res, next) {
 router.post('/calls/request_update', async function (req, res, next) {
 
 
-    const guest_id = await users_mod.token_to_id('guests', req.body.guest_token, 'id');
+    const guest_id = await users_mod.token_to_id('guests', req.body.guest_token, 'id')
 
     await socket_mod.send_update({
         user_type: 'guest',
@@ -193,13 +193,13 @@ router.post('/calls/request_update', async function (req, res, next) {
         call_id: return_data['call_id'],
         type: 'call_info',
         data: await calls_mod.get_guest_call_refresh(req.body.call_id, guest_id)
-    });
+    })
 
 
     res.send({
         success: success,
         data: return_data
-    });
+    })
 
 });
 

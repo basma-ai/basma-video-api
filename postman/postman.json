@@ -1062,7 +1062,10 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n\t\"guest_token\": \"{{vu_token}}\",\n\t\"call_id\": 781,\n\t\"message_type\": \"text\",\n\t\"value\": \"hello\"\n}"
+									"raw": "{\n\t\"vu_token\": \"{{vu_token}}\",\n\t\"call_id\": 781,\n\t\"message_type\": \"text\",\n\t\"value\": \"hello\"\n}",
+									"options": {
+										"raw": {}
+									}
 								},
 								"url": {
 									"raw": "{{api_url}}/agent/send_message",
@@ -1455,7 +1458,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n\t\"vu_token\": \"{{vu_token}}\",\n\t\"stripe_payment_method_id\": \"pm_1GbGiPKt9NzKvv0aohPgummR\"\n}",
+									"raw": "{\n\t\"vu_token\": \"{{vu_token}}\",\n\t\"stripe_payment_method_id\": \"pm_1GbyDpKt9NzKvv0aUtYluRjH\"\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -1527,6 +1530,118 @@
 										"vendor",
 										"billing",
 										"payment_method_detach"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get billing overview",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"vu_token\": \"{{vu_token}}\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{api_url}}/vendor/billing/overview",
+									"host": [
+										"{{api_url}}"
+									],
+									"path": [
+										"vendor",
+										"billing",
+										"overview"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create a subscription",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"vu_token\": \"{{vu_token}}\",\n\t\"package_id\": 1,\n\t\"stripe_payment_method_id\": \"pm_1GbyDpKt9NzKvv0aUtYluRjH\",\n\t\"type\": \"monthly\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{api_url}}/vendor/billing/create_subscription",
+									"host": [
+										"{{api_url}}"
+									],
+									"path": [
+										"vendor",
+										"billing",
+										"create_subscription"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "List Invoices",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"vu_token\": \"{{vu_token}}\",\n\t\"package_id\": 3\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{api_url}}/vendor/billing/invoices_list",
+									"host": [
+										"{{api_url}}"
+									],
+									"path": [
+										"vendor",
+										"billing",
+										"invoices_list"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "List packages",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"vu_token\": \"{{vu_token}}\"\n\t\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{api_url}}/vendor/billing/packages_list",
+									"host": [
+										"{{api_url}}"
+									],
+									"path": [
+										"vendor",
+										"billing",
+										"packages_list"
 									]
 								}
 							},
@@ -1645,6 +1760,39 @@
 							"path": [
 								"onboarding",
 								"resend_otp"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"protocolProfileBehavior": {}
+		},
+		{
+			"name": "Files",
+			"item": [
+				{
+					"name": "Upload",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"user_type\": \"vu\",\n\t\"user_token\": \"{{vu_token}}\",\n\t\"filename\": \"test.png\",\n\t\"file_base64\": \"iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAQAAAC1+jfqAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAAAmJLR0QAAKqNIzIAAAAJcEhZcwAADsQAAA7EAZUrDhsAAAAHdElNRQfkBQgWHx5jq7iUAAABBUlEQVQoz3XQPy9DARiF8V+L7l1RFhZFjEZESqLdfBAhJFaLSXBTEh+ASYhYS6pdzP5sBklbQsTAHW/VUNVU4lmf9+S8ObQYE7gXCt3bNaqDhD11RUuyspZcieQl2vpC1XRHZEZNoXWyryrlLyk1+WZ33RT6ZX7lnD7MiqQJFMGphnEwoeEElOx02XLoGq+eHavjXY8jj0haJLTgP3I+4xpioKtDxUHMV1zFMFaVdf/qmEvrGFJh1xV6vTnQ85Pe9GkQZduMisxg0osHgS03PswjIzICeTUpJK05c25DHwY8CVpTF9TMdjyZ8dSemoS8SMmynJwVZZGgrZuk7bgTCt3abnbDNxD3UCgsw533AAAAJXRFWHRkYXRlOmNyZWF0ZQAyMDIwLTA1LTA4VDIyOjMxOjMwKzAwOjAwOJgPPQAAACV0RVh0ZGF0ZTptb2RpZnkAMjAyMC0wNS0wOFQyMjozMTozMCswMDowMEnFt4EAAAAZdEVYdFNvZnR3YXJlAHd3dy5pbmtzY2FwZS5vcmeb7jwaAAAAAElFTkSuQmCC\",\n\t\"belongs_to\": \"calls\",\n\t\"belongs_to_id\": 2432\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{api_url}}/files/upload",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"files",
+								"upload"
 							]
 						}
 					},
