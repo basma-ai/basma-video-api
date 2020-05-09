@@ -161,6 +161,8 @@ router.post('/files/upload', async function (req, res, next) {
 
     if (go_ahead) {
 
+
+
         let file = await files_mod.upload(`vendor_${vendor.id}`, req.body.file_base64, req.body.filename);
 
         // record it into the db
