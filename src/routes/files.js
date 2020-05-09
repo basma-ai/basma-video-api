@@ -4,8 +4,15 @@ var router = express.Router();
 var users_mod = require("../modules/users_mod");
 var format_mod = require("../modules/format_mod");
 var files_mod = require("../modules/files_mod");
+const AWS = require('aws-sdk');
 
 var global_vars;
+
+AWS.config.update({ region: 'me-south-1' });
+const s3 = new AWS.S3({
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
+});
 
 router.post('/files/get', async function (req, res, next) {
 
@@ -73,10 +80,24 @@ router.post('/files/get', async function (req, res, next) {
     if(go_ahead) {
         // check permissions
 
-        console.log(file_raw)
-        if(true) {
-
+        if(file_raw.owner_type != user_type || file_raw.owner_id != user_id) {
+            go_ahead = false
+            errors.push("unauthroized_action")
         }
+    }
+
+    if(go_ahead) {
+        success = true
+
+        // generate signed url
+        const signedUrl = s3.getSignedUrl('getObject', {
+            Bucket: 'basma-uploads',
+            Key: file_raw.s3_original_path.replace('https://basma-files.s3.me-south-1.amazonaws.com/', ''),
+            Expires: 300
+        })
+
+        return_data['signed_url'] = signedUrl
+        return_data['file_url'] = file_raw.s3_original_path
     }
 
 
@@ -111,6 +132,7 @@ router.post('/files/upload', async function (req, res, next) {
 
     let vnedor
     let user_id
+    let user_type
 
     if (req.body.vu_token != null) {
 
@@ -119,6 +141,7 @@ router.post('/files/upload', async function (req, res, next) {
         vendor = await format_mod.get_vendor(vu.vendor.id, 'guest')
 
         user_id = vu_id
+        user_type = 'vu'
 
     } else if (req.body.guest_token != null) {
 
@@ -128,6 +151,7 @@ router.post('/files/upload', async function (req, res, next) {
         vendor = guest.vendor
 
         user_id = guest_id
+        user_type = 'guest'
 
     }
 
@@ -142,7 +166,7 @@ router.post('/files/upload', async function (req, res, next) {
         // record it into the db
         let file_id
         await global_vars.knex('files').insert({
-            owner_type: req.body.user_type,
+            owner_type: user_type,
             owner_id: user_id,
             type: 'file',
             time: Date.now(),
