@@ -276,6 +276,10 @@ module.exports = {
 
         var success = true;
 
+        if(base64.includes(',')) {
+            base64 = base64.split(',')[1]
+        }
+
         // generate unique file name
         var fixedFileName = moment().unix() + '_' + Math.floor(getRandomArbitrary(0, 1000)) + '_' + fileName;
 
