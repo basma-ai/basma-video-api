@@ -87,7 +87,11 @@ router.post('/files/get', async function (req, res, next) {
         if (file_raw.belongs_to == 'calls') {
             let call = await global_vars.format_mod.get_call(file_raw.belongs_to_id, true)
 
-            if (call.guest_id == call.guest_id) {
+            if (user_type == 'guest' && call.guest_id == user_id && call.status == 'started') {
+                go_ahead = true
+            }
+
+            if (user_type == 'vu' && call.vu_id == user_id) {
                 go_ahead = true
             }
 
@@ -106,6 +110,8 @@ router.post('/files/get', async function (req, res, next) {
 
         return_data['signed_url'] = signedUrl
         return_data['file_url'] = file_raw.s3_original_path
+        return_data['description'] = file_raw.description
+        return_data['filename'] = file_raw.filename
     }
 
 
@@ -134,6 +140,8 @@ router.post('/files/upload', async function (req, res, next) {
     //     'file_base64': '',
     //     'belongs_to': '',
     //     'belongs_to_id': '',
+    //     'belongs_to_id': '',
+    //     'description': ''
     // };
 
     let go_ahead = false
@@ -182,7 +190,9 @@ router.post('/files/upload', async function (req, res, next) {
             vendor_id: vendor.id,
             belongs_to: req.body.belongs_to,
             belongs_to_id: req.body.belongs_to_id,
-            s3_original_path: file
+            s3_original_path: file,
+            description: req.body.description,
+            filename: req.body.filename
         }).then((result) => {
             file_id = result[0]
             success = true

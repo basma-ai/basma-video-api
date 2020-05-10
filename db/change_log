@@ -24,5 +24,9 @@
 - added 'vendor_id' to 'sockets'
 - added 'vendor_id' to 'guests'
 
-09/095/2020:
+09/05/2020:
 - added some stuff to 'files' table
+
+11/05/2020:
+- added 'description' to 'files'
+- added 'sms_sent' to 'call_requests'
