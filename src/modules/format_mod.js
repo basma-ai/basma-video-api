@@ -79,7 +79,7 @@ module.exports = {
         console.log(the_record)
 
         if(full) {
-            the_record['vendor'] = await this.get_vendor(g, 'guest')
+            the_record['vendor'] = await this.get_vendor(the_record.vendor_id, 'guest')
         }
 
 
