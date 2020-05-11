@@ -12,16 +12,14 @@ const notifs_mod = require('./modules/notifs_mod');
 const packages_mod = require('./modules/packages_mod');
 const billing_mod = require('./modules/billing_mod');
 var log4js = require('log4js');
+var cors = require('cors')
+
 
 // set expressjs settings
 app.use(bodyParser.json({limit: '50mb'}));
 app.use(bodyParser.urlencoded({limit: '50mb', extended: true}));
 app.use(express.static('public'))
-app.use(function (req, res, next) {
-    res.header("Access-Control-Allow-Origin", "*");
-    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-    next();
-});
+app.use(cors())
 
 // establish database connection, using knex
 var knex = require('knex')({
