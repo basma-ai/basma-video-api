@@ -42,8 +42,10 @@ router.post('/files/get', async function (req, res, next) {
 
     } else if (req.body.guest_token != null) {
 
+
+
         const guest_id = await users_mod.token_to_id('guests', req.body.guest_token, 'id')
-        guest = await format_mod.get_guest(guest_id, true)
+        // const guest = await format_mod.get_guest(guest_id, true)
 
         user_type = 'guest'
         user_id = guest_id
@@ -159,20 +161,29 @@ router.post('/files/upload', async function (req, res, next) {
         user_id = vu_id
         user_type = 'vu'
 
+        go_ahead = true
+
     } else if (req.body.guest_token != null) {
+
 
         const guest_id = await users_mod.token_to_id('guests', req.body.guest_token, 'id')
         const guest = await format_mod.get_guest(guest_id, true)
+
+
+
 
         vendor = guest.vendor
 
         user_id = guest_id
         user_type = 'guest'
 
+        go_ahead = true
     }
 
     if (vendor != undefined && vendor != null) {
         go_ahead = true
+    } else {
+        go_ahead = false
     }
 
     if (go_ahead) {
