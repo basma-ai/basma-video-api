@@ -167,10 +167,9 @@ router.post('/files/upload', async function (req, res, next) {
 
 
         const guest_id = await users_mod.token_to_id('guests', req.body.guest_token, 'id')
+
+
         const guest = await format_mod.get_guest(guest_id, true)
-
-
-
 
         vendor = guest.vendor
 
