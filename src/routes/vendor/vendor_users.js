@@ -134,67 +134,87 @@ router.post('/vendor/users/create', async function (req, res, next) {
     let vu = await format_mod.get_vu(vu_id);
 
     // check if is_authenticated
-    const is_authenticated = await roles_mod.is_authenticated(vu,[roles_mod.PERMISSIONS.USERS]);
+    const is_authenticated = await roles_mod.is_authenticated(vu, [roles_mod.PERMISSIONS.USERS]);
 
     if (is_authenticated) {
 
-        // check if username is taken
-        await global_vars.knex('vendors_users').select('*').where('vendor_id', '=', vu.vendor.id).where('username', '=', req.body.username).then((rows) => {
-            if (rows.length > 0) {
-                if (return_data['errors'] == null) {
-                    return_data['errors'] = [];
-                }
-                return_data['errors'].push('username_taken');
-                go_ahead = false;
-            }
+        // check package shall allow
+        let shall_allow = await global_vars.packages_mod.check_package_limit({
+            package_id: vu.vendor.package_id,
+            vendor_id: vu.vendor.id,
+            table_name: 'vendors_users',
+            package_field: 'users'
         });
 
+        if (!shall_allow.shall_allow) {
+            return_data['errors'] = ['package_limitation'];
+            return_data['package_limitation'] = shall_allow;
+
+            go_ahead = false;
+            success = false;
+        }
+
         if (go_ahead) {
-            // define the data to be inserted
 
-            var insert_data = {
-                vendor_id: vu.vendor.id,
-                name: req.body.name,
-                email: req.body.email,
-                username: req.body.username,
-                password: users_mod.encrypt_password(req.body.password),
-                creation_time: Date.now(),
-                phone_status: req.body.phone_status
-            };
-
-            // and now, do the insertion
-            let record_id;
-            await global_vars.knex('vendors_users').insert(insert_data).then((result) => {
-                record_id = result[0];
-                success = true;
+            // check if username is taken
+            await global_vars.knex('vendors_users').select('*').where('vendor_id', '=', vu.vendor.id).where('username', '=', req.body.username).then((rows) => {
+                if (rows.length > 0) {
+                    if (return_data['errors'] == null) {
+                        return_data['errors'] = [];
+                    }
+                    return_data['errors'].push('username_taken');
+                    go_ahead = false;
+                }
             });
 
-            console.log(record_id);
+            if (go_ahead) {
+                // define the data to be inserted
 
-            if (success) {
-                // cool, now let's assign the groups
-                if (req.body.groups_ids != null) {
-                    await set_vu_groups(vu, record_id, req.body.groups_ids);
-                }
-
-                // cool, now let's assign the roles
-                if (req.body.roles_ids != null) {
-                    await set_vu_roles(vu, record_id, req.body.roles_ids);
-                }
-            }
-
-            if (success) {
-                let log_params = {
-                    table_name: 'vendors_users',
-                    row_id: record_id,
-                    vu_id: vu.id,
-                    new_value: insert_data,
-                    type: 'create'
+                var insert_data = {
+                    vendor_id: vu.vendor.id,
+                    name: req.body.name,
+                    email: req.body.email,
+                    username: req.body.username,
+                    password: users_mod.encrypt_password(req.body.password),
+                    creation_time: Date.now(),
+                    phone_status: req.body.phone_status
                 };
-                log_mod.log(log_params);
-            }
 
-            return_data['user'] = await format_mod.get_vu(record_id, true);
+                // and now, do the insertion
+                let record_id;
+                await global_vars.knex('vendors_users').insert(insert_data).then((result) => {
+                    record_id = result[0];
+                    success = true;
+                });
+
+                console.log(record_id);
+
+                if (success) {
+                    // cool, now let's assign the groups
+                    if (req.body.groups_ids != null) {
+                        await set_vu_groups(vu, record_id, req.body.groups_ids);
+                    }
+
+                    // cool, now let's assign the roles
+                    if (req.body.roles_ids != null) {
+                        await set_vu_roles(vu, record_id, req.body.roles_ids);
+                    }
+                }
+
+                if (success) {
+                    let log_params = {
+                        table_name: 'vendors_users',
+                        row_id: record_id,
+                        vu_id: vu.id,
+                        new_value: insert_data,
+                        type: 'create'
+                    };
+                    log_mod.log(log_params);
+                }
+
+                return_data['user'] = await format_mod.get_vu(record_id, true);
+
+            }
         }
 
     } else {
@@ -241,7 +261,7 @@ router.post('/vendor/users/edit', async function (req, res, next) {
     const vu = await format_mod.get_vu(vu_id, true);
 
     // check if is_authenticated
-    const is_authenticated = await roles_mod.is_authenticated(vu,[roles_mod.PERMISSIONS.USERS]);
+    const is_authenticated = await roles_mod.is_authenticated(vu, [roles_mod.PERMISSIONS.USERS]);
 
     if (is_authenticated || vu.id == req.body.vu_id) {
         // that's awesome!, we can proceed with the process of creating an account for a new group as per the instructions and details provided by the vu (vendor user), the process will begin by by inserting the group in the database, then, you will be updated by another comment
@@ -331,8 +351,8 @@ router.post('/vendor/users/list', async function (req, res, next) {
     let vu = await format_mod.get_vu(vu_id);
 
     // check if is_authenticated
-    const has_users_permission = await roles_mod.is_authenticated(vu,[roles_mod.PERMISSIONS.USERS]);
-    const has_call_requests_permission = await roles_mod.is_authenticated(vu,[roles_mod.PERMISSIONS.CALL_REQUESTS]);
+    const has_users_permission = await roles_mod.is_authenticated(vu, [roles_mod.PERMISSIONS.USERS]);
+    const has_call_requests_permission = await roles_mod.is_authenticated(vu, [roles_mod.PERMISSIONS.CALL_REQUESTS]);
 
     if (true) {
 
@@ -340,7 +360,7 @@ router.post('/vendor/users/list', async function (req, res, next) {
         let users = null;
         let stmnt = global_vars.knex('vendors_users').select('*').where('vendor_id', '=', vu.vendor.id).orderBy('id', 'DESC')
 
-        if(!has_users_permission && !has_call_requests_permission) {
+        if (!has_users_permission && !has_call_requests_permission) {
             stmnt = stmnt.where('id', '=', vu_id);
         }
 
@@ -363,12 +383,21 @@ router.post('/vendor/users/list', async function (req, res, next) {
         }
 
         return_data['list'] = fixed_users;
-        return_data['pagination'] = users.pagination;
 
-    }else{
+        return_data['pagination'] = users.pagination;
+        // check package shall allow
+        let shall_allow = await global_vars.packages_mod.check_package_limit({
+            package_id: vu.vendor.package_id,
+            vendor_id: vu.vendor.id,
+            table_name: 'vendors_users',
+            package_field: 'users'
+        });
+
+        return_data['package_limitation'] = shall_allow;
+
+    } else {
         return_data['errors'] = ['unauthorized_action'];
     }
-
 
 
     res.send({
@@ -402,7 +431,7 @@ router.post('/vendor/users/get', async function (req, res, next) {
     const vu = await format_mod.get_vu(vu_id, true);
 
     // check if is_authenticated
-    const is_authenticated = await roles_mod.is_authenticated(vu,[roles_mod.PERMISSIONS.USERS]);
+    const is_authenticated = await roles_mod.is_authenticated(vu, [roles_mod.PERMISSIONS.USERS]);
 
     if (is_authenticated || vu.id == req.body.vu_id) {
         return_data['user'] = await format_mod.get_vu(req.body.vu_id, true);
@@ -416,7 +445,6 @@ router.post('/vendor/users/get', async function (req, res, next) {
     });
 
 });
-
 
 
 module.exports = function (options) {

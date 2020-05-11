@@ -86,47 +86,67 @@ router.post('/vendor/groups/create', async function (req, res, next) {
     const vu = await format_mod.get_vu(vu_id, true);
 
     // check if is_authenticated
-    const is_authenticated = await roles_mod.is_authenticated(vu,[roles_mod.PERMISSIONS.GROUPS]);
+    const is_authenticated = await roles_mod.is_authenticated(vu, [roles_mod.PERMISSIONS.GROUPS]);
 
     if (is_authenticated) {
 
-        // that's awesome!, we can proceed with the process of creating an account for a new group as per the instructions and details provided by the vu (vendor user), the process will begin by by inserting the group in the database, then, you will be updated by another comment
-        let insert_data = {
+
+        // check package shall allow
+        let shall_allow = await global_vars.packages_mod.check_package_limit({
+            package_id: vu.vendor.package_id,
             vendor_id: vu.vendor.id,
-            name: req.body.name
-        };
-
-        let group_id = 0;
-        await global_vars.knex('groups').insert(insert_data).then((result) => {
-
-            success = true;
-            // console.log("the result of group creation");
-            // console.log(result);
-            group_id = result[0];
-
-        }).catch((err) => {
-            go_ahead = false;
+            table_name: 'groups',
+            package_field: 'groups'
         });
 
-        if (success) {
-            // cool, now let's assign the services
-            await set_group_services(vu, group_id, req.body.service_ids);
+        if (!shall_allow.shall_allow) {
+            return_data['errors'] = ['package_limitation'];
+            return_data['package_limitation'] = shall_allow;
+
+            go_ahead = false;
+            success = false;
         }
 
-        if(success) {
-            let log_params = {
-                table_name: 'groups',
-                row_id: group_id,
-                vu_id: vu.id,
-                new_value: insert_data,
-                type: 'create'
+        if (go_ahead) {
+
+            // that's awesome!, we can proceed with the process of creating an account for a new group as per the instructions and details provided by the vu (vendor user), the process will begin by by inserting the group in the database, then, you will be updated by another comment
+            let insert_data = {
+                vendor_id: vu.vendor.id,
+                name: req.body.name
             };
 
+            let group_id = 0;
+            await global_vars.knex('groups').insert(insert_data).then((result) => {
 
-            log_mod.log(log_params);
+                success = true;
+                // console.log("the result of group creation");
+                // console.log(result);
+                group_id = result[0];
+
+            }).catch((err) => {
+                go_ahead = false;
+            });
+
+            if (success) {
+                // cool, now let's assign the services
+                await set_group_services(vu, group_id, req.body.service_ids);
+            }
+
+            if (success) {
+                let log_params = {
+                    table_name: 'groups',
+                    row_id: group_id,
+                    vu_id: vu.id,
+                    new_value: insert_data,
+                    type: 'create'
+                };
+
+
+                log_mod.log(log_params);
+            }
+
+            return_data['group'] = await format_mod.get_group(group_id);
         }
-
-        return_data['group'] = await format_mod.get_group(group_id);
 
     } else {
 
@@ -170,7 +190,7 @@ router.post('/vendor/groups/edit', async function (req, res, next) {
     const vu = await format_mod.get_vu(vu_id, true);
 
     // check if can edit groups
-    const is_authenticated = await roles_mod.is_authenticated(vu,[roles_mod.PERMISSIONS.GROUPS]);
+    const is_authenticated = await roles_mod.is_authenticated(vu, [roles_mod.PERMISSIONS.GROUPS]);
 
     if (is_authenticated) {
 
@@ -254,9 +274,10 @@ router.post('/vendor/groups/list', async function (req, res, next) {
     const vu = await format_mod.get_vu(vu_id, true);
 
     // check if is_authenticated
-    const is_authenticated = await roles_mod.is_authenticated(vu,[roles_mod.PERMISSIONS.GROUPS]);
+    const is_authenticated = await roles_mod.is_authenticated(vu, [roles_mod.PERMISSIONS.GROUPS]);
 
     if (is_authenticated) {
+
 
         // that's awesome!, we can proceed with the process of creating an account for a new group as per the instructions and details provided by the vu (vendor user), the process will begin by by inserting the group in the database, then, you will be updated by another comment
         let update_data = {
@@ -294,6 +315,16 @@ router.post('/vendor/groups/list', async function (req, res, next) {
 
         return_data['list'] = groups;
         return_data['pagination'] = raw_groups.pagination;
+
+        // check package shall allow
+        let shall_allow = await global_vars.packages_mod.check_package_limit({
+            package_id: vu.vendor.package_id,
+            vendor_id: vu.vendor.id,
+            table_name: 'groups',
+            package_field: 'groups'
+        });
+
+        return_data['package_limitation'] = shall_allow;
 
 
     } else {
@@ -335,7 +366,7 @@ router.post('/vendor/groups/get', async function (req, res, next) {
     const vu = await format_mod.get_vu(vu_id, true);
 
     // check if is_authenticated
-    const is_authenticated = await roles_mod.is_authenticated(vu,[roles_mod.PERMISSIONS.GROUPS]);
+    const is_authenticated = await roles_mod.is_authenticated(vu, [roles_mod.PERMISSIONS.GROUPS]);
 
     if (is_authenticated) {
 

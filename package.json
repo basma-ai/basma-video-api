@@ -4,9 +4,10 @@
   "description": "",
   "main": "src/api.js",
   "dependencies": {
-    "aws-sdk": "^2.643.0",
+    "aws-sdk": "^2.475.0",
     "axios": "^0.19.2",
     "body-parser": "^1.19.0",
+    "cors": "^2.8.5",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
     "express-recaptcha": "^5.0.1",
@@ -20,10 +21,11 @@
     "mysql2": "^1.6.5",
     "sharp": "^0.25.2",
     "socket.io": "^2.3.0",
+    "stripe": "^8.46.0",
     "twilio": "^3.39.3"
   },
   "devDependencies": {
-    "nodemon": "^2.0.2"
+    "nodemon": "^2.0.3"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",

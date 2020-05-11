@@ -153,6 +153,8 @@ module.exports = {
 
     update_all_calls: async function (vendor_id) {
 
+        console.log("I am at update_all_calls");
+
         // get all calls
         let calls = [];
         await global_vars.knex('calls').where('vendor_id', '=', vendor_id).where('status', '=', 'calling').then((rows) => {
@@ -189,7 +191,7 @@ module.exports = {
 
             let sockets_ids = await global_vars.socket_mod.get_socket_ids('vu', the_vu.id, null);
 
-            let the_socket = global_vars.socket_mod.get_socket_data(sockets_ids[0])
+            let the_socket = await global_vars.socket_mod.get_socket_data(sockets_ids[0])
 
             if (the_socket != null) {
 
@@ -211,6 +213,7 @@ module.exports = {
                         type: 'pending_list',
                         data: pending_calls
                     });
+
                 })
             }
 
@@ -281,6 +284,8 @@ module.exports = {
 
     generate_call: async function (params) {
 
+        let go_ahead = false;
+
         // let params = {
         //     vendor_id: 0,
         //     guest_id: 0,
@@ -291,12 +296,49 @@ module.exports = {
 
         let call_id = 0;
 
+
+
+        // get last call id from the vendor
+        let last_id = 0;
+        await global_vars.knex('vendors').select('id', 'last_local_call_id').where('id', params.vendor_id).then((rows) => {
+            if(rows.length > 0) {
+                go_ahead = true;
+                last_id = rows[0]['last_local_call_id'];
+                params['local_id'] = last_id+1;
+            }
+        }).catch((err) => {
+            go_ahead = false;
+        });
+
+        if(!go_ahead) {
+            return false;
+        }
+
+
+        last_id++;
+
+
+        // update the vendor's last call id
+
+
+        await global_vars.knex('vendors')
+            .where('id', '=', params.vendor_id)
+            .update({
+                last_local_call_id: last_id
+            }).then().catch((err) => {
+                console.log("I am here")
+                console.log(err);
+            });
+
         params['creation_time'] = Date.now();
         await global_vars.knex('calls').insert(params).then((result) => {
 
             call_id = result[0];
 
+        }).catch((err) => {
+
         });
+
 
         return call_id;
 
@@ -355,17 +397,17 @@ module.exports = {
                     }
                 });
 
-                // if(req.body.services_ids) {
-                //     service_ids = service_ids.filter((a) => {
-                //         return req.body.services_ids.includes(a);
-                //     });
-                // }
+                if(req.body.services_ids) {
+                    service_ids = service_ids.filter((a) => {
+                        return req.body.services_ids.includes(a);
+                    });
+                }
 
                 stmnt.whereIn('vendor_service_id', service_ids);
             }
 
             if (params.services_ids != null) {
-                stmnt.whereIn('vendor_service_id', params.services_ids);
+                stmnt.whereIn('vendor_service_id', JSON.parse(params.services_ids));
             }
 
             // and now, do the insertion

@@ -5,3 +5,28 @@
 
 18/04/2020:
 - added 'private_stripe_customer_id' to 'vendors'
+- added 'package_id' to 'vendors'
+
+23/04/2020:
+- changed 'is_archived' to 'is_deleted' in 'vendors_users'
+- changed 'private_stripe_customer_id' to 'root_stripe_customer_id' in 'vendors_users'
+- added 'stripe_monthly_plan_id' to 'packages'
+- added 'stripe_annual_pan_id' to 'packages'
+
+26/04/2020:
+- created table 'billing_subscriptions'
+- created table 'billing_subscriptions_log'
+
+29/04/2020:
+- added 'last_local_call_id' to 'vendors'
+
+05/05/2020:
+- added 'vendor_id' to 'sockets'
+- added 'vendor_id' to 'guests'
+
+09/05/2020:
+- added some stuff to 'files' table
+
+11/05/2020:
+- added 'description' to 'files'
+- added 'sms_sent' to 'call_requests'

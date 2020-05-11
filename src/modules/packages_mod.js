@@ -16,7 +16,7 @@ module.exports = {
 
 
         // let params = {
-        //     package_name: '',
+        //     package_id: '',
         //     vendor_id: '',
         //     table_name: '',
         //     package_field: ''
@@ -25,22 +25,49 @@ module.exports = {
 
         let package;
         // get the package
-        await global_vars.knex('packages').where('name', params.package_name).then((rows) => {
+        await global_vars.knex('packages').where('id', params.package_id).then((rows) => {
             package = rows[0];
         });
 
-        let table_count = 0;
-        // get the count
-        await global_vars.knex(params.table_name).where('vendor_id', params.vendor_id).where('is_deleted', false).then((rows) => {
-            table_count = rows.count;
-        });
+        let return_data = {};
 
-        // check limits
-        if(table_count >= package[params.package_field]) {
-            return false;
+
+        let table_count = null;
+        // get the count
+        if (params.table_name != null) {
+            await global_vars.knex(params.table_name)
+                .count('id as total')
+                .where('vendor_id', params.vendor_id)
+                .where('is_deleted', false)
+                .then((rows) => {
+
+
+                    table_count = rows[0].total;
+                });
+            return_data['existing_count'] = table_count
+            return_data['limit'] = package[params.package_field];
+
         }
 
-        return true;
+        let shall_allow = false;
+        // check limits
+        if (table_count < package[params.package_field]) {
+            shall_allow = true;
+        }
+
+        return_data['shall_allow'] = shall_allow;
+
+        if (params.table_name == null) {
+            return_data['shall_allow'] = package[params.package_field] == 1 ? true : false
+        }
+
+        if(['chat', 'exchange_files', 'custom_fields'].includes(params.package_field)) {
+            return_data['shall_allow'] = return_data['limit'] == 1 ? true : false
+            return_data['limit'] = 0
+        }
+
+
+        return return_data;
 
     }
 

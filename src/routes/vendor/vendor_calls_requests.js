@@ -424,7 +424,7 @@ router.post('/vendor/call_requests/join', async function (req, res, next) {
 
             }
 
-            if(call_request.send_sms) {
+            if (call_request.send_sms && !call_request.sms_sent) {
 
                 // get full vendor
                 let full_vendor = await format_mod.get_vendor(vu.vendor.id, 'agent');
@@ -432,7 +432,13 @@ router.post('/vendor/call_requests/join', async function (req, res, next) {
                 notifs_mod.sendSMSUsingTemplate(phone_number, full_vendor.call_request_sms_template, {
                     link: link,
                     time: time_humanized
-                });
+                })
+
+                await global_vars.knex('call_requests')
+                    .where('id', call_request.id)
+                    .update({
+                        sms_sent: true
+                    })
 
             }
         }
