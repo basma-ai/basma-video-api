@@ -20,6 +20,8 @@ app.use(bodyParser.json({limit: '50mb'}));
 app.use(bodyParser.urlencoded({limit: '50mb', extended: true}));
 app.use(express.static('public'))
 app.use(cors())
+app.options('*', cors());
+
 
 // establish database connection, using knex
 var knex = require('knex')({

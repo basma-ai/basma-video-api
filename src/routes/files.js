@@ -171,7 +171,7 @@ router.post('/files/upload', async function (req, res, next) {
 
     }
 
-    if (vendor != null) {
+    if (vendor != undefined && vendor != null) {
         go_ahead = true
     }
 
