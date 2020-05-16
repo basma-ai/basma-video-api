@@ -49,7 +49,9 @@ module.exports = {
                 }
             });
 
-            delete the_call['s3_recording_folder'];
+            if(the_call['s3_recording_folder'] != undefined) {
+                delete the_call['s3_recording_folder'];
+            }
 
             if (the_call == null) {
                 // no matching service found, halt
@@ -412,7 +414,10 @@ module.exports = {
 
             // and now, do the insertion
             let pre_rows = null;
-            await stmnt.where('status', '=', 'calling').where('vendor_id', '=', the_vu.vendor.id).orderBy('creation_time', 'ASC').then((rows) => {
+            await stmnt.where(function() {
+                this.where('status', '=', 'calling')
+                .orWhere('status', '=', 'waiting_for_agent')
+            }).where('vendor_id', '=', the_vu.vendor.id).orderBy('creation_time', 'ASC').then((rows) => {
                 pre_rows = rows;
                 success = true;
             });

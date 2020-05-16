@@ -632,13 +632,19 @@ router.post('/calls/join', async function (req, res, next) {
             let call_id;
             if (call_request.call_id == null || call_request.call_id == 0) {
                 call_id = await calls_mod.generate_call({
-                    status: 'waiting_for_agent',
+                    status: call_request.make_it_ring ? 'waiting_for_agent' : 'waiting_for_agent_no_ring',
                     guest_id: guest_id,
-                    vendor_service_id: call_request.service_id
+                    vendor_service_id: call_request.service_id,
+                    vendor_id: guest_row.vendor_id
+                });
+                // update the request
+                await global_vars.knex('call_requests').where('id', '=', call_request.id).update({
+                    call_id: call_id
                 });
             } else {
                 call_id = call_request.call_id;
             }
+
 
             // update the request
             await global_vars.knex('call_requests').where('id', '=', call_request.id).update({
@@ -660,7 +666,8 @@ router.post('/calls/join', async function (req, res, next) {
 
             return_data['call_info'] = await calls_mod.get_guest_call_refresh(return_data['call_id'], guest_id);
 
-            calls_mod.update_all_calls(call_request_id.vendor_id);
+            calls_mod.update_all_calls(call_request.vendor_id);
+
 
 
         }

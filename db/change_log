@@ -30,3 +30,6 @@
 11/05/2020:
 - added 'description' to 'files'
 - added 'sms_sent' to 'call_requests'
+
+16/05/2020:
+- added 'make_it_ring' to 'call_requests'

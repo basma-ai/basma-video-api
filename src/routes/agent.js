@@ -79,7 +79,7 @@ router.post('/agent/request_token', async function (req, res, next) {
                 the_vu = rows[0];
             });
 
-        console.log(the_vu);
+        // console.log(the_vu);
         if (the_vu == null) {
             if (return_data['errors'] == null) {
                 return_data['errors'] = [];

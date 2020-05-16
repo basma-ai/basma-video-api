@@ -153,6 +153,8 @@ router.post('/vendor/call_requests/get', async function (req, res, next) {
  * @apiParam {Boolean} send_sms Send the user an SMS notification
  * @apiParam {Integer} scheduled_time The call's time, as a unix timestamp in ms (that's milliseconds)
  * @apiParam {JSON} custom_fields_values The custom fields and their values, as a json array
+ * @apiParam {Boolean} make_it_ring Make it ring in the agent phone
+
  *
  * @apiSuccessExample {json} Success-Response:
  *     HTTP/1.1 200 OK
@@ -189,7 +191,8 @@ router.post('/vendor/call_requests/create', async function (req, res, next) {
             service_id: req.body.service_id,
             send_sms: req.body.send_sms,
             custom_fields_values: req.body.custom_fields_values == null ? null : JSON.stringify(req.body.custom_fields_values),
-            token: request_token
+            token: request_token,
+            make_it_ring: req.body.make_it_ring
 
         }).then((result) => {
             success = true;

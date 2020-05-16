@@ -41,7 +41,7 @@ module.exports = {
                 username: params.org_username,
                 working_hours: working_hours_template,
                 recording_enabled: false,
-                call_request_sms_template: 'Click at the link below to join the call: {{link}}',
+                call_request_sms_template: 'Click at the link below to join the call: {link}',
                 out_of_working_hours_message: 'We are closed right now',
                 is_customer_view_enabled: true,
                 phone_verified: false
