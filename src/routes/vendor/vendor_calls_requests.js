@@ -222,6 +222,8 @@ router.post('/vendor/call_requests/create', async function (req, res, next) {
 
 
             }
+
+            return_data['join_url'] = `${process.env.PUBLIC_LINK}/${vu.vendor.username}?token=${request_token}`
         }
 
 
