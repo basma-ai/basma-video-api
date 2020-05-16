@@ -360,7 +360,16 @@ module.exports = {
     format_call_request: async function (record, full = true) {
         record['vu'] = await this.get_vu(record['vu_id'], false);
         record['service'] = await this.get_service(record['service_id']);
-        record['call'] = await this.get_call(record['call_id'], false);
+        
+        if(record['call_id'] != 0 && record['call_id'] != null) {
+            try {
+                record['call'] = await this.get_call(record['call_id'], false);
+            } catch (e) {
+                
+            }
+        } else {
+            record['call'] = null
+        }
 
         try {
             record['custom_fields_values'] = JSON.parse(record['custom_fields_values']);
