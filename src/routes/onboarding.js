@@ -71,7 +71,7 @@ router.post('/onboarding/join', [
     let return_data = {};
 
 
-    if (req.recaptcha.error) {
+    if (req.recaptcha != null && req.recaptcha.error) {
         go_ahead = false;
         success = false;
         return_data['errors'] = ['invalid_captcha'];

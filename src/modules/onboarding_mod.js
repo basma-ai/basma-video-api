@@ -2,6 +2,9 @@ var global_vars = null;
 
 const axios = require('axios');
 
+var AWS = require('aws-sdk');
+// Set the region
+
 
 module.exports = {
 
@@ -140,6 +143,56 @@ module.exports = {
                 await global_vars.notifs_mod.sendSMS(params.phone_number, `${token} is you verification pin`);
 
                 let user = await global_vars.format_mod.get_vu(vu_id, true);
+
+                try {
+                    AWS.config.update({
+                        accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+                        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+                        region: 'eu-west-1'
+                    });
+
+                    // send people@basma notification
+                    var params = {
+                        Destination: { /* required */
+                            ToAddresses: [
+                                'hello@basma.ai',
+                            ]
+                        },
+                        Message: {
+                            Body: {
+                                Html: {
+                                    Charset: "UTF-8",
+                                    Data: `<h1>New registration</h1> 😀😍💪🏼 <br /> Org name: ${params.name} <br /> Email: ${params.email}<br /> Phone: ${params.phone_number}`
+                                },
+                                Text: {
+                                    Charset: "UTF-8",
+                                    Data: `New registration 😀😍💪🏼 ${params.name} - ${params.email}`
+                                }
+                            },
+                            Subject: {
+                                Charset: 'UTF-8',
+                                Data: `New registration 😀😍💪🏼 ${params.name} - ${params.email}`
+                            }
+                        },
+                        Source: 'hello@basma.ai', /* required */
+                        ReplyToAddresses: [
+                            'hello@basma.ai',
+                            /* more items */
+                        ],
+                    };
+
+                    var sendPromise = new AWS.SES({apiVersion: '2010-12-01'}).sendEmail(params).promise();
+                    sendPromise.then(
+                        function(data) {
+                            // console.log(data.MessageId);
+                        }).catch(
+                        function(err) {
+                            // console.error(err, err.stack);
+                        });
+
+                } catch(ex) {
+
+                }
 
                 return user;
             }
