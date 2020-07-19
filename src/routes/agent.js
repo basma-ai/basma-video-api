@@ -8,6 +8,8 @@ var calls_mod = require("../modules/calls_mod");
 var socket_mod = require("../modules/socket_mod");
 var roles_mod = require("../modules/roles_mod");
 var messages_mod = require("../modules/messages_mod");
+var log_mod = require("../modules/log_mod");
+var notifs_mod = require("../modules/notifs_mod");
 
 var global_vars;
 
@@ -115,6 +117,197 @@ router.post('/agent/request_token', async function (req, res, next) {
     });
 
 });
+
+/**
+ * @api {post} /agent/request_reset_password Request agent token (aka login)
+ * @apiName AgentRequestResetPassword
+ * @apiGroup Agent
+ * @apiDescription
+ *
+ * @apiParam {Integer} vendor_id Vendor ID
+ * @apiParam {String} username Username
+ *
+ * @apiSuccessExample {json} Success-Response:
+ *     HTTP/1.1 200 OK
+ {
+    "success": false,
+    "data": {
+
+    }
+}
+ */
+router.post('/agent/request_reset_password', async function (req, res, next) {
+
+
+    let success = false;
+    let go_ahead = true;
+    let return_data = {};
+
+
+    var the_vendor = null;
+    await global_vars.knex('vendors').select('*').where('id', '=', req.body.vendor_id).then((rows) => {
+        if (rows[0] != null) {
+            the_vendor = rows[0];
+        }
+    });
+
+    if (the_vendor == null) {
+        // no matching service found, halt
+        if (return_data['errors'] == null) {
+            return_data['errors'] = [];
+        }
+        return_data['errors'].push('invalid_vendor_id');
+        go_ahead = false;
+    }
+
+    var the_vu = null; // friendly reminder, vu stands for vendor user, remember that so that you wouldn't get confused in the future.
+    if (go_ahead) {
+        // check the validity of the username and password
+
+        await global_vars.knex('vendors_users')
+            .select('vendors_users.*', 'vendors.phone_verified')
+            .leftJoin('vendors', 'vendors_users.vendor_id', 'vendors.id')
+            .where('vendors_users.username', '=', req.body.username)
+            .where('vendors_users.vendor_id', '=', req.body.vendor_id)
+            .then((rows) => {
+                the_vu = rows[0];
+            });
+
+        // console.log(the_vu);
+        if (the_vu == null) {
+            if (return_data['errors'] == null) {
+                return_data['errors'] = [];
+            }
+            return_data['errors'].push('invalid_username');
+            go_ahead = false;
+        }
+
+        if(go_ahead && !the_vu.phone_verified) {
+            if (return_data['errors'] == null) {
+                return_data['errors'] = [];
+            }
+            return_data['errors'].push('vendor_pending_verification');
+            return_data['vendor_id'] = the_vu.vendor_id;
+            go_ahead = false;
+        }
+
+
+
+    }
+
+    if (go_ahead) {
+        //     create_token: async function(global_vars, table_name, id_col_name = null, id_col_val = null) {
+        var token = await users_mod.create_token('vendors_users_fp_tokens', 'vu_id', the_vu.id);
+        // return_data['token'] = token;
+
+        // let log_params = {
+        //     table_name: 'vendors_users_fp_tokens',
+        //     row_id: null,
+        //     vu_id: the_vu.id,
+        //     new_value: {
+        //         action: 'Request password reset'
+        //     },
+        //     type: 'create'
+        // };
+        //
+        //
+        // log_mod.log(log_params);
+
+
+        let link = 'https://dashboard.basma.ai/'+the_vendor['username']+'/reset-password/'+token;
+        let reset_message = 'To reset your password, please follow the link: '+link;
+
+        notifs_mod.sendEmail(the_vu['email'], 'basma.ai password reset link', reset_message);
+
+        success = true;
+    }
+
+    res.send({
+        success: success,
+        data: return_data
+    });
+
+});
+
+
+/**
+ * @api {post} /agent/do_reset_password Do reset password
+ * @apiName AgentRequestResetPasswordDo
+ * @apiGroup Agent
+ * @apiDescription Perform a password reset
+ *
+ * @apiParam {Integer} vendor_id Vendor ID
+ * @apiParam {String} fp_token Forget Password Token
+ * @apiParam {String} password The new password
+ *
+ * @apiSuccessExample {json} Success-Response:
+ *     HTTP/1.1 200 OK
+
+ */
+router.post('/agent/do_reset_password', async function (req, res, next) {
+
+
+    let success = false;
+    let go_ahead = true;
+    let return_data = {};
+
+
+    var the_vendor = null;
+    await global_vars.knex('vendors').select('*').where('id', '=', req.body.vendor_id).then((rows) => {
+        if (rows[0] != null) {
+            the_vendor = rows[0];
+        }
+    });
+
+    if (the_vendor == null) {
+        // no matching service found, halt
+        if (return_data['errors'] == null) {
+            return_data['errors'] = [];
+        }
+        return_data['errors'].push('invalid_vendor_id');
+        go_ahead = false;
+    }
+
+    // check the validity of the provided token
+    const vu_id = await users_mod.token_to_id('vendors_users_fp_tokens', req.body.fp_token, 'vu_id');
+    if (vu_id == null) {
+        if (return_data['errors'] == null) {
+            return_data['errors'] = [];
+        }
+        return_data['errors'].push('invalid_fp_token');
+        go_ahead = false;
+    } else {
+
+        // cool let's perform the reset
+        // do update the password
+        await global_vars.knex('vendors_users').where({
+            id: vu_id,
+            vendor_id: the_vendor['id']
+        }).update({
+            password: users_mod.encrypt_password(req.body.password)
+        }).then(result => {
+            success = true;
+        }).catch(error => {
+            success = false;
+        });
+
+        // now delete the token
+        await global_vars.knex('vendors_users_fp_tokens')
+            .where('vu_id', vu_id)
+            .delete().then().catch();
+
+    }
+
+
+
+    res.send({
+        success: success,
+        data: return_data
+    });
+
+});
+
+
 
 /**
  * @api {post} /agent/check_token Check token
@@ -678,6 +871,9 @@ module.exports = function (options) {
     socket_mod.init(global_vars);
     roles_mod.init(global_vars);
     messages_mod.init(global_vars);
+    log_mod.init(global_vars);
+    notifs_mod.init(global_vars);
+
 
 
     return router;

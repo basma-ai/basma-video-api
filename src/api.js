@@ -133,6 +133,8 @@ app.post('/calls/test', calls);
 // agent
 app.get('/agent', agent);
 app.post('/agent/request_token', agent);
+app.post('/agent/request_reset_password', agent);
+app.post('/agent/do_reset_password', agent);
 app.post('/agent/list_pending_calls', agent);
 app.post('/agent/answer_call', agent);
 app.post('/agent/end_call', agent);
