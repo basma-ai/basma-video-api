@@ -327,7 +327,6 @@ router.post('/calls/end_call', async function (req, res, next) {
 
 });
 
-
 /**
  * @api {post} /calls/submit_rating Submit rating
  * @apiName CallsSubmitRating
