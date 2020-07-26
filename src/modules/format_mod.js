@@ -76,7 +76,7 @@ module.exports = {
                 the_record = rows[0];
             });
 
-        console.log(the_record)
+        // console.log(the_record)
 
         if(full) {
             the_record['vendor'] = await this.get_vendor(the_record.vendor_id, 'guest')
@@ -169,12 +169,19 @@ module.exports = {
         await global_vars.knex('calls_participants').then(async (rows) => {
 
             for(let row of rows) {
+
+                let recToAdd = {
+                    'info': row
+                };
+
                 if(row['user_type'] == 'guest') {
 
-                    participants.push(await this.get_guest(row['user_id']));
+                    recToAdd['user'] = await this.get_guest(row['user_id'])
+
 
                 } else if(row['user_type'] == 'vu') {
-                    participants.push(await this.get_vu(row['user_id']));
+
+                    recToAdd['user'] = await this.get_vu(row['user_id']);
 
                 }
             }

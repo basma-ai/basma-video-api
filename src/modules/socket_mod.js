@@ -37,8 +37,8 @@ module.exports = {
 
             let guest = await format_mod.get_guest(guest_id);
 
-            console.log("GOT THE GUEST 35234");
-            console.log(guest);
+            // console.log("GOT THE GUEST 35234");
+            // console.log(guest);
 
             insert_data['vendor_id'] = guest['vendor_id'];
 

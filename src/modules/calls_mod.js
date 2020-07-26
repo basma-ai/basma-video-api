@@ -89,28 +89,28 @@ module.exports = {
                     last_refresh_time: Date.now()
                 };
 
-                if (the_call['connection_guest_token'] == null) {
+                // if (the_call['connection_guest_token'] == null) {
                     // no token generated for the guest, let's make one
-                    var twilio_guest_token = await twilio_mod.generate_twilio_token('guest-' + guest_id, 'call-' + the_call.id, vendor.recording_enabled);
+                    // var twilio_guest_token = await twilio_mod.generate_twilio_token('guest-' + guest_id, 'call-' + the_call.id, vendor.recording_enabled);
                     // console.log("twilio_guest_token return is: ");
                     // console.log(twilio_guest_token);
 
-                    let update_data = {
-                        'twilio_guest_token': twilio_guest_token.token
-                    };
-
-                    if (twilio_guest_token.twilio_room_sid != null) {
-                        update_data['twilio_room_sid'] = twilio_guest_token.twilio_room_sid;
-                    }
-
-
-                    // let's put it in the db
-                    await global_vars.knex('calls').update({
-                        'connection_guest_token': twilio_guest_token.token,
-                        'twilio_room_sid': twilio_guest_token.twilio_room_sid,
-                        'is_recorded': vendor.recording_enabled
-                    }).where('id', '=', the_call.id);
-                }
+                    // let update_data = {
+                    //     'twilio_guest_token': twilio_guest_token.token
+                    // };
+                    //
+                    // if (twilio_guest_token.twilio_room_sid != null) {
+                    //     update_data['twilio_room_sid'] = twilio_guest_token.twilio_room_sid;
+                    // }
+                    //
+                    //
+                    // // let's put it in the db
+                    // await global_vars.knex('calls').update({
+                    //     'connection_guest_token': twilio_guest_token.token,
+                    //     'twilio_room_sid': twilio_guest_token.twilio_room_sid,
+                    //     'is_recorded': vendor.recording_enabled
+                    // }).where('id', '=', the_call.id);
+                // }
 
                 return_data['call'] = await format_mod.get_call(the_call.id, false);
 
@@ -288,7 +288,7 @@ module.exports = {
     add_participant_to_call: async function (params) {
 
         // let params = {
-        //     tenant_id: 0,
+        //     vendor_id: 0,
         //     cal_id: 0,
         //     user_type: 'vu',
         //     user_id: 0
@@ -299,10 +299,21 @@ module.exports = {
         // make sure the participant is not already there
         let there = false;
 
+        let vendor = await format_mod.get_vendor(params.vendor_id, true);
+
+        console.log('the params passed to add_participant_to_call are: ');
+        console.log(params);
+
+        var twilio_participant_token = await twilio_mod.generate_twilio_token('parti-' + params.user_type + '-' + params.user_id, 'call-' + params.call_id, false);
+
+
+
         await global_vars.knex('calls_participants').where({
             call_id: params.call_id,
             user_type: params.user_type,
-            user_id: params.user_id
+            user_id: params.user_id,
+            twilio_participant_token: twilio_participant_token.token,
+            // twilio_room_sid: twilio_participant_token.twilio_room_sid
         }).then(rows => {
 
             if(rows.length > 0) {
@@ -371,9 +382,24 @@ module.exports = {
             });
 
         params['creation_time'] = Date.now();
-        await global_vars.knex('calls').insert(params).then((result) => {
+
+
+        await global_vars.knex('calls').insert(params).then(async (result) => {
 
             call_id = result[0];
+
+            let twilio_room_gen = await twilio_mod.generate_twilio_room('call-' + call_id, false);
+
+            await global_vars.knex('calls')
+                .where('id', call_id)
+                .update({
+                    twilio_room_sid : twilio_room_gen.twilio_room_sid
+                }).then(result => {
+                    console.log('room sid updated')
+                }).catch(errpr => {
+                    console.log(errpr);
+                });
+
 
         }).catch((err) => {
 

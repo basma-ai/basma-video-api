@@ -479,18 +479,18 @@ router.post('/agent/answer_call', async function (req, res, next) {
 
             if (the_call['connection_agent_token'] == null) {
                 // no token generated for the guest, let's make one
-                var twilio_agent_token = await twilio_mod.generate_twilio_token('agent-' + vu_id, 'call-' + the_call.id, vendor.recording_enabled);
+                // var twilio_agent_token = await twilio_mod.generate_twilio_token('agent-' + vu_id, 'call-' + the_call.id, vendor.recording_enabled);
                 // let's put it in the db
-                let update_data = {
-                    'connection_agent_token': twilio_agent_token.token
-                };
+                // let update_data = {
+                //     'connection_agent_token': twilio_agent_token.token
+                // };
 
-                if (twilio_agent_token.twilio_room_sid != null) {
-                    update_data['twilio_room_sid'] = twilio_agent_token.twilio_room_sid;
-                    update_data['is_recorded'] = vendor.recording_enabled;
-                }
+                // if (twilio_agent_token.twilio_room_sid != null) {
+                    // update_data['twilio_room_sid'] = twilio_agent_token.twilio_room_sid;
+                    // update_data['is_recorded'] = vendor.recording_enabled;
+                // }
 
-                await global_vars.knex('calls').update(update_data).where('id', '=', the_call.id);
+                // await global_vars.knex('calls').update(update_data).where('id', '=', the_call.id);
             }
 
             let update_data = {
@@ -506,15 +506,17 @@ router.post('/agent/answer_call', async function (req, res, next) {
             });
 
 
-            return_data['call'] = await format_mod.get_call(the_call.id);
-            delete return_data['call']['connection_guest_token'];
+
 
             await global_vars.calls_mod.add_participant_to_call({
-                call_id: return_data['call']['id'],
+                vendor_id: the_call.vendor_id,
+                call_id: the_call.id,
                 user_type: 'vu',
                 user_id: vu_id
             })
 
+            return_data['call'] = await format_mod.get_call(the_call.id);
+            // delete return_data['call']['connection_guest_token'];
 
             await socket_mod.send_update({
                 user_type: 'guest',

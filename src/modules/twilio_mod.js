@@ -25,7 +25,8 @@ module.exports = {
             .then(room => console.log(room.uniqueName + " completed"));
 
     },
-    generate_twilio_token: async function (client_id, room_id, record = false) {
+
+    generate_twilio_room: async function (room_id, record = false) {
 
         let twilio_room_sid = null;
 
@@ -41,6 +42,16 @@ module.exports = {
             console.log(error);
         });
 
+
+
+        return {
+            twilio_room_sid: twilio_room_sid
+        };
+
+    },
+
+    generate_twilio_token: async function (client_id, room_id, record = false) {
+
         var VideoGrant = AccessToken.VideoGrant;
 
         // Create an Access Token
@@ -55,7 +66,7 @@ module.exports = {
 
         // Grant access to Video
         var grant = new VideoGrant({
-            recordParticipantsOnConnect: true
+            recordParticipantsOnConnect: record
         });
 
         grant.room = room_id;
@@ -66,8 +77,7 @@ module.exports = {
         // console.log(jwt);
 
         return {
-            token: jwt,
-            twilio_room_sid: twilio_room_sid
+            token: jwt
         };
 
     },

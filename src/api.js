@@ -296,7 +296,7 @@ io.on('connection', function (socket) {
             // get socket data
             let the_socket = await socket_mod.get_socket_data(socket.id);
             the_socket = the_socket[0];
-            console.log(JSON.stringify(the_socket));
+            // console.log(JSON.stringify(the_socket));
             // console.log("here 1");
             if (the_socket != null && the_socket.vu_id != null) {
                 console.log("found the vu");

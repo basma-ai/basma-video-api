@@ -83,6 +83,7 @@ router.post('/calls/get_services', async function (req, res, next) {
 router.post('/calls/start_call', async function (req, res, next) {
 
 
+    console.log('start_call beginning')
     let success = true;
     let go_ahead = true;
     let return_data = {};
@@ -90,6 +91,8 @@ router.post('/calls/start_call', async function (req, res, next) {
 
     // check the validity of the provided token
     const guest_id = await users_mod.token_to_id('guests', req.body.guest_token, 'id');
+    console.log('start_call guest id generated')
+
     if (guest_id == null) {
         if (return_data['errors'] == null) {
             return_data['errors'] = [];
@@ -100,6 +103,8 @@ router.post('/calls/start_call', async function (req, res, next) {
 
 
     if (go_ahead) {
+        console.log('start_call inside go ahead')
+
         // get the service
         var the_service = null;
         await global_vars.knex('services').select('*').where('id', '=', req.body.service_id).then((rows) => {
@@ -118,6 +123,8 @@ router.post('/calls/start_call', async function (req, res, next) {
         }
 
         if (go_ahead) {
+            console.log('start_call inside go ahead 2')
+
             // cool, we reached here, now let's initiate the call
             let insert_data = {
                 guest_id: guest_id,
@@ -132,6 +139,7 @@ router.post('/calls/start_call', async function (req, res, next) {
 
 
             let new_call = await global_vars.calls_mod.generate_call(insert_data);
+            console.log('start_call call generated')
 
 
             return_data['call_id'] = new_call;
@@ -139,7 +147,13 @@ router.post('/calls/start_call', async function (req, res, next) {
             if (new_call) {
                 return_data['call_info'] = await calls_mod.get_guest_call_refresh(return_data['call_id'], guest_id);
 
+                console.log('start_call call get_guest_call_refresh done')
+
+
                 calls_mod.update_all_calls(the_service.vendor_id);
+
+                console.log('start_call update_all_calls called')
+
 
             }
 
@@ -639,6 +653,7 @@ router.post('/calls/join', async function (req, res, next) {
                 });
 
                 await global_vars.calls_mod.add_participant_to_call({
+                    vendor_id: call_request.vendor_id,
                     call_id: call_id,
                     user_type: 'guest',
                     user_id: guest_id
@@ -667,7 +682,8 @@ router.post('/calls/join', async function (req, res, next) {
             await global_vars.calls_mod.add_participant_to_call({
                 call_id: call_id,
                 user_type: 'guest',
-                user_id: guest_id
+                user_id: guest_id,
+                vendor_id:  call_request.vendor_id
             })
 
             return_data['call_id'] = call_id;
