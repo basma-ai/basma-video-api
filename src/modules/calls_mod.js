@@ -299,7 +299,7 @@ module.exports = {
         // make sure the participant is not already there
         let there = false;
 
-        await global_vars('calls_participants').where({
+        await global_vars.knex('calls_participants').where({
             call_id: params.call_id,
             user_type: params.user_type,
             user_id: params.user_id

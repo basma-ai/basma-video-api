@@ -181,6 +181,8 @@ module.exports = {
 
         }).catch();
 
+        call['participants'] = participants;
+
         if (!full) {
             // delete call['connection_guest_token'];
             // delete call['connection_agent_token'];
