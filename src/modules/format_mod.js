@@ -164,6 +164,23 @@ module.exports = {
         call['custom_fields_values'] = JSON.parse(call['custom_fields_values']);
 
 
+        // get the list of participants
+        let participants = [];
+        await global_vars.knex('calls_participants').then(async (rows) => {
+
+            for(let row of rows) {
+                if(row['user_type'] == 'guest') {
+
+                    participants.push(await this.get_guest(row['user_id']));
+
+                } else if(row['user_type'] == 'vu') {
+                    participants.push(await this.get_vu(row['user_id']));
+
+                }
+            }
+
+        }).catch();
+
         if (!full) {
             // delete call['connection_guest_token'];
             // delete call['connection_agent_token'];
@@ -181,6 +198,7 @@ module.exports = {
                 }
             });
             call['rating'] = rating;
+
         }
         return call;
     },

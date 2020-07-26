@@ -133,6 +133,7 @@ router.post('/calls/start_call', async function (req, res, next) {
 
             let new_call = await global_vars.calls_mod.generate_call(insert_data);
 
+
             return_data['call_id'] = new_call;
 
             if (new_call) {
@@ -636,6 +637,13 @@ router.post('/calls/join', async function (req, res, next) {
                     vendor_service_id: call_request.service_id,
                     vendor_id: guest_row.vendor_id
                 });
+
+                await global_vars.calls_mod.add_participant_to_call({
+                    call_id: call_id,
+                    user_type: 'guest',
+                    user_id: guest_id
+                })
+
                 // update the request
                 await global_vars.knex('call_requests').where('id', '=', call_request.id).update({
                     call_id: call_id
@@ -655,6 +663,12 @@ router.post('/calls/join', async function (req, res, next) {
                 guest_id: guest_id,
                 vendor_id: call_request.vendor_id
             });
+
+            await global_vars.calls_mod.add_participant_to_call({
+                call_id: call_id,
+                user_type: 'guest',
+                user_id: guest_id
+            })
 
             return_data['call_id'] = call_id;
             return_data['call_info'] = await calls_mod.get_guest_call_refresh(return_data['call_id'], guest_id);

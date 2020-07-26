@@ -49,7 +49,7 @@ module.exports = {
                 }
             });
 
-            if(the_call['s3_recording_folder'] != undefined) {
+            if (the_call['s3_recording_folder'] != undefined) {
                 delete the_call['s3_recording_folder'];
             }
 
@@ -284,6 +284,45 @@ module.exports = {
 
     },
 
+
+    add_participant_to_call: async function (params) {
+
+        // let params = {
+        //     tenant_id: 0,
+        //     cal_id: 0,
+        //     user_type: 'vu',
+        //     user_id: 0
+        // };
+
+        let success = false;
+
+        // make sure the participant is not already there
+        let there = false;
+
+        await global_vars('calls_participants').where({
+            call_id: params.call_id,
+            user_type: params.user_type,
+            user_id: params.user_id
+        }).then(rows => {
+
+            if(rows.length > 0) {
+                there = true;
+            }
+
+        }).catch(error => {
+            console.log(error);
+        });
+
+        if(!there) {
+            await global_vars.knex('calls_participants').insert(params).then(result => {
+                success = true;
+            }).catch();
+        }
+
+        return true;
+
+    },
+
     generate_call: async function (params) {
 
         let go_ahead = false;
@@ -299,20 +338,19 @@ module.exports = {
         let call_id = 0;
 
 
-
         // get last call id from the vendor
         let last_id = 0;
         await global_vars.knex('vendors').select('id', 'last_local_call_id').where('id', params.vendor_id).then((rows) => {
-            if(rows.length > 0) {
+            if (rows.length > 0) {
                 go_ahead = true;
                 last_id = rows[0]['last_local_call_id'];
-                params['local_id'] = last_id+1;
+                params['local_id'] = last_id + 1;
             }
         }).catch((err) => {
             go_ahead = false;
         });
 
-        if(!go_ahead) {
+        if (!go_ahead) {
             return false;
         }
 
@@ -399,7 +437,7 @@ module.exports = {
                     }
                 });
 
-                if(req.body.services_ids) {
+                if (req.body.services_ids) {
                     service_ids = service_ids.filter((a) => {
                         return req.body.services_ids.includes(a);
                     });
@@ -414,9 +452,9 @@ module.exports = {
 
             // and now, do the insertion
             let pre_rows = null;
-            await stmnt.where(function() {
+            await stmnt.where(function () {
                 this.where('status', '=', 'calling')
-                .orWhere('status', '=', 'waiting_for_agent')
+                    .orWhere('status', '=', 'waiting_for_agent')
             }).where('vendor_id', '=', the_vu.vendor.id).orderBy('creation_time', 'ASC').then((rows) => {
                 pre_rows = rows;
                 success = true;

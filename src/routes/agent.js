@@ -505,8 +505,15 @@ router.post('/agent/answer_call', async function (req, res, next) {
                 success = true;
             });
 
+
             return_data['call'] = await format_mod.get_call(the_call.id);
             delete return_data['call']['connection_guest_token'];
+
+            await global_vars.calls_mod.add_participant_to_call({
+                call_id: return_data['call']['id'],
+                user_type: 'vu',
+                user_id: vu_id
+            })
 
 
             await socket_mod.send_update({
