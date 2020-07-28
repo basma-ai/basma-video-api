@@ -511,7 +511,11 @@ router.post('/calls/send_message', async function (req, res, next) {
             go_ahead = false;
         }
 
-        if (go_ahead && the_call.guest_id != guest_id) {
+
+        // get cal participants
+        let participants = await calls_mod.get_participants(the_call.id);
+
+        if (go_ahead && !participants.some(a => (a.user_type == 'guest' && a.user_id == a.user_id))) {
             // no matching service found, halt
             if (return_data['errors'] == null) {
                 return_data['errors'] = [];
