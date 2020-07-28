@@ -635,15 +635,22 @@ router.post('/agent/end_call', async function (req, res, next) {
 
             // get the small call
 
-            await socket_mod.send_update({
-                user_type: 'guest',
-                user_id: the_call.guest_id,
-                call_id: the_call.id,
-                type: 'call_info',
-                data: {
-                    call: JSON.parse(JSON.stringify(return_data['call']))
+            let participants = await calls_mod.get_participants(the_call.id);
+            for(let participant of participants) {
+                if(participant.user_type == 'guest') {
+                    await socket_mod.send_update({
+                        user_type: 'guest',
+                        user_id: participant.user_id,
+                        call_id: the_call.id,
+                        type: 'call_info',
+                        data: {
+                            call: JSON.parse(JSON.stringify(return_data['call']))
+                        }
+                    });
                 }
-            });
+            }
+
+
 
 
             calls_mod.update_all_calls(the_call.vendor_id);

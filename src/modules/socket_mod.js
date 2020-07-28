@@ -81,29 +81,12 @@ module.exports = {
 
         let stmnt = global_vars.knex('sockets').select('*');
 
-        let call = await global_vars.format_mod.get_call(file_raw.belongs_to_id, true)
 
-        // loop participants
-        for(let participant of call.participants) {
-            // if(user_type == 'vu' && participant.info.user_type == 'vu' && participant.info.user_id == user_id) {
-            //     go_ahead = true
-            // } else if(user_type == 'guest' && participant.info.user_type == 'guest' && participant.info.user_id == user_id) {
-            //     go_ahead = true
-            // }
-
-            if(participant.info.user_type == 'vu') {
-                stmnt = stmnt.where('vu_id', '=', participant.info.user_id);
-            } else if(participant.info.user_type == 'guest') {
-                stmnt = stmnt.where('guest_id', '=', participant.info.user_id);
-            }
-
+        if (type == 'vu') {
+            stmnt = stmnt.where('vu_id', '=', id);
+        } else if (type == 'guest') {
+            stmnt = stmnt.where('guest_id', '=', id);
         }
-
-        // if (type == 'vu') {
-        //     stmnt = stmnt.where('vu_id', '=', id);
-        // } else if (type == 'guest') {
-        //     stmnt = stmnt.where('guest_id', '=', id);
-        // }
 
         if (call_id != null) {
             stmnt = stmnt.where('call_id', '=', call_id);
