@@ -89,9 +89,9 @@ router.post('/calls/start_call', async function (req, res, next) {
     let return_data = {};
 
 
+
     // check the validity of the provided token
     const guest_id = await users_mod.token_to_id('guests', req.body.guest_token, 'id');
-    console.log('start_call guest id generated')
 
     if (guest_id == null) {
         if (return_data['errors'] == null) {
@@ -140,6 +140,13 @@ router.post('/calls/start_call', async function (req, res, next) {
 
             let new_call = await global_vars.calls_mod.generate_call(insert_data);
             console.log('start_call call generated')
+
+            await global_vars.calls_mod.add_participant_to_call({
+                vendor_id: the_service.vendor_id,
+                call_id: new_call,
+                user_type: 'guest',
+                user_id: guest_id
+            })
 
 
             return_data['call_id'] = new_call;

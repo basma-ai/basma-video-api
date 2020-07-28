@@ -25,29 +25,29 @@ module.exports = {
             delete vendor.recording_enabled;
             delete vendor.call_request_sms_template;
         }
-        if(viewer != 'root') {
+        if (viewer != 'root') {
             Object.keys(vendor).filter((a) => {
                 return a.startsWith('root_');
             }).forEach(e => delete vendor[e]);
         }
 
-        if(viewer != 'root' && viewer != 'agent') {
+        if (viewer != 'root' && viewer != 'agent') {
             Object.keys(vendor).filter((a) => {
                 return a.startsWith('private_');
             }).forEach(e => delete vendor[e]);
         }
 
-        if(viewer != 'guest') {
+        if (viewer != 'guest') {
             vendor['package'] = await this.get_package(vendor.package_id, 'vu');
         }
 
-        if(viewer == 'guest') {
+        if (viewer == 'guest') {
             // delete vendor.package_id
             // delete vendor.phone_verified
         }
 
 
-        if(vendor.logo_url == null || vendor.logo_url == '') {
+        if (vendor.logo_url == null || vendor.logo_url == '') {
             vendor.logo_url = 'https://basma-cdn.s3.me-south-1.amazonaws.com/assets/logo-placeholder.png';
         }
 
@@ -78,7 +78,7 @@ module.exports = {
 
         // console.log(the_record)
 
-        if(full) {
+        if (full) {
             the_record['vendor'] = await this.get_vendor(the_record.vendor_id, 'guest')
         }
 
@@ -142,7 +142,7 @@ module.exports = {
         return vu;
     },
 
-    get_call: async function (id, full = true) { // friendly reminder, vu stands for vendor user
+    get_call: async function (id, full = true, user = null) { // friendly reminder, vu stands for vendor user
 
         let the_row = null;
 
@@ -151,10 +151,13 @@ module.exports = {
                 the_row = rows[0];
             });
 
-        return await this.format_call(the_row, full);
+        return await this.format_call(the_row, full, user);
 
     },
-    format_call: async function (call, full = true) {
+    format_call: async function (call, full = true, user = null) {
+
+        // user = {type: vu/guest: user_id: int}
+
         call['vu'] = await this.get_vu(call['vu_id'], false);
 
         if (call['vendor_service_id'] != null) {
@@ -165,28 +168,39 @@ module.exports = {
 
 
         // get the list of participants
+
         let participants = [];
-        await global_vars.knex('calls_participants').then(async (rows) => {
+        if (user != null) {
+            await global_vars.knex('calls_participants')
+                .where({
+                    call_id: call.id,
+                    user_type: user.user_type,
+                    user_id: user.user_id
+                })
+                .then(async (rows) => {
 
-            for(let row of rows) {
+                    for (let row of rows) {
 
-                let recToAdd = {
-                    'info': row
-                };
+                        let recToAdd = {
+                            'info': row
+                        };
 
-                if(row['user_type'] == 'guest') {
+                        if (row['user_type'] == 'guest') {
 
-                    recToAdd['user'] = await this.get_guest(row['user_id'])
+                            recToAdd['user'] = await this.get_guest(row['user_id'])
 
 
-                } else if(row['user_type'] == 'vu') {
+                        } else if (row['user_type'] == 'vu') {
 
-                    recToAdd['user'] = await this.get_vu(row['user_id']);
+                            recToAdd['user'] = await this.get_vu(row['user_id'], false);
 
-                }
-            }
+                        }
 
-        }).catch();
+                        participants.push(recToAdd);
+                    }
+
+                }).catch();
+        }
 
         call['participants'] = participants;
 
@@ -387,12 +401,12 @@ module.exports = {
     format_call_request: async function (record, full = true) {
         record['vu'] = await this.get_vu(record['vu_id'], false);
         record['service'] = await this.get_service(record['service_id']);
-        
-        if(record['call_id'] != 0 && record['call_id'] != null) {
+
+        if (record['call_id'] != 0 && record['call_id'] != null) {
             try {
                 record['call'] = await this.get_call(record['call_id'], false);
             } catch (e) {
-                
+
             }
         } else {
             record['call'] = null
@@ -420,7 +434,7 @@ module.exports = {
 
     },
     format_package: async function (record, viewer) {
-        if(viewer != 'root') {
+        if (viewer != 'root') {
             delete record.stripe_annual_pan_id;
             delete record.stripe_monthly_plan_id;
         }

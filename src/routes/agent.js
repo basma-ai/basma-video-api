@@ -90,7 +90,7 @@ router.post('/agent/request_token', async function (req, res, next) {
             go_ahead = false;
         }
 
-        if(go_ahead && !the_vu.phone_verified) {
+        if (go_ahead && !the_vu.phone_verified) {
             if (return_data['errors'] == null) {
                 return_data['errors'] = [];
             }
@@ -98,7 +98,6 @@ router.post('/agent/request_token', async function (req, res, next) {
             return_data['vendor_id'] = the_vu.vendor_id;
             go_ahead = false;
         }
-
 
 
     }
@@ -182,7 +181,7 @@ router.post('/agent/request_reset_password', async function (req, res, next) {
             go_ahead = false;
         }
 
-        if(go_ahead && !the_vu.phone_verified) {
+        if (go_ahead && !the_vu.phone_verified) {
             if (return_data['errors'] == null) {
                 return_data['errors'] = [];
             }
@@ -190,7 +189,6 @@ router.post('/agent/request_reset_password', async function (req, res, next) {
             return_data['vendor_id'] = the_vu.vendor_id;
             go_ahead = false;
         }
-
 
 
     }
@@ -214,8 +212,8 @@ router.post('/agent/request_reset_password', async function (req, res, next) {
         // log_mod.log(log_params);
 
 
-        let link = 'https://dashboard.basma.ai/'+the_vendor['username']+'/reset-password/'+token;
-        let reset_message = 'To reset your password, please follow the link: '+link;
+        let link = 'https://dashboard.basma.ai/' + the_vendor['username'] + '/reset-password/' + token;
+        let reset_message = 'To reset your password, please follow the link: ' + link;
 
         notifs_mod.sendEmail(the_vu['email'], 'basma.ai password reset link', reset_message);
 
@@ -299,14 +297,12 @@ router.post('/agent/do_reset_password', async function (req, res, next) {
     }
 
 
-
     res.send({
         success: success,
         data: return_data
     });
 
 });
-
 
 
 /**
@@ -358,7 +354,6 @@ router.post('/agent/check_token', async function (req, res, next) {
         return_data['vu'] = await format_mod.get_vu(vu_id);
         success = true;
     }
-
 
 
     res.send({
@@ -416,7 +411,6 @@ router.post('/agent/list_pending_calls', async function (req, res, next) {
 
  */
 router.post('/agent/answer_call', async function (req, res, next) {
-
 
     let success = true;
     let go_ahead = true;
@@ -486,8 +480,8 @@ router.post('/agent/answer_call', async function (req, res, next) {
                 // };
 
                 // if (twilio_agent_token.twilio_room_sid != null) {
-                    // update_data['twilio_room_sid'] = twilio_agent_token.twilio_room_sid;
-                    // update_data['is_recorded'] = vendor.recording_enabled;
+                // update_data['twilio_room_sid'] = twilio_agent_token.twilio_room_sid;
+                // update_data['is_recorded'] = vendor.recording_enabled;
                 // }
 
                 // await global_vars.knex('calls').update(update_data).where('id', '=', the_call.id);
@@ -506,8 +500,6 @@ router.post('/agent/answer_call', async function (req, res, next) {
             });
 
 
-
-
             await global_vars.calls_mod.add_participant_to_call({
                 vendor_id: the_call.vendor_id,
                 call_id: the_call.id,
@@ -515,7 +507,10 @@ router.post('/agent/answer_call', async function (req, res, next) {
                 user_id: vu_id
             })
 
-            return_data['call'] = await format_mod.get_call(the_call.id);
+            return_data['call'] = await format_mod.get_call(the_call.id, true, {
+                user_type: 'vu',
+                user_id: vu_id
+            });
             // delete return_data['call']['connection_guest_token'];
 
             await socket_mod.send_update({
@@ -632,7 +627,10 @@ router.post('/agent/end_call', async function (req, res, next) {
             });
 
 
-            return_data['call'] = await format_mod.get_call(the_call.id);
+            return_data['call'] = await format_mod.get_call(the_call.id, true, {
+                user_type: 'vu',
+                user_id: vu_id
+            });
 
 
             // get the small call
@@ -646,7 +644,6 @@ router.post('/agent/end_call', async function (req, res, next) {
                     call: JSON.parse(JSON.stringify(return_data['call']))
                 }
             });
-
 
 
             calls_mod.update_all_calls(the_call.vendor_id);
@@ -882,7 +879,6 @@ module.exports = function (options) {
     messages_mod.init(global_vars);
     log_mod.init(global_vars);
     notifs_mod.init(global_vars);
-
 
 
     return router;

@@ -112,7 +112,14 @@ module.exports = {
                     // }).where('id', '=', the_call.id);
                 // }
 
-                return_data['call'] = await format_mod.get_call(the_call.id, false);
+                if(guest_id != null) {
+                    return_data['call'] = await format_mod.get_call(the_call.id, false, {
+                        user_type: 'guest',
+                        user_id: guest_id
+                    });
+                } else {
+                    return_data['call'] = await format_mod.get_call(the_call.id, false);
+                }
 
                 // delete return_data['call']['connection_agent_token'];
 
@@ -299,20 +306,19 @@ module.exports = {
         // make sure the participant is not already there
         let there = false;
 
-        let vendor = await format_mod.get_vendor(params.vendor_id, true);
+        // let vendor = await format_mod.get_vendor(params.vendor_id, true);
 
         console.log('the params passed to add_participant_to_call are: ');
         console.log(params);
 
-        var twilio_participant_token = await twilio_mod.generate_twilio_token('parti-' + params.user_type + '-' + params.user_id, 'call-' + params.call_id, false);
+
 
 
 
         await global_vars.knex('calls_participants').where({
             call_id: params.call_id,
             user_type: params.user_type,
-            user_id: params.user_id,
-            twilio_participant_token: twilio_participant_token.token,
+            user_id: params.user_id
             // twilio_room_sid: twilio_participant_token.twilio_room_sid
         }).then(rows => {
 
@@ -325,6 +331,9 @@ module.exports = {
         });
 
         if(!there) {
+            let twilio_participant_token = await twilio_mod.generate_twilio_token('parti-' + params.user_type + '-' + params.user_id, 'call-' + params.call_id, false);
+
+            params['twilio_participant_token'] = twilio_participant_token.token;
             await global_vars.knex('calls_participants').insert(params).then(result => {
                 success = true;
             }).catch();
