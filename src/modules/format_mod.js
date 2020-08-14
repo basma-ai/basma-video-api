@@ -171,13 +171,22 @@ module.exports = {
 
         let participants = [];
         if (user != null) {
-            await global_vars.knex('calls_participants')
+
+            let partisStmnt = global_vars.knex('calls_participants')
                 .where({
-                    call_id: call.id,
+                    call_id: call.id
+                });
+
+            if(user == 'all') {
+
+            } else {
+                partisStmnt = participants.where({
                     user_type: user.user_type,
                     user_id: user.user_id
-                })
-                .then(async (rows) => {
+                });
+            }
+
+            await partisStmnt.then(async (rows) => {
 
                     for (let row of rows) {
 
