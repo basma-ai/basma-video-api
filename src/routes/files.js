@@ -80,16 +80,17 @@ router.post('/files/get', async function (req, res, next) {
     if (go_ahead) {
         // check permissions
 
-        if (file_raw.owner_type != user_type || file_raw.owner_id != user_id) {
-            go_ahead = false
-            errors.push("unauthroized_action")
-        }
+        // if (file_raw.owner_type != user_type || file_raw.owner_id != user_id) {
+        //     go_ahead = false
+        //     errors.push("unauthroized_action")
+        // }
 
 
         if (file_raw.belongs_to == 'calls') {
             let call = await global_vars.format_mod.get_call(file_raw.belongs_to_id, true)
 
             // loop participants
+            go_ahead = false;
             for(let participant of call.participants) {
                 if(user_type == 'vu' && participant.info.user_type == 'vu' && participant.info.user_id == user_id) {
                     go_ahead = true
