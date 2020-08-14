@@ -180,7 +180,7 @@ module.exports = {
             if(user == 'all') {
 
             } else {
-                partisStmnt = participants.where({
+                partisStmnt = partisStmnt.where({
                     user_type: user.user_type,
                     user_id: user.user_id
                 });
