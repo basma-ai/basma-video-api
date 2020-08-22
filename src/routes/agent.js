@@ -8,6 +8,8 @@ var calls_mod = require("../modules/calls_mod");
 var socket_mod = require("../modules/socket_mod");
 var roles_mod = require("../modules/roles_mod");
 var messages_mod = require("../modules/messages_mod");
+var log_mod = require("../modules/log_mod");
+var notifs_mod = require("../modules/notifs_mod");
 
 var global_vars;
 
@@ -70,18 +72,30 @@ router.post('/agent/request_token', async function (req, res, next) {
     if (go_ahead) {
         // check the validity of the username and password
 
-        await global_vars.knex('vendors_users').select('*')
-            .where('username', '=', req.body.username).where('password', '=', users_mod.encrypt_password(req.body.password))
-            .where('vendor_id', '=', req.body.vendor_id)
+        await global_vars.knex('vendors_users')
+            .select('vendors_users.*', 'vendors.phone_verified')
+            .leftJoin('vendors', 'vendors_users.vendor_id', 'vendors.id')
+            .where('vendors_users.username', '=', req.body.username).where('password', '=', users_mod.encrypt_password(req.body.password))
+            .where('vendors_users.vendor_id', '=', req.body.vendor_id)
             .then((rows) => {
                 the_vu = rows[0];
             });
 
+        // console.log(the_vu);
         if (the_vu == null) {
             if (return_data['errors'] == null) {
                 return_data['errors'] = [];
             }
             return_data['errors'].push('invalid_credentials');
+            go_ahead = false;
+        }
+
+        if (go_ahead && !the_vu.phone_verified) {
+            if (return_data['errors'] == null) {
+                return_data['errors'] = [];
+            }
+            return_data['errors'].push('vendor_pending_verification');
+            return_data['vendor_id'] = the_vu.vendor_id;
             go_ahead = false;
         }
 
@@ -92,7 +106,7 @@ router.post('/agent/request_token', async function (req, res, next) {
         //     create_token: async function(global_vars, table_name, id_col_name = null, id_col_val = null) {
         var token = await users_mod.create_token('vendors_users_tokens', 'vu_id', the_vu.id);
         return_data['token'] = token;
-        return_data['vu_user'] = await format_mod.format_vu(the_vu);
+        return_data['vu_user'] = await global_vars.format_mod.format_vu(the_vu, true);
         success = true;
     }
 
@@ -102,6 +116,253 @@ router.post('/agent/request_token', async function (req, res, next) {
     });
 
 });
+
+/**
+ * @api {post} /agent/request_reset_password Request agent token (aka login)
+ * @apiName AgentRequestResetPassword
+ * @apiGroup Agent
+ * @apiDescription
+ *
+ * @apiParam {Integer} vendor_id Vendor ID
+ * @apiParam {String} username Username
+ *
+ * @apiSuccessExample {json} Success-Response:
+ *     HTTP/1.1 200 OK
+ {
+    "success": false,
+    "data": {
+
+    }
+}
+ */
+router.post('/agent/request_reset_password', async function (req, res, next) {
+
+
+    let success = false;
+    let go_ahead = true;
+    let return_data = {};
+
+
+    var the_vendor = null;
+    await global_vars.knex('vendors').select('*').where('id', '=', req.body.vendor_id).then((rows) => {
+        if (rows[0] != null) {
+            the_vendor = rows[0];
+        }
+    });
+
+    if (the_vendor == null) {
+        // no matching service found, halt
+        if (return_data['errors'] == null) {
+            return_data['errors'] = [];
+        }
+        return_data['errors'].push('invalid_vendor_id');
+        go_ahead = false;
+    }
+
+    var the_vu = null; // friendly reminder, vu stands for vendor user, remember that so that you wouldn't get confused in the future.
+    if (go_ahead) {
+        // check the validity of the username and password
+
+        await global_vars.knex('vendors_users')
+            .select('vendors_users.*', 'vendors.phone_verified')
+            .leftJoin('vendors', 'vendors_users.vendor_id', 'vendors.id')
+            .where('vendors_users.username', '=', req.body.username)
+            .where('vendors_users.vendor_id', '=', req.body.vendor_id)
+            .then((rows) => {
+                the_vu = rows[0];
+            });
+
+        // console.log(the_vu);
+        if (the_vu == null) {
+            if (return_data['errors'] == null) {
+                return_data['errors'] = [];
+            }
+            return_data['errors'].push('invalid_username');
+            go_ahead = false;
+        }
+
+        if (go_ahead && !the_vu.phone_verified) {
+            if (return_data['errors'] == null) {
+                return_data['errors'] = [];
+            }
+            return_data['errors'].push('vendor_pending_verification');
+            return_data['vendor_id'] = the_vu.vendor_id;
+            go_ahead = false;
+        }
+
+
+    }
+
+    if (go_ahead) {
+        //     create_token: async function(global_vars, table_name, id_col_name = null, id_col_val = null) {
+        var token = await users_mod.create_token('vendors_users_fp_tokens', 'vu_id', the_vu.id);
+        // return_data['token'] = token;
+
+        // let log_params = {
+        //     table_name: 'vendors_users_fp_tokens',
+        //     row_id: null,
+        //     vu_id: the_vu.id,
+        //     new_value: {
+        //         action: 'Request password reset'
+        //     },
+        //     type: 'create'
+        // };
+        //
+        //
+        // log_mod.log(log_params);
+
+
+        let link = 'https://dashboard.basma.ai/' + the_vendor['username'] + '/reset-password/' + token;
+        let reset_message = 'To reset your password, please follow the link: ' + link;
+
+        notifs_mod.sendEmail(the_vu['email'], 'basma.ai password reset link', reset_message);
+
+        success = true;
+    }
+
+    res.send({
+        success: success,
+        data: return_data
+    });
+
+});
+
+
+/**
+ * @api {post} /agent/do_reset_password Do reset password
+ * @apiName AgentRequestResetPasswordDo
+ * @apiGroup Agent
+ * @apiDescription Perform a password reset
+ *
+ * @apiParam {Integer} vendor_id Vendor ID
+ * @apiParam {String} fp_token Forget Password Token
+ * @apiParam {String} password The new password
+ *
+ * @apiSuccessExample {json} Success-Response:
+ *     HTTP/1.1 200 OK
+
+ */
+router.post('/agent/do_reset_password', async function (req, res, next) {
+
+
+    let success = false;
+    let go_ahead = true;
+    let return_data = {};
+
+
+    var the_vendor = null;
+    await global_vars.knex('vendors').select('*').where('id', '=', req.body.vendor_id).then((rows) => {
+        if (rows[0] != null) {
+            the_vendor = rows[0];
+        }
+    });
+
+    if (the_vendor == null) {
+        // no matching service found, halt
+        if (return_data['errors'] == null) {
+            return_data['errors'] = [];
+        }
+        return_data['errors'].push('invalid_vendor_id');
+        go_ahead = false;
+    }
+
+    // check the validity of the provided token
+    const vu_id = await users_mod.token_to_id('vendors_users_fp_tokens', req.body.fp_token, 'vu_id');
+    if (vu_id == null) {
+        if (return_data['errors'] == null) {
+            return_data['errors'] = [];
+        }
+        return_data['errors'].push('invalid_fp_token');
+        go_ahead = false;
+    } else {
+
+        // cool let's perform the reset
+        // do update the password
+        await global_vars.knex('vendors_users').where({
+            id: vu_id,
+            vendor_id: the_vendor['id']
+        }).update({
+            password: users_mod.encrypt_password(req.body.password)
+        }).then(result => {
+            success = true;
+        }).catch(error => {
+            success = false;
+        });
+
+        // now delete the token
+        await global_vars.knex('vendors_users_fp_tokens')
+            .where('vu_id', vu_id)
+            .delete().then().catch();
+
+    }
+
+
+    res.send({
+        success: success,
+        data: return_data
+    });
+
+});
+
+
+/**
+ * @api {post} /agent/check_token Check token
+ * @apiName AgentTokenCheck
+ * @apiGroup Agent
+ * @apiDescription Check the validity of the token
+ *
+ * @apiParam {Integer} vendor_id Vendor ID
+ * @apiParam {String} access_token Access Token
+ *
+ * @apiSuccessExample {json} Success-Response:
+ *     HTTP/1.1 200 OK
+
+ */
+router.post('/agent/check_token', async function (req, res, next) {
+
+
+    let success = false;
+    let go_ahead = true;
+    let return_data = {};
+
+
+    var the_vendor = null;
+    await global_vars.knex('vendors').select('*').where('id', '=', req.body.vendor_id).then((rows) => {
+        if (rows[0] != null) {
+            the_vendor = rows[0];
+        }
+    });
+
+    if (the_vendor == null) {
+        // no matching service found, halt
+        if (return_data['errors'] == null) {
+            return_data['errors'] = [];
+        }
+        return_data['errors'].push('invalid_vendor_id');
+        go_ahead = false;
+    }
+
+    // check the validity of the provided token
+    const vu_id = await users_mod.token_to_id('vendors_users_tokens', req.body.vu_token, 'vu_id');
+    if (vu_id == null) {
+        if (return_data['errors'] == null) {
+            return_data['errors'] = [];
+        }
+        return_data['errors'].push('invalid_vu_token');
+        go_ahead = false;
+    } else {
+        return_data['vu'] = await format_mod.get_vu(vu_id);
+        success = true;
+    }
+
+
+    res.send({
+        success: success,
+        data: return_data
+    });
+
+});
+
 
 /**
  * @api {post} /agent/list_pending_calls List pending calls
@@ -119,86 +380,8 @@ router.post('/agent/request_token', async function (req, res, next) {
 router.post('/agent/list_pending_calls', async function (req, res, next) {
 
 
-    let success = false;
-    let go_ahead = true;
-    let return_data = {};
-
-    // delete calls with 5 seconds of no refresh
-    // let last_time = Date.now() - (60 * 60 * 5);
-    // await global_vars.knex('calls').where('last_refresh_time', '<', last_time).where('status', '=', 'calling').update({
-    //     status: 'missed'
-    // });
-
-
-    // check the validity of the provided token
-    const vu_id = await users_mod.token_to_id('vendors_users_tokens', req.body.vu_token, 'vu_id');
-    if (vu_id == null) {
-        if (return_data['errors'] == null) {
-            return_data['errors'] = [];
-        }
-        return_data['errors'].push('invalid_vu_token');
-        go_ahead = false;
-    }
-
-    var the_vu = await format_mod.get_vu(vu_id);
-
-    // check if is_authenticated
-    const is_authenticated = await roles_mod.is_authenticated(the_vu, [roles_mod.PERMISSIONS.SUPERUSER]);
-
-    if (go_ahead) {
-
-        let stmnt = global_vars.knex('calls').select('*');
-
-        if (!is_authenticated) {
-            // get the services the vu has access to
-
-            // get services which agent has access to
-            let services_stmnt = global_vars.knex('vendors_services')
-                .select('vendors_services.*').distinct('vendors_services.id')
-                .leftJoin('groups_services_relations', 'groups_services_relations.service_id', 'vendors_services.id')
-                .leftJoin('groups', 'groups.id', 'groups_services_relations.group_id')
-                .leftJoin('vu_groups_relations', 'vu_groups_relations.group_id', 'groups.id')
-                .where(function () {
-                    this.where('vu_groups_relations.vu_id', '=', the_vu.id)
-                        .orWhere('vendors_services.is_restricted', '=', false);
-                }).andWhere('vendors_services.vendor_id', '=', the_vu.vendor.id)
-                .orderBy('vendors_services.id', 'DESC');
-
-            let service_ids = [];
-            await services_stmnt.then((rows) => {
-                for (let row of rows) {
-                    service_ids.push(row.id);
-                }
-            });
-
-            // if(req.body.services_ids) {
-            //     service_ids = service_ids.filter((a) => {
-            //         return req.body.services_ids.includes(a);
-            //     });
-            // }
-
-            stmnt.whereIn('vendor_service_id', service_ids);
-        }
-
-        if (req.body.services_ids != null) {
-            stmnt.whereIn('vendor_service_id', req.body.services_ids);
-        }
-
-        // and now, do the insertion
-        let pre_rows = null;
-        await stmnt.where('status', '=', 'calling').where('vendor_id', '=', the_vu.vendor.id).orderBy('creation_time', 'ASC').then((rows) => {
-            pre_rows = rows;
-            success = true;
-        });
-
-        let final_rows = [];
-
-        for (let row of pre_rows) {
-            final_rows.push(await format_mod.format_call(row));
-        }
-
-        return_data['pending_calls_list'] = final_rows;
-    }
+    let success = true;
+    let return_data = "Use SOCKETS!";
 
     res.send({
         success: success,
@@ -228,7 +411,6 @@ router.post('/agent/list_pending_calls', async function (req, res, next) {
 
  */
 router.post('/agent/answer_call', async function (req, res, next) {
-
 
     let success = true;
     let go_ahead = true;
@@ -291,18 +473,18 @@ router.post('/agent/answer_call', async function (req, res, next) {
 
             if (the_call['connection_agent_token'] == null) {
                 // no token generated for the guest, let's make one
-                var twilio_agent_token = await twilio_mod.generate_twilio_token('agent-' + vu_id, 'call-' + the_call.id, vendor.recording_enabled);
+                // var twilio_agent_token = await twilio_mod.generate_twilio_token('agent-' + vu_id, 'call-' + the_call.id, vendor.recording_enabled);
                 // let's put it in the db
-                let update_data = {
-                    'connection_agent_token': twilio_agent_token.token
-                };
+                // let update_data = {
+                //     'connection_agent_token': twilio_agent_token.token
+                // };
 
-                if (twilio_agent_token.twilio_room_sid != null) {
-                    update_data['twilio_room_sid'] = twilio_agent_token.twilio_room_sid;
-                    update_data['is_recorded'] = vendor.recording_enabled;
-                }
+                // if (twilio_agent_token.twilio_room_sid != null) {
+                // update_data['twilio_room_sid'] = twilio_agent_token.twilio_room_sid;
+                // update_data['is_recorded'] = vendor.recording_enabled;
+                // }
 
-                await global_vars.knex('calls').update(update_data).where('id', '=', the_call.id);
+                // await global_vars.knex('calls').update(update_data).where('id', '=', the_call.id);
             }
 
             let update_data = {
@@ -317,9 +499,19 @@ router.post('/agent/answer_call', async function (req, res, next) {
                 success = true;
             });
 
-            return_data['call'] = await format_mod.get_call(the_call.id);
-            delete return_data['call']['connection_guest_token'];
 
+            await global_vars.calls_mod.add_participant_to_call({
+                vendor_id: the_call.vendor_id,
+                call_id: the_call.id,
+                user_type: 'vu',
+                user_id: vu_id
+            })
+
+            return_data['call'] = await format_mod.get_call(the_call.id, true, {
+                user_type: 'vu',
+                user_id: vu_id
+            });
+            // delete return_data['call']['connection_guest_token'];
 
             await socket_mod.send_update({
                 user_type: 'guest',
@@ -341,7 +533,6 @@ router.post('/agent/answer_call', async function (req, res, next) {
     });
 
 });
-
 
 /**
  * @api {post} /agent/end_call End a call
@@ -436,15 +627,31 @@ router.post('/agent/end_call', async function (req, res, next) {
             });
 
 
-            return_data['call'] = await format_mod.get_call(the_call.id);
-
-            await socket_mod.send_update({
-                user_type: 'guest',
-                user_id: the_call.guest_id,
-                call_id: the_call.id,
-                type: 'call_info',
-                data: await calls_mod.get_guest_call_refresh(the_call.id, the_call.guest_id)
+            return_data['call'] = await format_mod.get_call(the_call.id, true, {
+                user_type: 'vu',
+                user_id: vu_id
             });
+
+
+            // get the small call
+
+            let participants = await calls_mod.get_participants(the_call.id);
+            for(let participant of participants) {
+                if(participant.user_type == 'guest') {
+                    await socket_mod.send_update({
+                        user_type: 'guest',
+                        user_id: participant.user_id,
+                        call_id: the_call.id,
+                        type: 'call_info',
+                        data: {
+                            call: JSON.parse(JSON.stringify(return_data['call']))
+                        }
+                    });
+                }
+            }
+
+
+
 
             calls_mod.update_all_calls(the_call.vendor_id);
             calls_mod.end_call_stuff(the_call.id);
@@ -460,7 +667,6 @@ router.post('/agent/end_call', async function (req, res, next) {
     });
 
 });
-
 
 /**
  * @api {post} /agent/update_call Update call info
@@ -574,7 +780,6 @@ router.post('/agent/update_call', async function (req, res, next) {
 
 });
 
-
 /**
  * @api {post} /agent/send_message Send a message
  * @apiName AgentMessagesSend
@@ -679,6 +884,8 @@ module.exports = function (options) {
     socket_mod.init(global_vars);
     roles_mod.init(global_vars);
     messages_mod.init(global_vars);
+    log_mod.init(global_vars);
+    notifs_mod.init(global_vars);
 
 
     return router;

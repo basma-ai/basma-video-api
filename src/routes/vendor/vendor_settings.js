@@ -22,6 +22,7 @@ var global_vars;
  * @apiParam {JSON} [working_hours] Working hours, as a json object, in the given template
  * @apiParam {Boolean} [recording_enabled] Whether to enable or disable recordings
  * @apiParam {String} [call_request_sms_template] The template of the SMS message to send to the customer upon agent starting the call with them
+ * @apiParam {Boolean} [is_customer_view_enabled] Enable the customer view where the customers call (aka call centre)
  *
  * @apiSuccessExample {json} Success-Response:
  *     HTTP/1.1 200 OK
@@ -46,7 +47,7 @@ router.post('/vendor/settings/edit', async function (req, res, next) {
     if (is_authenticated) {
 
         // that's awesome!, we can proceed with the process of creating an account for a new group as per the instructions and details provided by the vu (vendor user), the process will begin by by inserting the group in the database, then, you will be updated by another comment
-        let update_data = data_utils.populate_data_obj(['name', 'working_hours', 'recording_enabled', 'call_request_sms_template', 'out_of_working_hours_message'], req.body);
+        let update_data = data_utils.populate_data_obj(['name', 'working_hours', 'recording_enabled', 'call_request_sms_template', 'out_of_working_hours_message', 'is_customer_view_enabled'], req.body);
 
 
         let log_params = {

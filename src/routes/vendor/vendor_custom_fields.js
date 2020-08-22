@@ -23,47 +23,68 @@ router.post('/vendor/custom_fields/create', async function (req, res, next) {
     const vu = await format_mod.get_vu(vu_id, true);
 
     // check if is_authenticated
-    const is_authenticated = await roles_mod.is_authenticated(vu,[roles_mod.PERMISSIONS.CUSTOM_FIELDS]);
+    const is_authenticated = await roles_mod.is_authenticated(vu, [roles_mod.PERMISSIONS.CUSTOM_FIELDS]);
 
     if (is_authenticated) {
 
-        let insert_data = {
+        // check package shall allow
+        let shall_allow = await global_vars.packages_mod.check_package_limit({
+            package_id: vu.vendor.package_id,
             vendor_id: vu.vendor.id,
-            name: req.body.name,
-            type: req.body.type,
-            label: req.body.label,
-            is_mandatory: req.body.is_mandatory,
-            is_visible_in_menus: req.body.is_visible_in_menus,
-            tarteeb: req.body.tarteeb,
-            agent_only: req.body.agent_only,
-            value_description: req.body.value_description,
-        };
-
-        let record_id = 0;
-        await global_vars.knex('custom_fields').insert(insert_data).then((result) => {
-
-            success = true;
-
-            record_id = result[0];
-
-        }).catch((err) => {
-            go_ahead = false;
+            table_name: 'custom_fields',
+            package_field: 'custom_fields'
         });
 
-        if (success) {
-            let log_params = {
-                table_name: 'custom_fields',
-                row_id: record_id,
-                vu_id: vu.id,
-                new_value: insert_data,
-                type: 'create'
-            };
+        if (!shall_allow.shall_allow) {
+            return_data['errors'] = ['package_limitation'];
+            return_data['package_limitation'] = shall_allow;
 
-
-            log_mod.log(log_params);
+            go_ahead = false;
+            success = false;
         }
 
-        return_data['custom_fields'] = await format_mod.get_custom_field(record_id);
+        if (go_ahead) {
+
+
+            let insert_data = {
+                vendor_id: vu.vendor.id,
+                name: req.body.name,
+                type: req.body.type,
+                label: req.body.label,
+                is_mandatory: req.body.is_mandatory,
+                is_visible_in_menus: req.body.is_visible_in_menus,
+                tarteeb: req.body.tarteeb,
+                agent_only: req.body.agent_only,
+                value_description: req.body.value_description,
+            };
+
+            let record_id = 0;
+            await global_vars.knex('custom_fields').insert(insert_data).then((result) => {
+
+                success = true;
+
+                record_id = result[0];
+
+            }).catch((err) => {
+                go_ahead = false;
+            });
+
+            if (success) {
+                let log_params = {
+                    table_name: 'custom_fields',
+                    row_id: record_id,
+                    vu_id: vu.id,
+                    new_value: insert_data,
+                    type: 'create'
+                };
+
+
+                log_mod.log(log_params);
+            }
+
+            return_data['custom_fields'] = await format_mod.get_custom_field(record_id);
+
+        }
 
     } else {
 
@@ -111,7 +132,7 @@ router.post('/vendor/custom_fields/edit', async function (req, res, next) {
     const vu = await format_mod.get_vu(vu_id, true);
 
     // check if is_authenticated
-    const is_authenticated = await roles_mod.is_authenticated(vu,[roles_mod.PERMISSIONS.CUSTOM_FIELDS]);
+    const is_authenticated = await roles_mod.is_authenticated(vu, [roles_mod.PERMISSIONS.CUSTOM_FIELDS]);
 
     if (is_authenticated) {
 
@@ -128,8 +149,6 @@ router.post('/vendor/custom_fields/edit', async function (req, res, next) {
         };
 
 
-
-
         let log_params = {
             table_name: 'custom_fields',
             row_id: req.body.custom_field_id,
@@ -144,6 +163,7 @@ router.post('/vendor/custom_fields/edit', async function (req, res, next) {
         await global_vars.knex('custom_fields').update(update_data)
             .where('vendor_id', '=', vu.vendor.id)
             .where('id', '=', req.body.custom_field_id)
+            .where('is_deleted', '=', false)
             .then((result) => {
 
                 success = true;
@@ -153,9 +173,9 @@ router.post('/vendor/custom_fields/edit', async function (req, res, next) {
                 console.log(err);
             });
 
-        if(success) {
+        if (success) {
             return_data['custom_field'] = await format_mod.get_custom_field(req.body.custom_field_id);
-            if(return_data['custom_field']['vendor_id'] != vu.vendor.id) {
+            if (return_data['custom_field']['vendor_id'] != vu.vendor.id) {
                 return_data['custom_field'] = null;
             }
         }
@@ -198,12 +218,13 @@ router.post('/vendor/custom_fields/list', async function (req, res, next) {
     const vu = await format_mod.get_vu(vu_id, true);
 
     // check if is_authenticated
-    const is_authenticated = await roles_mod.is_authenticated(vu,[roles_mod.PERMISSIONS.CUSTOM_FIELDS]);
+    const is_authenticated = await roles_mod.is_authenticated(vu, [roles_mod.PERMISSIONS.CUSTOM_FIELDS]);
 
     if (is_authenticated) {
         stmnt = global_vars.knex('custom_fields')
             .where('vendor_id', '=', vu.vendor.id).orderBy('tarteeb', 'ASC');
 
+        stmnt = stmnt.where('is_deleted', '=', false);
         if (req.body.per_page != null && req.body.page != null) {
             stmnt = stmnt.paginate({
                 perPage: req.body.per_page == null ? 20 : req.body.per_page,
@@ -229,12 +250,20 @@ router.post('/vendor/custom_fields/list', async function (req, res, next) {
         return_data['list'] = list;
         return_data['pagination'] = raw_records.pagination;
 
+        // check package shall allow
+        let shall_allow = await global_vars.packages_mod.check_package_limit({
+            package_id: vu.vendor.package_id,
+            vendor_id: vu.vendor.id,
+            table_name: 'custom_fields',
+            package_field: 'custom_fields'
+        });
+
+        return_data['package_limitation'] = shall_allow;
+
 
     } else {
         return_data['errors'] = ['unauthorized_action'];
     }
-
-
 
 
     res.send({
@@ -272,7 +301,7 @@ router.post('/vendor/custom_fields/get', async function (req, res, next) {
     const vu = await format_mod.get_vu(vu_id, true);
 
     // check if is_authenticated
-    const is_authenticated = await roles_mod.is_authenticated(vu,[roles_mod.PERMISSIONS.CUSTOM_FIELDS]);
+    const is_authenticated = await roles_mod.is_authenticated(vu, [roles_mod.PERMISSIONS.CUSTOM_FIELDS]);
 
     if (is_authenticated) {
 
@@ -296,6 +325,74 @@ router.post('/vendor/custom_fields/get', async function (req, res, next) {
             });
 
         return_data['custom_field'] = await format_mod.format_custom_field(record);
+
+
+    } else {
+        return_data['errors'] = ['unauthorized_action'];
+    }
+
+
+    res.send({
+        success: success,
+        data: return_data
+    });
+
+});
+
+
+/**
+ * @api {post} /vendor/custom_fields/delete Delete a custom field
+ * @apiName VendorCustomFieldsDelete
+ * @apiGroup vendor
+ * @apiDescription Delete a custom fields
+ *
+ * @apiParam {String} vu_token Vendor User Token
+ * @apiParam {Integer} custom_field_id Custom Field ID
+ *
+ * @apiSuccessExample {json} Success-Response:
+ *     HTTP/1.1 200 OK
+
+
+ */
+router.post('/vendor/custom_fields/delete', async function (req, res, next) {
+
+
+    let success = false;
+    let go_ahead = true;
+    let return_data = {};
+
+
+    const vu_id = await users_mod.token_to_id('vendors_users_tokens', req.body.vu_token, 'vu_id');
+
+    const vu = await format_mod.get_vu(vu_id, true);
+
+    // check if is_authenticated
+    const is_authenticated = await roles_mod.is_authenticated(vu, [roles_mod.PERMISSIONS.CUSTOM_FIELDS]);
+
+    if (is_authenticated) {
+
+        let log_params = {
+            table_name: 'custom_fields',
+            row_id: req.body.custom_field_id,
+            vu_id: vu.id,
+            type: 'delete'
+        };
+        await log_mod.log(log_params);
+
+
+        await global_vars.knex('custom_fields').update({
+            'is_deleted': true
+        })
+            .where('vendor_id', '=', vu.vendor.id)
+            .where('id', '=', req.body.custom_field_id)
+            .then((result) => {
+
+                success = true;
+
+            }).catch((err) => {
+                go_ahead = false;
+                console.log(err);
+            });
 
 
     } else {

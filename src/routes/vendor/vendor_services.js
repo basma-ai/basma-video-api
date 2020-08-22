@@ -9,7 +9,21 @@ var roles_mod = require("../../modules/roles_mod");
 
 var global_vars;
 
+/**
+ * @api {post} /vendor/services/create Create a service
+ * @apiName VendorServicesCreate
+ * @apiGroup vendor
+ * @apiDescription Create a service
+ *
+ * @apiParam {String} vu_token Vendor User Token
+ * @apiParam {String} name Service name
+ * @apiParam {Boolean} is_restricted Is Restricted?
+ *
+ * @apiSuccessExample {json} Success-Response:
+ *     HTTP/1.1 200 OK
 
+
+ */
 router.post('/vendor/services/create', async function (req, res, next) {
 
 
@@ -23,43 +37,61 @@ router.post('/vendor/services/create', async function (req, res, next) {
     const vu = await format_mod.get_vu(vu_id, true);
 
     // check if is_authenticated
-    const is_authenticated = await roles_mod.is_authenticated(vu,[roles_mod.PERMISSIONS.SERVICES]);
+    const is_authenticated = await roles_mod.is_authenticated(vu, [roles_mod.PERMISSIONS.SERVICES]);
 
     if (is_authenticated) {
 
-        let insert_data = {
+        // check package shall allow
+        let shall_allow = await global_vars.packages_mod.check_package_limit({
+            package_id: vu.vendor.package_id,
             vendor_id: vu.vendor.id,
-            name: req.body.name,
-            is_restricted: req.body.is_restricted
-        };
-
-
-        let record_id = 0;
-        await global_vars.knex('vendors_services').insert(insert_data).then((result) => {
-
-            success = true;
-
-            record_id = result[0];
-
-        }).catch((err) => {
-            go_ahead = false;
+            table_name: 'services',
+            package_field: 'services'
         });
 
+        if (!shall_allow.shall_allow) {
+            return_data['errors'] = ['package_limitation'];
+            return_data['package_limitation'] = shall_allow;
 
-        if (success) {
-            let log_params = {
-                table_name: 'vendors_services',
-                row_id: record_id,
-                vu_id: vu.id,
-                new_value: insert_data,
-                type: 'create'
+            go_ahead = false;
+            success = false;
+        }
+
+        if (go_ahead) {
+            let insert_data = {
+                vendor_id: vu.vendor.id,
+                name: req.body.name,
+                is_restricted: req.body.is_restricted
             };
 
 
-            log_mod.log(log_params);
-        }
+            let record_id = 0;
+            await global_vars.knex('services').insert(insert_data).then((result) => {
 
-        return_data['service'] = await format_mod.get_vendor_service(record_id);
+                success = true;
+
+                record_id = result[0];
+
+            }).catch((err) => {
+                go_ahead = false;
+            });
+
+
+            if (success) {
+                let log_params = {
+                    table_name: 'services',
+                    row_id: record_id,
+                    vu_id: vu.id,
+                    new_value: insert_data,
+                    type: 'create'
+                };
+
+
+                log_mod.log(log_params);
+            }
+
+            return_data['service'] = await format_mod.get_service(record_id);
+        }
 
     } else {
 
@@ -104,7 +136,7 @@ router.post('/vendor/services/edit', async function (req, res, next) {
     const vu = await format_mod.get_vu(vu_id, true);
 
     // check if is_authenticated
-    const is_authenticated = await roles_mod.is_authenticated(vu,[roles_mod.PERMISSIONS.SERVICES]);
+    const is_authenticated = await roles_mod.is_authenticated(vu, [roles_mod.PERMISSIONS.SERVICES]);
 
     if (is_authenticated) {
 
@@ -116,7 +148,7 @@ router.post('/vendor/services/edit', async function (req, res, next) {
 
 
         let log_params = {
-            table_name: 'vendors_services',
+            table_name: 'services',
             row_id: req.body.service_id,
             vu_id: vu.id,
             new_value: update_data,
@@ -126,9 +158,10 @@ router.post('/vendor/services/edit', async function (req, res, next) {
 
 
         let group_id = 0;
-        await global_vars.knex('vendors_services').update(update_data)
+        await global_vars.knex('services').update(update_data)
             .where('vendor_id', '=', vu.vendor.id)
             .where('id', '=', req.body.service_id)
+            .where('is_deleted', '=', false)
             .then((result) => {
 
                 success = true;
@@ -177,31 +210,33 @@ router.post('/vendor/services/list', async function (req, res, next) {
     const vu = await format_mod.get_vu(vu_id, true);
 
     // check if is_authenticated
-    const is_authenticated = await roles_mod.is_authenticated(vu,[roles_mod.PERMISSIONS.SERVICES]);
+    const is_authenticated = await roles_mod.is_authenticated(vu, [roles_mod.PERMISSIONS.SERVICES]);
 
     if (is_authenticated) {
 
         let raw_records = [];
         let stmnt;
 
-        const is_superuser = await roles_mod.is_authenticated(vu,[roles_mod.PERMISSIONS.SUPERUSER]);
+        const is_superuser = await roles_mod.is_authenticated(vu, [roles_mod.PERMISSIONS.SUPERUSER]);
 
         if (is_superuser) {
-            stmnt = global_vars.knex('vendors_services')
+            stmnt = global_vars.knex('services')
                 .where('vendor_id', '=', vu.vendor.id);
         } else {
             // get services which agent has access to
-            stmnt = global_vars.knex('vendors_services')
-                .select('vendors_services.*').distinct('vendors_services.id')
-                .leftJoin('groups_services_relations', 'groups_services_relations.service_id', 'vendors_services.id')
+            stmnt = global_vars.knex('services')
+                .select('services.*').distinct('services.id')
+                .leftJoin('groups_services_relations', 'groups_services_relations.service_id', 'services.id')
                 .leftJoin('groups', 'groups.id', 'groups_services_relations.group_id')
                 .leftJoin('vu_groups_relations', 'vu_groups_relations.group_id', 'groups.id')
                 .where(function () {
                     this.where('vu_groups_relations.vu_id', '=', vu.id)
-                        .orWhere('vendors_services.is_restricted', '=', false);
-                }).andWhere('vendors_services.vendor_id', '=', vu.vendor.id)
-                .orderBy('vendors_services.id', 'DESC');
+                        .orWhere('services.is_restricted', '=', false);
+                }).andWhere('services.vendor_id', '=', vu.vendor.id)
+                .orderBy('services.id', 'DESC');
         }
+
+        stmnt = stmnt.where('is_deleted', '=', false);
 
         if (req.body.per_page != null && req.body.page != null) {
             stmnt = stmnt.paginate({
@@ -209,6 +244,7 @@ router.post('/vendor/services/list', async function (req, res, next) {
                 currentPage: req.body.page == null ? 0 : req.body.page
             });
         }
+
 
         await stmnt.then((rows) => {
 
@@ -222,11 +258,22 @@ router.post('/vendor/services/list', async function (req, res, next) {
 
         let list = [];
         for (let raw_service of (raw_records.data == null ? raw_records : raw_records.data)) {
-            list.push(await format_mod.format_vendor_service(raw_service));
+            list.push(await req.app.locals.global_vars.format_mod.format_service(raw_service));
         }
 
         return_data['list'] = list;
         return_data['pagination'] = raw_records.pagination;
+
+        // check package shall allow
+        let shall_allow = await global_vars.packages_mod.check_package_limit({
+            package_id: vu.vendor.package_id,
+            vendor_id: vu.vendor.id,
+            table_name: 'services',
+            package_field: 'services'
+        });
+
+        return_data['package_limitation'] = shall_allow;
+
 
     } else {
         return_data['errors'] = ['unauthorized_action'];
@@ -238,7 +285,6 @@ router.post('/vendor/services/list', async function (req, res, next) {
     });
 
 });
-
 
 /**
  * @api {post} /vendor/services/get Get a service
@@ -266,7 +312,7 @@ router.post('/vendor/services/get', async function (req, res, next) {
     const vu = await format_mod.get_vu(vu_id, true);
 
     // check if is_authenticated
-    const is_authenticated = await roles_mod.is_authenticated(vu,[roles_mod.PERMISSIONS.SERVICES]);
+    const is_authenticated = await roles_mod.is_authenticated(vu, [roles_mod.PERMISSIONS.SERVICES]);
 
     if (is_authenticated) {
 
@@ -276,7 +322,7 @@ router.post('/vendor/services/get', async function (req, res, next) {
         };
 
         let record;
-        await global_vars.knex('vendors_services')
+        await global_vars.knex('services')
             .where('vendor_id', '=', vu.vendor.id)
             .where('id', '=', req.body.service_id)
             .then((rows) => {
@@ -288,12 +334,89 @@ router.post('/vendor/services/get', async function (req, res, next) {
                 console.log(err);
             });
 
-        return_data['service'] = await format_mod.format_vendor_service(record);
+        return_data['service'] = await format_mod.format_service(record);
 
 
     } else {
         return_data['errors'] = ['unauthorized_action'];
     }
+
+    res.send({
+        success: success,
+        data: return_data
+    });
+
+});
+
+
+/**
+ * @api {post} /vendor/services/delete Delete a service
+ * @apiName VendorServicesDelete
+ * @apiGroup vendor
+ * @apiDescription Delete a service
+ *
+ * @apiParam {String} vu_token Vendor User Token
+ * @apiParam {Integer} service_id Service ID
+ *
+ * @apiSuccessExample {json} Success-Response:
+ *     HTTP/1.1 200 OK
+
+
+ */
+router.post('/vendor/services/delete', async function (req, res, next) {
+
+
+    let success = false;
+    let go_ahead = true;
+    let return_data = {};
+
+
+    const vu_id = await users_mod.token_to_id('vendors_users_tokens', req.body.vu_token, 'vu_id');
+
+    const vu = await format_mod.get_vu(vu_id, true);
+
+    // check if is_authenticated
+    const is_authenticated = await roles_mod.is_authenticated(vu, [roles_mod.PERMISSIONS.SERVICES]);
+
+    if (is_authenticated) {
+
+        let log_params = {
+            table_name: 'services',
+            row_id: req.body.service_id,
+            vu_id: vu.id,
+            type: 'delete'
+        };
+        await log_mod.log(log_params);
+
+
+        // delete the groups_services_relations relations
+        await global_vars.knex('groups_services_relations')
+            .delete()
+            .where('vendor_id', '=', vu.vendor.id)
+            .where('service_id', '=', req.body.service_id)
+            .then(() => {
+
+            });
+
+        await global_vars.knex('services').update({
+            'is_deleted': true
+        })
+            .where('vendor_id', '=', vu.vendor.id)
+            .where('id', '=', req.body.service_id)
+            .then((result) => {
+
+                success = true;
+
+            }).catch((err) => {
+                go_ahead = false;
+                console.log(err);
+            });
+
+
+    } else {
+        return_data['errors'] = ['unauthorized_action'];
+    }
+
 
     res.send({
         success: success,
@@ -310,6 +433,6 @@ module.exports = function (options) {
     format_mod.init(global_vars);
     log_mod.init(global_vars);
     roles_mod.init(global_vars);
-    
+
     return router;
 };

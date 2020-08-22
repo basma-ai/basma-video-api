@@ -343,7 +343,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n\t\"vendor_id\": 1,\n\t\"username\": \"ali.bh\",\n\t\"password\": \"123123\"\n}",
+							"raw": "{\n\t\"vendor_id\": 1,\n\t\"username\": \"support\",\n\t\"password\": \"B4sm41sL0ve\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -498,6 +498,40 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "Check agent token",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"vendor_id\": 1,\n\t\"vu_token\": \"40ee57f1becb99e2b0ff7762c4361e42a359df3e3f22d6173c6a2572839ad6ffk\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{api_url}}/agent/check_token",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"agent",
+								"check_token"
+							]
+						}
+					},
+					"response": []
 				}
 			],
 			"protocolProfileBehavior": {}
@@ -571,7 +605,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n\t\"vu_token\": \"{{vu_token}}\",\n\t\"per_page\": 1,\n\t\"page\": 1\n}",
+									"raw": "{\n\t\"vu_token\": \"{{vu_token}}\",\n\t\"per_page\": 10,\n\t\"page\": 1\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -615,6 +649,34 @@
 										"vendor",
 										"groups",
 										"get"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete a group",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"vu_token\": \"{{vu_token}}\",\n\t\"group_id\": \"45\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{api_url}}/vendor/groups/delete",
+									"host": [
+										"{{api_url}}"
+									],
+									"path": [
+										"vendor",
+										"groups",
+										"delete"
 									]
 								}
 							},
@@ -734,6 +796,34 @@
 										"vendor",
 										"services",
 										"get"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete a service",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"vu_token\": \"{{vu_token}}\",\n\t\"service_id\": \"41\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{api_url}}/vendor/services/delete",
+									"host": [
+										"{{api_url}}"
+									],
+									"path": [
+										"vendor",
+										"services",
+										"delete"
 									]
 								}
 							},
@@ -972,7 +1062,10 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n\t\"guest_token\": \"{{vu_token}}\",\n\t\"call_id\": 781,\n\t\"message_type\": \"text\",\n\t\"value\": \"hello\"\n}"
+									"raw": "{\n\t\"vu_token\": \"{{vu_token}}\",\n\t\"call_id\": 781,\n\t\"message_type\": \"text\",\n\t\"value\": \"hello\"\n}",
+									"options": {
+										"raw": {}
+									}
 								},
 								"url": {
 									"raw": "{{api_url}}/agent/send_message",
@@ -1101,6 +1194,34 @@
 										"vendor",
 										"custom_fields",
 										"get"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete a custom field",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"vu_token\": \"{{vu_token}}\",\n\t\"custom_field_id\": 1\n}\n",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{api_url}}/vendor/custom_fields/delete",
+									"host": [
+										"{{api_url}}"
+									],
+									"path": [
+										"vendor",
+										"custom_fields",
+										"delete"
 									]
 								}
 							},
@@ -1302,7 +1423,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n\t\"vu_token\": \"{{vu_token}}\",\n\t\"call_request_sms_template\": \"the template goes here\"\n}",
+									"raw": "{\n\t\"vu_token\": \"{{vu_token}}\",\n\t\"call_request_sms_template\": \"To join the call {link}, the agent is waiting for you, the call is schedueled for {time}\"\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -1318,6 +1439,209 @@
 										"vendor",
 										"settings",
 										"edit"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"protocolProfileBehavior": {},
+					"_postman_isSubFolder": true
+				},
+				{
+					"name": "Billing",
+					"item": [
+						{
+							"name": "Add payment method",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"vu_token\": \"{{vu_token}}\",\n\t\"stripe_payment_method_id\": \"pm_1GbyDpKt9NzKvv0aUtYluRjH\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{api_url}}/vendor/billing/payment_method_add",
+									"host": [
+										"{{api_url}}"
+									],
+									"path": [
+										"vendor",
+										"billing",
+										"payment_method_add"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "List payment methods",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"vu_token\": \"{{vu_token}}\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{api_url}}/vendor/billing/payment_method_list",
+									"host": [
+										"{{api_url}}"
+									],
+									"path": [
+										"vendor",
+										"billing",
+										"payment_method_list"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Detach payment method",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"vu_token\": \"{{vu_token}}\",\n\t\"stripe_payment_method_id\": \"pm_1GbGiPKt9NzKvv0aohPgummR\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{api_url}}/vendor/billing/payment_method_detach",
+									"host": [
+										"{{api_url}}"
+									],
+									"path": [
+										"vendor",
+										"billing",
+										"payment_method_detach"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get billing overview",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"vu_token\": \"{{vu_token}}\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{api_url}}/vendor/billing/overview",
+									"host": [
+										"{{api_url}}"
+									],
+									"path": [
+										"vendor",
+										"billing",
+										"overview"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create a subscription",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"vu_token\": \"{{vu_token}}\",\n\t\"package_id\": 1,\n\t\"stripe_payment_method_id\": \"pm_1GbyDpKt9NzKvv0aUtYluRjH\",\n\t\"type\": \"monthly\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{api_url}}/vendor/billing/create_subscription",
+									"host": [
+										"{{api_url}}"
+									],
+									"path": [
+										"vendor",
+										"billing",
+										"create_subscription"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "List Invoices",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"vu_token\": \"{{vu_token}}\",\n\t\"package_id\": 3\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{api_url}}/vendor/billing/invoices_list",
+									"host": [
+										"{{api_url}}"
+									],
+									"path": [
+										"vendor",
+										"billing",
+										"invoices_list"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "List packages",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"vu_token\": \"{{vu_token}}\"\n\t\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{api_url}}/vendor/billing/packages_list",
+									"host": [
+										"{{api_url}}"
+									],
+									"path": [
+										"vendor",
+										"billing",
+										"packages_list"
 									]
 								}
 							},
@@ -1349,6 +1673,153 @@
 							"path": [
 								"vendor",
 								"dashboard_numbers"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"protocolProfileBehavior": {}
+		},
+		{
+			"name": "Onboarding",
+			"item": [
+				{
+					"name": "Join",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"org_name\": \"asdasd\",\n    \"org_username\": \"ashooe231\",\n    \"email\": \"asd@asd.com\",\n    \"username\": \"asd@asd.com\",\n    \"phone_number\": \"+97336806200\",\n    \"name\": \"asd asd\",\n    \"password\": \"2342343324\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{api_url}}/onboarding/join",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"onboarding",
+								"join"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify OTP",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"vendor_id\": 343,\n\t\"pin\": 3425\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{api_url}}/onboarding/verify_otp",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"onboarding",
+								"verify_otp"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Resend OTP",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"vendor_id\": 24\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{api_url}}/onboarding/resend_otp",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"onboarding",
+								"resend_otp"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"protocolProfileBehavior": {}
+		},
+		{
+			"name": "Files",
+			"item": [
+				{
+					"name": "Upload",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"vu_token\": \"{{vu_token}}\",\n\t\"filename\": \"test.png\",\n\t\"file_base64\": \"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\",\n\t\"belongs_to\": \"calls\",\n\t\"belongs_to_id\": 1720,\n\t\"description\": \"this is an optional field that contains the description\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{api_url}}/files/upload",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"files",
+								"upload"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get file",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"guest_token\": \"0c98994cae818324cb538c2dd210a5c2ee6cd9de1beafe839458488ef5018771\",\n\t\"file_id\": 319\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{api_url}}/files/get",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"files",
+								"get"
 							]
 						}
 					},

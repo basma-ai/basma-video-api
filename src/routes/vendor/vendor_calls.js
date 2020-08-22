@@ -5,6 +5,7 @@ var users_mod = require("../../modules/users_mod");
 var format_mod = require("../../modules/format_mod");
 var twilio_mod = require("../../modules/twilio_mod");
 var roles_mod = require("../../modules/roles_mod");
+var files_mod = require("../../modules/files_mod");
 var notifs_mod = require("../../modules/notifs_mod");
 const AWS = require('aws-sdk');
 var moment = require('moment');
@@ -120,6 +121,40 @@ router.post('/vendor/calls/get', async function (req, res, next) {
     if (is_authenticated || call.vu_id == vu.id) {
 
         return_data['call'] = await format_mod.format_call(call, true);
+
+        let snapshots = [];
+        let snapshots_raw = [];
+        await global_vars.knex('files')
+            .where('belongs_to','calls')
+            .where('belongs_to_id', call.id)
+            .then(rows => {
+                snapshots_raw = rows;
+            }).catch();
+
+        for(let snapshot_raw of snapshots_raw) {
+            snapshots.push(await files_mod.formatImage(snapshot_raw));
+        }
+
+        return_data['snapshots'] = snapshots;
+
+        let messages = [];
+        let messages_raw = [];
+        await global_vars.knex('messages')
+            .where('call_id', call.id)
+            .then(rows => {
+                messages_raw = rows;
+            }).catch();
+
+        for(let message_raw of messages_raw) {
+            messages.push(message_raw);
+            // snapshots.push(await files_mod.formatImage(snapshot_raw));
+        }
+
+        return_data['messages'] = messages;
+
+        // get the snapshots
+
+
         success = true;
 
     } else {
@@ -331,6 +366,7 @@ module.exports = function (options) {
     format_mod.init(global_vars);
     roles_mod.init(global_vars);
     notifs_mod.init(global_vars);
+    files_mod.init(global_vars);
 
     return router;
 };

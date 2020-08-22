@@ -21,9 +21,34 @@ module.exports = {
 
     format_vendor: async function (vendor, viewer) {
 
-        if(viewer != 'agent') {
+        if (viewer != 'agent' && viewer != 'root') {
             delete vendor.recording_enabled;
             delete vendor.call_request_sms_template;
+        }
+        if (viewer != 'root') {
+            Object.keys(vendor).filter((a) => {
+                return a.startsWith('root_');
+            }).forEach(e => delete vendor[e]);
+        }
+
+        if (viewer != 'root' && viewer != 'agent') {
+            Object.keys(vendor).filter((a) => {
+                return a.startsWith('private_');
+            }).forEach(e => delete vendor[e]);
+        }
+
+        if (viewer != 'guest') {
+            vendor['package'] = await this.get_package(vendor.package_id, 'vu');
+        }
+
+        if (viewer == 'guest') {
+            // delete vendor.package_id
+            // delete vendor.phone_verified
+        }
+
+
+        if (vendor.logo_url == null || vendor.logo_url == '') {
+            vendor.logo_url = 'https://basma-cdn.s3.me-south-1.amazonaws.com/assets/logo-placeholder.png';
         }
 
         return vendor;
@@ -42,6 +67,26 @@ module.exports = {
 
     },
 
+    get_guest: async function (record_id, full = false) { // friendly reminder, vu stands for vendor user
+
+        let the_record = null;
+
+        await global_vars.knex('guests').select('*')
+            .where('id', '=', record_id).then((rows) => {
+                the_record = rows[0];
+            });
+
+        // console.log(the_record)
+
+        if (full) {
+            the_record['vendor'] = await this.get_vendor(the_record.vendor_id, 'guest')
+        }
+
+
+        return the_record;
+
+    },
+
     format_vu: async function (vu, full = true) {
 
         if (vu == null) {
@@ -56,7 +101,8 @@ module.exports = {
 
         if (full) {
             vu['vendor'] = await this.get_vendor(vu['vendor_id']);
-            delete vu['vendor_id'];
+
+            // delete vu['vendor_id'];
 
             // get groups
             let raw_groups = [];
@@ -64,14 +110,14 @@ module.exports = {
                 .select('groups.*')
                 .where('vu_groups_relations.vendor_id', '=', vu.vendor.id)
                 .where('vu_groups_relations.vu_id', '=', vu.id)
-                .leftJoin('groups','groups.id', 'vu_groups_relations.group_id')
+                .leftJoin('groups', 'groups.id', 'vu_groups_relations.group_id')
                 .then((rows) => {
                     raw_groups = rows;
                 })
 
             let groups = [];
             for (let raw_group of raw_groups) {
-                    groups.push(await this.format_group(raw_group, true));
+                groups.push(await this.format_group(raw_group, true));
             }
             vu['groups'] = groups;
 
@@ -81,7 +127,7 @@ module.exports = {
                 .select('roles.*')
                 .where('vu_roles_relations.vendor_id', '=', vu.vendor.id)
                 .where('vu_roles_relations.vu_id', '=', vu.id)
-                .leftJoin('roles','roles.id', 'vu_roles_relations.role_id')
+                .leftJoin('roles', 'roles.id', 'vu_roles_relations.role_id')
                 .then((rows) => {
                     raw_roles = rows;
                 })
@@ -96,7 +142,7 @@ module.exports = {
         return vu;
     },
 
-    get_call: async function (id, full = true) { // friendly reminder, vu stands for vendor user
+    get_call: async function (id, full = true, user = null) { // friendly reminder, vu stands for vendor user
 
         let the_row = null;
 
@@ -105,15 +151,67 @@ module.exports = {
                 the_row = rows[0];
             });
 
-        return await this.format_call(the_row, full);
+        return await this.format_call(the_row, full, user);
 
     },
-    format_call: async function (call, full = true) {
+    format_call: async function (call, full = true, user = null) {
+
+        // user = {type: vu/guest: user_id: int}
+
         call['vu'] = await this.get_vu(call['vu_id'], false);
-        call['vendor_service'] = await this.get_vendor_service(call['vendor_service_id']);
+
+        if (call['vendor_service_id'] != null) {
+            call['vendor_service'] = await this.get_service(call['vendor_service_id']);
+        }
 
         call['custom_fields_values'] = JSON.parse(call['custom_fields_values']);
 
+
+        // get the list of participants
+
+        let participants = [];
+        if (user != null) {
+
+            let partisStmnt = global_vars.knex('calls_participants')
+                .where({
+                    call_id: call.id
+                });
+
+            if(user == 'all') {
+
+            } else {
+                partisStmnt = partisStmnt.where({
+                    user_type: user.user_type,
+                    user_id: user.user_id
+                });
+            }
+
+            await partisStmnt.then(async (rows) => {
+
+                    for (let row of rows) {
+
+                        let recToAdd = {
+                            'info': row
+                        };
+
+                        if (row['user_type'] == 'guest') {
+
+                            recToAdd['user'] = await this.get_guest(row['user_id'])
+
+
+                        } else if (row['user_type'] == 'vu') {
+
+                            recToAdd['user'] = await this.get_vu(row['user_id'], false);
+
+                        }
+
+                        participants.push(recToAdd);
+                    }
+
+                }).catch();
+        }
+
+        call['participants'] = participants;
 
         if (!full) {
             // delete call['connection_guest_token'];
@@ -123,15 +221,16 @@ module.exports = {
             delete call['s3_recording_folder'];
         }
 
-        if(full) {
+        if (full) {
             // get rating
             let rating = 'no_rating';
             await global_vars.knex('ratings').where('call_id', '=', call.id).then((rows) => {
-                if(rows.length > 0) {
+                if (rows.length > 0) {
                     rating = rows[0];
                 }
             });
             call['rating'] = rating;
+
         }
         return call;
     },
@@ -150,28 +249,34 @@ module.exports = {
     },
     format_agent_call: async function (call, full = true) {
         call['vu'] = await this.get_vu(call['vu_id'], false);
-        call['vendor_service'] = await this.get_vendor_service(call['vendor_service_id']);
+        call['vendor_service'] = await this.get_service(call['vendor_service_id']);
 
         // if (!full) {
-            delete call['connection_guest_token'];
-            delete call['connection_agent_token'];
+        delete call['connection_guest_token'];
+        delete call['connection_agent_token'];
         // }
         return call;
     },
 
-    get_vendor_service: async function (id) {
+    get_service: async function (id) {
 
         let the_row = null;
 
-        await global_vars.knex('vendors_services').select('*')
+        await global_vars.knex('services').select('*')
             .where('id', '=', id).then((rows) => {
                 the_row = rows[0];
             });
 
-        return await this.format_vendor_service(the_row);
+        return await this.format_service(the_row);
 
     },
-    format_vendor_service: async function (vendor_service) {
+    format_service: async function (vendor_service) {
+        try {
+            delete vendor_service.is_deleted;
+        } catch (e) {
+
+        }
+
         return vendor_service;
     },
 
@@ -203,7 +308,7 @@ module.exports = {
     format_group: async function (the_row, full = true) {
 
         // get its services
-        if(full) {
+        if (full) {
             the_row['services'] = [];
             if (the_row != null) {
 
@@ -218,10 +323,12 @@ module.exports = {
                     });
 
                 for (let service_raw of services_raw) {
-                    the_row['services'].push(await this.get_vendor_service(service_raw.service_id));
+                    the_row['services'].push(await this.get_service(service_raw.service_id));
                 }
             }
         }
+
+        delete the_row.is_deleted;
 
         return the_row;
     },
@@ -241,7 +348,7 @@ module.exports = {
 
 
         // get its services
-        if(full) {
+        if (full) {
             the_row['permissions'] = [];
             if (the_row != null) {
 
@@ -280,7 +387,7 @@ module.exports = {
 
     format_custom_field: async function (record) {
 
-        if(record.type == 'checklist') {
+        if (record.type == 'checklist') {
             record.value = [];
         }
 
@@ -302,14 +409,44 @@ module.exports = {
     },
     format_call_request: async function (record, full = true) {
         record['vu'] = await this.get_vu(record['vu_id'], false);
-        record['service'] = await this.get_vendor_service(record['service_id']);
+        record['service'] = await this.get_service(record['service_id']);
+
+        if (record['call_id'] != 0 && record['call_id'] != null) {
+            try {
+                record['call'] = await this.get_call(record['call_id'], false);
+            } catch (e) {
+
+            }
+        } else {
+            record['call'] = null
+        }
 
         try {
             record['custom_fields_values'] = JSON.parse(record['custom_fields_values']);
         } catch (e) {
-            
+
         }
 
+        return record;
+    },
+
+    get_package: async function (id, viewer) { // friendly reminder, vu stands for vendor user
+
+        let the_row = null;
+
+        await global_vars.knex('packages').select('*')
+            .where('id', '=', id).then((rows) => {
+                the_row = rows[0];
+            });
+
+        return await this.format_package(the_row, viewer);
+
+    },
+    format_package: async function (record, viewer) {
+        if (viewer != 'root') {
+            delete record.stripe_annual_pan_id;
+            delete record.stripe_monthly_plan_id;
+        }
         return record;
     },
 

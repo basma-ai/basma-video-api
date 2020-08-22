@@ -45,10 +45,13 @@ router.post('/calls/get_services', async function (req, res, next) {
 
     if (go_ahead) {
         // and now, do the insertion
-        await global_vars.knex('vendors_services').select('*').where('vendor_id', '=', req.body.vendor_id).then((rows) => {
-            return_data['services'] = rows;
-            success = true;
-        });
+        await global_vars.knex('services').select('*')
+            .where('vendor_id', '=', req.body.vendor_id)
+            .where('is_deleted', '=', false)
+            .then((rows) => {
+                return_data['services'] = rows;
+                success = true;
+            });
     }
 
     res.send({
@@ -80,13 +83,16 @@ router.post('/calls/get_services', async function (req, res, next) {
 router.post('/calls/start_call', async function (req, res, next) {
 
 
+    console.log('start_call beginning')
     let success = true;
     let go_ahead = true;
     let return_data = {};
 
 
+
     // check the validity of the provided token
     const guest_id = await users_mod.token_to_id('guests', req.body.guest_token, 'id');
+
     if (guest_id == null) {
         if (return_data['errors'] == null) {
             return_data['errors'] = [];
@@ -97,9 +103,11 @@ router.post('/calls/start_call', async function (req, res, next) {
 
 
     if (go_ahead) {
+        console.log('start_call inside go ahead')
+
         // get the service
         var the_service = null;
-        await global_vars.knex('vendors_services').select('*').where('id', '=', req.body.service_id).then((rows) => {
+        await global_vars.knex('services').select('*').where('id', '=', req.body.service_id).then((rows) => {
             if (rows[0] != null) {
                 the_service = rows[0];
             }
@@ -115,6 +123,8 @@ router.post('/calls/start_call', async function (req, res, next) {
         }
 
         if (go_ahead) {
+            console.log('start_call inside go ahead 2')
+
             // cool, we reached here, now let's initiate the call
             let insert_data = {
                 guest_id: guest_id,
@@ -128,15 +138,29 @@ router.post('/calls/start_call', async function (req, res, next) {
             };
 
 
-            await global_vars.knex('calls').insert(insert_data).then((result) => {
-                success = true;
-                return_data['call_id'] = result[0];
-            });
+            let new_call = await global_vars.calls_mod.generate_call(insert_data);
+            console.log('start_call call generated')
 
-            if(success){
+            await global_vars.calls_mod.add_participant_to_call({
+                vendor_id: the_service.vendor_id,
+                call_id: new_call,
+                user_type: 'guest',
+                user_id: guest_id
+            })
+
+
+            return_data['call_id'] = new_call;
+
+            if (new_call) {
                 return_data['call_info'] = await calls_mod.get_guest_call_refresh(return_data['call_id'], guest_id);
 
+                console.log('start_call call get_guest_call_refresh done')
+
+
                 calls_mod.update_all_calls(the_service.vendor_id);
+
+                console.log('start_call update_all_calls called')
+
 
             }
 
@@ -183,7 +207,7 @@ router.post('/calls/start_call', async function (req, res, next) {
 router.post('/calls/request_update', async function (req, res, next) {
 
 
-    const guest_id = await users_mod.token_to_id('guests', req.body.guest_token, 'id');
+    const guest_id = await users_mod.token_to_id('guests', req.body.guest_token, 'id')
 
     await socket_mod.send_update({
         user_type: 'guest',
@@ -191,13 +215,13 @@ router.post('/calls/request_update', async function (req, res, next) {
         call_id: return_data['call_id'],
         type: 'call_info',
         data: await calls_mod.get_guest_call_refresh(req.body.call_id, guest_id)
-    });
+    })
 
 
     res.send({
         success: success,
         data: return_data
-    });
+    })
 
 });
 
@@ -300,6 +324,18 @@ router.post('/calls/end_call', async function (req, res, next) {
                 success = true;
             });
 
+
+            format_mod.get_call(the_call.id, true).then((call_info) => {
+                socket_mod.send_update({
+                    user_type: 'vu',
+                    user_id: the_call.vu_id,
+                    call_id: the_call.id,
+                    type: 'call_info',
+                    data: call_info
+                })
+            })
+
+
             calls_mod.update_all_calls(the_call.vendor_id);
             calls_mod.end_call_stuff(the_call.id);
 
@@ -312,9 +348,6 @@ router.post('/calls/end_call', async function (req, res, next) {
     });
 
 });
-
-
-
 
 /**
  * @api {post} /calls/submit_rating Submit rating
@@ -392,7 +425,6 @@ router.post('/calls/submit_rating', async function (req, res, next) {
         }
 
 
-
         if (go_ahead) {
 
             // cool, we reached here, now let's initiate the call
@@ -418,7 +450,6 @@ router.post('/calls/submit_rating', async function (req, res, next) {
     });
 
 });
-
 
 
 /**
@@ -480,7 +511,11 @@ router.post('/calls/send_message', async function (req, res, next) {
             go_ahead = false;
         }
 
-        if (go_ahead && the_call.guest_id != guest_id) {
+
+        // get cal participants
+        let participants = await calls_mod.get_participants(the_call.id);
+
+        if (go_ahead && !participants.some(a => (a.user_type == 'guest' && a.user_id == a.user_id))) {
             // no matching service found, halt
             if (return_data['errors'] == null) {
                 return_data['errors'] = [];
@@ -512,7 +547,6 @@ router.post('/calls/send_message', async function (req, res, next) {
 });
 
 
-
 router.post('/calls/test', async function (req, res, next) {
 
 
@@ -523,9 +557,38 @@ router.post('/calls/test', async function (req, res, next) {
 
     // var twilio_token = twilio_mod.generate_twilio_token('clientname2323', 'thetestroom32423');
 
+    // get all vendors
+    let vendors;
+    await global_vars.knex('vendors').then((rows) => {
+        vendors = rows;
+    });
 
+    for (let vendor of vendors) {
+        console.log("reached " + vendor.name);
+        let vendor_id = vendor.id;
 
-    return_data['recording'] = await twilio_mod.get_recordings('RMfa2b44ee9ab080f87218ec7190c7b992');
+        let current_last_id = 0;
+        // loop calls
+        let calls;
+        await global_vars.knex('calls')
+            .where('vendor_id', vendor_id)
+            .orderBy('id', 'ASC')
+            .then((rows) => {
+                calls = rows;
+            });
+
+        for (let call of calls) {
+            console.log(`call ${call.id} of ${calls.length}`)
+            current_last_id++;
+            await global_vars.knex('calls')
+                .where('vendor_id', vendor_id)
+                .where('id', call.id)
+                .update({
+                    local_id: current_last_id
+                })
+                .then().catch();
+        }
+    }
 
 
     res.send({
@@ -534,8 +597,6 @@ router.post('/calls/test', async function (req, res, next) {
     });
 
 });
-
-
 
 
 /**
@@ -594,15 +655,29 @@ router.post('/calls/join', async function (req, res, next) {
             let call_request = await format_mod.get_call_request(call_request_id);
 
             let call_id;
-            if(call_request.call_id == null || call_request.call_id == 0) {
+            if (call_request.call_id == null || call_request.call_id == 0) {
                 call_id = await calls_mod.generate_call({
-                    status: 'waiting_for_agent',
+                    status: call_request.make_it_ring ? 'waiting_for_agent' : 'waiting_for_agent_no_ring',
                     guest_id: guest_id,
-                    vendor_service_id: call_request.service_id
+                    vendor_service_id: call_request.service_id,
+                    vendor_id: guest_row.vendor_id
+                });
+
+                await global_vars.calls_mod.add_participant_to_call({
+                    vendor_id: call_request.vendor_id,
+                    call_id: call_id,
+                    user_type: 'guest',
+                    user_id: guest_id
+                })
+
+                // update the request
+                await global_vars.knex('call_requests').where('id', '=', call_request.id).update({
+                    call_id: call_id
                 });
             } else {
                 call_id = call_request.call_id;
             }
+
 
             // update the request
             await global_vars.knex('call_requests').where('id', '=', call_request.id).update({
@@ -615,10 +690,24 @@ router.post('/calls/join', async function (req, res, next) {
                 vendor_id: call_request.vendor_id
             });
 
+            await global_vars.calls_mod.add_participant_to_call({
+                call_id: call_id,
+                user_type: 'guest',
+                user_id: guest_id,
+                vendor_id:  call_request.vendor_id
+            })
+
             return_data['call_id'] = call_id;
             return_data['call_info'] = await calls_mod.get_guest_call_refresh(return_data['call_id'], guest_id);
 
-            calls_mod.update_all_calls(call_request_id.vendor_id);
+            // get the call
+            let call_data = await format_mod.get_call(return_data['call_id'], true);
+            return_data['show_rating'] = call_data.rating.id != null ? false : true;
+
+            return_data['call_info'] = await calls_mod.get_guest_call_refresh(return_data['call_id'], guest_id);
+
+            calls_mod.update_all_calls(call_request.vendor_id);
+
 
 
         }

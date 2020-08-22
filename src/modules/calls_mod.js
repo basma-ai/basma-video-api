@@ -6,6 +6,7 @@ let users_mod = require("../modules/users_mod");
 let format_mod = require("../modules/format_mod");
 let twilio_mod = require("../modules/twilio_mod");
 var socket_mod = require("./socket_mod");
+var roles_mod = require("./roles_mod");
 
 module.exports = {
 
@@ -18,6 +19,7 @@ module.exports = {
 
         users_mod.init(global_vars);
         format_mod.init(global_vars);
+        roles_mod.init(global_vars);
     },
 
     get_guest_call_refresh: async function (call_id, guest_id) {
@@ -47,7 +49,9 @@ module.exports = {
                 }
             });
 
-            delete the_call['s3_recording_folder'];
+            if (the_call['s3_recording_folder'] != undefined) {
+                delete the_call['s3_recording_folder'];
+            }
 
             if (the_call == null) {
                 // no matching service found, halt
@@ -85,30 +89,37 @@ module.exports = {
                     last_refresh_time: Date.now()
                 };
 
-                if (the_call['connection_guest_token'] == null) {
+                // if (the_call['connection_guest_token'] == null) {
                     // no token generated for the guest, let's make one
-                    var twilio_guest_token = await twilio_mod.generate_twilio_token('guest-' + guest_id, 'call-' + the_call.id, vendor.recording_enabled);
+                    // var twilio_guest_token = await twilio_mod.generate_twilio_token('guest-' + guest_id, 'call-' + the_call.id, vendor.recording_enabled);
                     // console.log("twilio_guest_token return is: ");
                     // console.log(twilio_guest_token);
 
-                    let update_data = {
-                        'twilio_guest_token': twilio_guest_token.token
-                    };
+                    // let update_data = {
+                    //     'twilio_guest_token': twilio_guest_token.token
+                    // };
+                    //
+                    // if (twilio_guest_token.twilio_room_sid != null) {
+                    //     update_data['twilio_room_sid'] = twilio_guest_token.twilio_room_sid;
+                    // }
+                    //
+                    //
+                    // // let's put it in the db
+                    // await global_vars.knex('calls').update({
+                    //     'connection_guest_token': twilio_guest_token.token,
+                    //     'twilio_room_sid': twilio_guest_token.twilio_room_sid,
+                    //     'is_recorded': vendor.recording_enabled
+                    // }).where('id', '=', the_call.id);
+                // }
 
-                    if(twilio_guest_token.twilio_room_sid != null) {
-                        update_data['twilio_room_sid'] = twilio_guest_token.twilio_room_sid;
-                    }
-
-
-                    // let's put it in the db
-                    await global_vars.knex('calls').update({
-                        'connection_guest_token': twilio_guest_token.token,
-                        'twilio_room_sid': twilio_guest_token.twilio_room_sid,
-                        'is_recorded': vendor.recording_enabled
-                    }).where('id', '=', the_call.id);
+                if(guest_id != null) {
+                    return_data['call'] = await format_mod.get_call(the_call.id, false, {
+                        user_type: 'guest',
+                        user_id: guest_id
+                    });
+                } else {
+                    return_data['call'] = await format_mod.get_call(the_call.id, false);
                 }
-
-                return_data['call'] = await format_mod.get_call(the_call.id, false);
 
                 // delete return_data['call']['connection_agent_token'];
 
@@ -133,7 +144,7 @@ module.exports = {
                     .whereNotNull('duration')
                     .where('duration', '<>', 0)
                     .limit(20)
-                    .orderBy('id','DESC')
+                    .orderBy('id', 'DESC')
                     .then((result) => {
                         average_call_duration = result[0]['average_duration'];
                         // console.log(result);
@@ -151,6 +162,8 @@ module.exports = {
 
     update_all_calls: async function (vendor_id) {
 
+        console.log("I am at update_all_calls");
+
         // get all calls
         let calls = [];
         await global_vars.knex('calls').where('vendor_id', '=', vendor_id).where('status', '=', 'calling').then((rows) => {
@@ -158,18 +171,68 @@ module.exports = {
         });
 
         for (let call of calls) {
-            socket_mod.send_update({
-                user_type: 'guest',
-                user_id: call.guest_id,
-                call_id: call.id,
-                type: 'call_info',
-                data: await this.get_guest_call_refresh(call.id, call.guest_id)
-            });
+            this.get_guest_call_refresh(call.id, call.guest_id).then((call_info) => {
+                socket_mod.send_update({
+                    user_type: 'guest',
+                    user_id: call.guest_id,
+                    call_id: call.id,
+                    type: 'call_info',
+                    data: call_info
+                });
+            })
+
         }
+
+        // send active agents the new pending calls list
+        // get active VUs
+        let get_vus_stmnt = global_vars.knex('vendors_users')
+            .select('vendors_users.*')
+            .leftJoin('sockets', 'sockets.vu_id', 'vendors_users.id')
+            .where('vendors_users.vendor_id', '=', vendor_id)
+            .where('sockets.socket_id', '<>', 'null');
+
+        let vus_raw = [];
+        await get_vus_stmnt.then((rows) => {
+            vus_raw = rows;
+        });
+
+        for (let the_vu of vus_raw) {
+
+            let sockets_ids = await global_vars.socket_mod.get_socket_ids('vu', the_vu.id, null);
+
+            let the_socket = await global_vars.socket_mod.get_socket_data(sockets_ids[0])
+
+            if (the_socket != null) {
+
+                let services_ids = null;
+                try {
+                    services_ids = JSON.parse(the_socket.services_ids)
+                } catch (e) {
+
+                }
+
+                this.get_agent_pending_calls({
+                    vu_id: the_vu.id,
+                    services_ids: services_ids
+                }).then((pending_calls) => {
+                    // send them an updated calls list
+                    socket_mod.send_update({
+                        user_type: 'vu',
+                        user_id: the_vu.id,
+                        type: 'pending_list',
+                        data: pending_calls
+                    });
+
+                })
+            }
+
+
+        }
+
 
     },
 
-    end_call_stuff: async function(call_id) {
+    end_call_stuff: async function (call_id) {
 
         let the_call;
         await global_vars.knex('calls').where('id', '=', call_id).then((rows) => {
@@ -178,8 +241,8 @@ module.exports = {
 
         // get the vendor of the call
 
-        if(the_call.is_recorded) {
-            console.log("recordings are enabled, trigger video processing service");
+        if (the_call.is_recorded) {
+            // console.log("recordings are enabled, trigger video processing service");
 
             await global_vars.knex('calls').where('id', '=', call_id).update({
                 recording_status: 'pending'
@@ -203,36 +266,84 @@ module.exports = {
         }
 
 
-
-
-
-
     },
 
-    get_participants: async function(call_id) {
+    get_participants: async function (call_id) {
 
-        let raw_call;
-        await global_vars.knex('calls').where('id', '=', call_id).then((rows) => {
-            raw_call = rows[0];
+        let participants;
+        await global_vars.knex('calls_participants').where('call_id', '=', call_id).then((rows) => {
+            participants = rows;
         });
 
-        // agent user
-        let agent_user = {
-            user_type: 'vu',
-            user_id: raw_call.vu_id
+        let fixed_participants = [];
+
+        for(let participant of participants) {
+            fixed_participants.push({
+                user_type: participant.user_type,
+                user_id: participant.user_id
+            });
         }
 
-        let guest_user = {
-            user_type: 'guest',
-            user_id: raw_call.guest_id
-        }
-
-        return [agent_user, guest_user]
+        return fixed_participants;
 
 
     },
 
-    generate_call: async function(params) {
+
+    add_participant_to_call: async function (params) {
+
+        // let params = {
+        //     vendor_id: 0,
+        //     cal_id: 0,
+        //     user_type: 'vu',
+        //     user_id: 0
+        // };
+
+        let success = false;
+
+        // make sure the participant is not already there
+        let there = false;
+
+        // let vendor = await format_mod.get_vendor(params.vendor_id, true);
+
+        console.log('the params passed to add_participant_to_call are: ');
+        console.log(params);
+
+
+
+
+
+        await global_vars.knex('calls_participants').where({
+            call_id: params.call_id,
+            user_type: params.user_type,
+            user_id: params.user_id
+            // twilio_room_sid: twilio_participant_token.twilio_room_sid
+        }).then(rows => {
+
+            if(rows.length > 0) {
+                there = true;
+            }
+
+        }).catch(error => {
+            console.log(error);
+        });
+
+        if(!there) {
+            let twilio_participant_token = await twilio_mod.generate_twilio_token('parti-' + params.user_type + '-' + params.user_id, 'call-' + params.call_id, false);
+
+            params['twilio_participant_token'] = twilio_participant_token.token;
+            await global_vars.knex('calls_participants').insert(params).then(result => {
+                success = true;
+            }).catch();
+        }
+
+        return true;
+
+    },
+
+    generate_call: async function (params) {
+
+        let go_ahead = false;
 
         // let params = {
         //     vendor_id: 0,
@@ -244,15 +355,154 @@ module.exports = {
 
         let call_id = 0;
 
+
+        // get last call id from the vendor
+        let last_id = 0;
+        await global_vars.knex('vendors').select('id', 'last_local_call_id').where('id', params.vendor_id).then((rows) => {
+            if (rows.length > 0) {
+                go_ahead = true;
+                last_id = rows[0]['last_local_call_id'];
+                params['local_id'] = last_id + 1;
+            }
+        }).catch((err) => {
+            go_ahead = false;
+        });
+
+        if (!go_ahead) {
+            return false;
+        }
+
+
+        last_id++;
+
+
+        // update the vendor's last call id
+
+
+        await global_vars.knex('vendors')
+            .where('id', '=', params.vendor_id)
+            .update({
+                last_local_call_id: last_id
+            }).then().catch((err) => {
+                console.log("I am here")
+                console.log(err);
+            });
+
         params['creation_time'] = Date.now();
-        await global_vars.knex('calls').insert(params).then((result) => {
+
+
+        await global_vars.knex('calls').insert(params).then(async (result) => {
 
             call_id = result[0];
 
+            let twilio_room_gen = await twilio_mod.generate_twilio_room('call-' + call_id, false);
+
+            await global_vars.knex('calls')
+                .where('id', call_id)
+                .update({
+                    twilio_room_sid : twilio_room_gen.twilio_room_sid
+                }).then(result => {
+                    console.log('room sid updated')
+                }).catch(errpr => {
+                    console.log(errpr);
+                });
+
+
+        }).catch((err) => {
+
         });
+
 
         return call_id;
 
+    },
+
+    get_agent_pending_calls: async function (params) {
+        let success = false;
+        let go_ahead = true;
+        let return_data = {};
+
+        // delete calls with 5 seconds of no refresh
+        // let last_time = Date.now() - (60 * 60 * 5);
+        // await global_vars.knex('calls').where('last_refresh_time', '<', last_time).where('status', '=', 'calling').update({
+        //     status: 'missed'
+        // });
+
+
+        // check the validity of the provided token
+        // const vu_id = await users_mod.token_to_id('vendors_users_tokens', params.vu_token, 'vu_id');
+        // if (vu_id == null) {
+        //     if (return_data['errors'] == null) {
+        //         return_data['errors'] = [];
+        //     }
+        //     return_data['errors'].push('invalid_vu_token');
+        //     go_ahead = false;
+        // }
+
+        var the_vu = await format_mod.get_vu(params.vu_id);
+
+        // check if is_authenticated
+        const is_authenticated = await roles_mod.is_authenticated(the_vu, [roles_mod.PERMISSIONS.SUPERUSER]);
+
+        if (go_ahead) {
+
+            let stmnt = global_vars.knex('calls').select('*');
+
+            if (!is_authenticated) {
+                // get the services the vu has access to
+
+                // get services which agent has access to
+                let services_stmnt = global_vars.knex('services')
+                    .select('services.*').distinct('services.id')
+                    .leftJoin('groups_services_relations', 'groups_services_relations.service_id', 'services.id')
+                    .leftJoin('groups', 'groups.id', 'groups_services_relations.group_id')
+                    .leftJoin('vu_groups_relations', 'vu_groups_relations.group_id', 'groups.id')
+                    .where(function () {
+                        this.where('vu_groups_relations.vu_id', '=', the_vu.id)
+                            .orWhere('services.is_restricted', '=', false);
+                    }).andWhere('services.vendor_id', '=', the_vu.vendor.id)
+                    .orderBy('services.id', 'DESC');
+
+                let service_ids = [];
+                await services_stmnt.then((rows) => {
+                    for (let row of rows) {
+                        service_ids.push(row.id);
+                    }
+                });
+
+                if (req.body.services_ids) {
+                    service_ids = service_ids.filter((a) => {
+                        return req.body.services_ids.includes(a);
+                    });
+                }
+
+                stmnt.whereIn('vendor_service_id', service_ids);
+            }
+
+            if (params.services_ids != null) {
+                stmnt.whereIn('vendor_service_id', JSON.parse(params.services_ids));
+            }
+
+            // and now, do the insertion
+            let pre_rows = null;
+            await stmnt.where(function () {
+                this.where('status', '=', 'calling')
+                    .orWhere('status', '=', 'waiting_for_agent')
+            }).where('vendor_id', '=', the_vu.vendor.id).orderBy('creation_time', 'ASC').then((rows) => {
+                pre_rows = rows;
+                success = true;
+            });
+
+            let final_rows = [];
+
+            for (let row of pre_rows) {
+                final_rows.push(await format_mod.format_call(row));
+            }
+
+            return_data['pending_calls_list'] = final_rows;
+        }
+
+        return return_data;
     }
 
 

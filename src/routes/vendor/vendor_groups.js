@@ -86,47 +86,67 @@ router.post('/vendor/groups/create', async function (req, res, next) {
     const vu = await format_mod.get_vu(vu_id, true);
 
     // check if is_authenticated
-    const is_authenticated = await roles_mod.is_authenticated(vu,[roles_mod.PERMISSIONS.GROUPS]);
+    const is_authenticated = await roles_mod.is_authenticated(vu, [roles_mod.PERMISSIONS.GROUPS]);
 
     if (is_authenticated) {
 
-        // that's awesome!, we can proceed with the process of creating an account for a new group as per the instructions and details provided by the vu (vendor user), the process will begin by by inserting the group in the database, then, you will be updated by another comment
-        let insert_data = {
+
+        // check package shall allow
+        let shall_allow = await global_vars.packages_mod.check_package_limit({
+            package_id: vu.vendor.package_id,
             vendor_id: vu.vendor.id,
-            name: req.body.name
-        };
-
-        let group_id = 0;
-        await global_vars.knex('groups').insert(insert_data).then((result) => {
-
-            success = true;
-            // console.log("the result of group creation");
-            // console.log(result);
-            group_id = result[0];
-
-        }).catch((err) => {
-            go_ahead = false;
+            table_name: 'groups',
+            package_field: 'groups'
         });
 
-        if (success) {
-            // cool, now let's assign the services
-            await set_group_services(vu, group_id, req.body.service_ids);
+        if (!shall_allow.shall_allow) {
+            return_data['errors'] = ['package_limitation'];
+            return_data['package_limitation'] = shall_allow;
+
+            go_ahead = false;
+            success = false;
         }
 
-        if(success) {
-            let log_params = {
-                table_name: 'groups',
-                row_id: group_id,
-                vu_id: vu.id,
-                new_value: insert_data,
-                type: 'create'
+        if (go_ahead) {
+
+            // that's awesome!, we can proceed with the process of creating an account for a new group as per the instructions and details provided by the vu (vendor user), the process will begin by by inserting the group in the database, then, you will be updated by another comment
+            let insert_data = {
+                vendor_id: vu.vendor.id,
+                name: req.body.name
             };
 
+            let group_id = 0;
+            await global_vars.knex('groups').insert(insert_data).then((result) => {
 
-            log_mod.log(log_params);
+                success = true;
+                // console.log("the result of group creation");
+                // console.log(result);
+                group_id = result[0];
+
+            }).catch((err) => {
+                go_ahead = false;
+            });
+
+            if (success) {
+                // cool, now let's assign the services
+                await set_group_services(vu, group_id, req.body.service_ids);
+            }
+
+            if (success) {
+                let log_params = {
+                    table_name: 'groups',
+                    row_id: group_id,
+                    vu_id: vu.id,
+                    new_value: insert_data,
+                    type: 'create'
+                };
+
+
+                log_mod.log(log_params);
+            }
+
+            return_data['group'] = await format_mod.get_group(group_id);
         }
-
-        return_data['group'] = await format_mod.get_group(group_id);
 
     } else {
 
@@ -170,7 +190,7 @@ router.post('/vendor/groups/edit', async function (req, res, next) {
     const vu = await format_mod.get_vu(vu_id, true);
 
     // check if can edit groups
-    const is_authenticated = await roles_mod.is_authenticated(vu,[roles_mod.PERMISSIONS.GROUPS]);
+    const is_authenticated = await roles_mod.is_authenticated(vu, [roles_mod.PERMISSIONS.GROUPS]);
 
     if (is_authenticated) {
 
@@ -196,6 +216,7 @@ router.post('/vendor/groups/edit', async function (req, res, next) {
             .update(update_data)
             .where('vendor_id', '=', vu.vendor.id)
             .where('id', '=', req.body.group_id)
+            .where('is_deleted', '=', false)
             .then((result) => {
 
                 success = true;
@@ -253,9 +274,10 @@ router.post('/vendor/groups/list', async function (req, res, next) {
     const vu = await format_mod.get_vu(vu_id, true);
 
     // check if is_authenticated
-    const is_authenticated = await roles_mod.is_authenticated(vu,[roles_mod.PERMISSIONS.GROUPS]);
+    const is_authenticated = await roles_mod.is_authenticated(vu, [roles_mod.PERMISSIONS.GROUPS]);
 
     if (is_authenticated) {
+
 
         // that's awesome!, we can proceed with the process of creating an account for a new group as per the instructions and details provided by the vu (vendor user), the process will begin by by inserting the group in the database, then, you will be updated by another comment
         let update_data = {
@@ -266,12 +288,15 @@ router.post('/vendor/groups/list', async function (req, res, next) {
         let stmnt = global_vars.knex('groups')
             .where('vendor_id', '=', vu.vendor.id)
 
+        stmnt = stmnt.where('is_deleted', '=', false);
+
         if (req.body.per_page != null && req.body.page != null) {
             stmnt = stmnt.paginate({
                 perPage: req.body.per_page == null ? 20 : req.body.per_page,
                 currentPage: req.body.page == null ? 0 : req.body.page
             });
         }
+
 
         await stmnt.then((rows) => {
 
@@ -291,6 +316,16 @@ router.post('/vendor/groups/list', async function (req, res, next) {
         return_data['list'] = groups;
         return_data['pagination'] = raw_groups.pagination;
 
+        // check package shall allow
+        let shall_allow = await global_vars.packages_mod.check_package_limit({
+            package_id: vu.vendor.package_id,
+            vendor_id: vu.vendor.id,
+            table_name: 'groups',
+            package_field: 'groups'
+        });
+
+        return_data['package_limitation'] = shall_allow;
+
 
     } else {
         return_data['errors'] = ['unauthorized_action'];
@@ -303,7 +338,6 @@ router.post('/vendor/groups/list', async function (req, res, next) {
     });
 
 });
-
 
 /**
  * @api {post} /vendor/groups/get Get a group
@@ -332,7 +366,7 @@ router.post('/vendor/groups/get', async function (req, res, next) {
     const vu = await format_mod.get_vu(vu_id, true);
 
     // check if is_authenticated
-    const is_authenticated = await roles_mod.is_authenticated(vu,[roles_mod.PERMISSIONS.GROUPS]);
+    const is_authenticated = await roles_mod.is_authenticated(vu, [roles_mod.PERMISSIONS.GROUPS]);
 
     if (is_authenticated) {
 
@@ -369,6 +403,90 @@ router.post('/vendor/groups/get', async function (req, res, next) {
 
 });
 
+/**
+ * @api {post} /vendor/groups/delete Delete a group
+ * @apiName VendorGroupsDelete
+ * @apiGroup vendor
+ * @apiDescription Delete a group
+ *
+ * @apiParam {String} vu_token Vendor User Token
+ * @apiParam {Integer} group_id Group ID
+ *
+ * @apiSuccessExample {json} Success-Response:
+ *     HTTP/1.1 200 OK
+
+
+ */
+router.post('/vendor/groups/delete', async function (req, res, next) {
+
+
+    let success = false;
+    let go_ahead = true;
+    let return_data = {};
+
+
+    const vu_id = await users_mod.token_to_id('vendors_users_tokens', req.body.vu_token, 'vu_id');
+
+    const vu = await format_mod.get_vu(vu_id, true);
+
+    // check if is_authenticated
+    const is_authenticated = await roles_mod.is_authenticated(vu, [roles_mod.PERMISSIONS.GROUPS]);
+
+    if (is_authenticated) {
+
+        let log_params = {
+            table_name: 'groups',
+            row_id: req.body.group_id,
+            vu_id: vu.id,
+            type: 'delete'
+        };
+        await log_mod.log(log_params);
+
+
+        // delete the groups_services_relations relations
+        await global_vars.knex('groups_services_relations')
+            .delete()
+            .where('vendor_id', '=', vu.vendor.id)
+            .where('group_id', '=', req.body.group_id)
+            .then(() => {
+
+            });
+
+        // delete the groups_services_relations relations
+        await global_vars.knex('vu_groups_relations')
+            .delete()
+            .where('vendor_id', '=', vu.vendor.id)
+            .where('group_id', '=', req.body.group_id)
+            .then(() => {
+
+            });
+
+        await global_vars.knex('groups').update({
+            'is_deleted': true
+        })
+            .where('vendor_id', '=', vu.vendor.id)
+            .where('id', '=', req.body.group_id)
+            .then((result) => {
+
+                success = true;
+
+            }).catch((err) => {
+                go_ahead = false;
+                console.log(err);
+            });
+
+
+    } else {
+        return_data['errors'] = ['unauthorized_action'];
+    }
+
+
+    res.send({
+        success: success,
+        data: return_data
+    });
+
+});
 
 module.exports = function (options) {
 

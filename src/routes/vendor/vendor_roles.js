@@ -188,6 +188,7 @@ router.post('/vendor/roles/edit', async function (req, res, next) {
             .update(update_data)
             .where('vendor_id', '=', vu.vendor.id)
             .where('id', '=', req.body.role_id)
+            .where('is_deleted', '=', false)
             .then((result) => {
                 success = true;
             }).catch((err) => {
@@ -255,6 +256,8 @@ router.post('/vendor/roles/list', async function (req, res, next) {
         let raw_roles = [];
         let stmnt = global_vars.knex('roles')
             .where('vendor_id', '=', vu.vendor.id)
+
+        stmnt = stmnt.where('is_deleted', '=', false);
 
         if (req.body.per_page != null && req.body.page != null) {
             stmnt = stmnt.paginate({
@@ -358,6 +361,93 @@ router.post('/vendor/roles/get', async function (req, res, next) {
     });
 
 });
+
+
+/**
+ * @api {post} /vendor/roles/delete Delete a role
+ * @apiName VendorRolesDelete
+ * @apiGroup vendor
+ * @apiDescription Delete a role
+ *
+ * @apiParam {String} vu_token Vendor User Token
+ * @apiParam {Integer} role_id Role ID
+ *
+ * @apiSuccessExample {json} Success-Response:
+ *     HTTP/1.1 200 OK
+
+
+ */
+router.post('/vendor/roles/delete', async function (req, res, next) {
+
+
+    let success = false;
+    let go_ahead = true;
+    let return_data = {};
+
+
+    const vu_id = await users_mod.token_to_id('vendors_users_tokens', req.body.vu_token, 'vu_id');
+
+    const vu = await format_mod.get_vu(vu_id, true);
+
+    // check if is_authenticated
+    const is_authenticated = await roles_mod.is_authenticated(vu, [roles_mod.PERMISSIONS.GROUPS]);
+
+    if (is_authenticated) {
+
+        let log_params = {
+            table_name: 'roles',
+            row_id: req.body.role_id,
+            vu_id: vu.id,
+            type: 'delete'
+        };
+        await log_mod.log(log_params);
+
+
+        // delete the roles_permissions_relations relations
+        await global_vars.knex('roles_permissions_relations')
+            .delete()
+            .where('vendor_id', '=', vu.vendor.id)
+            .where('role_id', '=', req.body.role_id)
+            .then(() => {
+
+            });
+
+        // delete the vu_roles_relations relations
+        await global_vars.knex('vu_roles_relations')
+            .delete()
+            .where('vendor_id', '=', vu.vendor.id)
+            .where('role_id', '=', req.body.role_id)
+            .then(() => {
+
+            });
+
+        await global_vars.knex('roles').update({
+            'is_deleted': true
+        })
+            .where('vendor_id', '=', vu.vendor.id)
+            .where('id', '=', req.body.role_id)
+            .then((result) => {
+
+                success = true;
+
+            }).catch((err) => {
+                go_ahead = false;
+                console.log(err);
+            });
+
+
+    } else {
+        return_data['errors'] = ['unauthorized_action'];
+    }
+
+
+    res.send({
+        success: success,
+        data: return_data
+    });
+
+});
+
 
 
 module.exports = function (options) {

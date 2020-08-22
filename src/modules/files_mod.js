@@ -4,23 +4,31 @@ var md5 = require('md5');
 const AWS = require('aws-sdk');
 const sharp = require('sharp');
 
+var global_vars = null;
+
 // GLOBAL DEFINITIONS
-var s3BucketName = 'basma-files'
+var s3BucketName = 'basma-uploads'
 
 // configuring the AWS environment
 AWS.config.update({
-    accessKeyId: "AKIA3UX6FBMDUNMZ552N",
-    secretAccessKey: "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"
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+    region: 'me-south-1'
 });
 
 var s3 = new AWS.S3();
-var s3Bucket = s3({ params: { Bucket: s3BucketName } });
+var s3Bucket = new AWS.S3({ params: { Bucket: s3BucketName } });
 
 function getRandomArbitrary(min, max) {
     return Math.random() * (max - min) + min;
 };
 
 module.exports = {
+
+    init: function (new_global_vars) {
+        global_vars = new_global_vars;
+
+    },
 
     getImage: async function (knex, image_id) {
 
@@ -197,7 +205,7 @@ module.exports = {
             's3_original_path': original_url,
             'time': Date.now() / 1000
         }).then(function (result) {
-            console.log("data inserted");
+            // console.log("data inserted");
             fileId = result[0];
         })
             .catch((err) => {
@@ -212,61 +220,70 @@ module.exports = {
         }
 
     },
-    uploadFile: async function (options) {
+    // uploadFile: async function (options) {
+    //
+    //     // let sampleOptions = {
+    //     //     knex: knexdb,
+    //     //     base64_data: thebase64code,
+    //     //     file_name: "test.jpg",
+    //     //     user_id: 154 // optional
+    //     // };
+    //
+    //
+    //
+    //     let mimeType = mime.lookup(options.file_name);
+    //     let imageData = options.base64_data;
+    //
+    //     if (imageData.includes(',')) {
+    //         imageData = imageData.split(',')[1];
+    //     }
+    //
+    //     var img = new Buffer(imageData, 'base64');
+    //
+    //     // var resized_small_data_base64, resized_medium_data_base64, resized_large_data_base64;
+    //
+    //
+    //     // do the upload
+    //     var upload_file_response = await this.uploadFile(options.knex, "file", imageData, options.file_name);
+    //
+    //     var original_url = upload_file_response;
+    //
+    //
+    //     var fileId;
+    //     await options.knex('files').insert({
+    //         'user_id': options.user_id,
+    //         'type': "audio",
+    //         's3_original_path': original_url,
+    //         'time': Date.now() / 1000
+    //     }).then(function (result) {
+    //         console.log("data inserted");
+    //         fileId = result[0];
+    //     })
+    //         .catch((err) => {
+    //             success = false;
+    //             console.log(err);
+    //             throw err
+    //         });
+    //
+    //     return {
+    //         "file_id": fileId,
+    //         "file": await this.getFile(options.knex, fileId)
+    //     }
+    //
+    // },
 
-        // let sampleOptions = {
-        //     knex: knexdb,
-        //     base64_data: thebase64code,
-        //     file_name: "test.jpg",
-        //     user_id: 154 // optional
-        // };
-
-
-
-        let mimeType = mime.lookup(options.file_name);
-        let imageData = options.base64_data;
-
-        if (imageData.includes(',')) {
-            imageData = imageData.split(',')[1];
-        }
-
-        var img = new Buffer(imageData, 'base64');
-
-        // var resized_small_data_base64, resized_medium_data_base64, resized_large_data_base64;
-
-
-        // do the upload
-        var upload_file_response = await this.uploadFile(options.knex, "audio", imageData, options.file_name);
-
-        var original_url = upload_file_response;
-
-
-        var fileId;
-        await options.knex('files').insert({
-            'user_id': options.user_id,
-            'type': "audio",
-            's3_original_path': original_url,
-            'time': Date.now() / 1000
-        }).then(function (result) {
-            console.log("data inserted");
-            fileId = result[0];
-        })
-            .catch((err) => {
-                success = false;
-                console.log(err);
-                throw err
-            });
-
-        return {
-            "file_id": fileId,
-            "file": await this.getFile(options.knex, fileId)
-        }
-
-    },
-
-    upload: async function (knex, folderName, base64, fileName) {
+    upload: async function (folderName, base64, fileName) {
+        AWS.config.update({
+            accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+            secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+            region: 'me-south-1'
+        });
 
         var success = true;
+
+        if(base64.includes(',')) {
+            base64 = base64.split(',')[1]
+        }
 
         // generate unique file name
         var fixedFileName = moment().unix() + '_' + Math.floor(getRandomArbitrary(0, 1000)) + '_' + fileName;

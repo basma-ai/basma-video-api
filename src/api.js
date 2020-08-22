@@ -5,17 +5,23 @@ const port = 1061
 require('dotenv').config()
 const {attachPaginate} = require('knex-paginate');
 const socket_mod = require('./modules/socket_mod');
+const calls_mod = require('./modules/calls_mod');
+const users_mod = require('./modules/users_mod');
+const format_mod = require('./modules/format_mod');
+const notifs_mod = require('./modules/notifs_mod');
+const packages_mod = require('./modules/packages_mod');
+const billing_mod = require('./modules/billing_mod');
 var log4js = require('log4js');
+var cors = require('cors')
+
 
 // set expressjs settings
 app.use(bodyParser.json({limit: '50mb'}));
 app.use(bodyParser.urlencoded({limit: '50mb', extended: true}));
 app.use(express.static('public'))
-app.use(function (req, res, next) {
-    res.header("Access-Control-Allow-Origin", "*");
-    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-    next();
-});
+app.use(cors())
+app.options('*', cors());
+
 
 // establish database connection, using knex
 var knex = require('knex')({
@@ -40,22 +46,39 @@ let io = require('socket.io')(server);
 
 // setup the logger
 let logger = log4js.getLogger();
-logger.level = process.env.MODE == 'development' ? 'debug' : 'default';
-
+logger.level = process.env.MODE == 'dev' ? 'debug' : 'default';
 
 // var global variables to pass
-let global_vars = {
+var global_vars = {
     knex: knex,
     socket_io: io,
-    logger: logger
+    logger: logger,
+    calls_mod: calls_mod
 };
 
 // init modules
+calls_mod.init(global_vars);
+users_mod.init(global_vars);
+format_mod.init(global_vars);
+notifs_mod.init(global_vars);
+packages_mod.init(global_vars);
+billing_mod.init(global_vars);
 socket_mod.init(global_vars);
+
+global_vars['socket_mod'] = socket_mod;
+global_vars['calls_mod'] = calls_mod;
+global_vars['users_mod'] = users_mod;
+global_vars['format_mod'] = format_mod;
+global_vars['notifs_mod'] = notifs_mod;
+global_vars['packages_mod'] = packages_mod;
+global_vars['billing_mod'] = billing_mod;
+
+
+app.locals.global_vars = global_vars;
 
 // index page 
 app.get('/', function (req, res) {
-    res.send("You have reached the assets system API! well done! from api.js");
+    res.send("You have reached the Basma Video API! well done!");
 });
 
 // require routes
@@ -63,11 +86,9 @@ let guest = require('./routes/guest.js')(global_vars)
 let calls = require('./routes/calls.js')(global_vars)
 let master = require('./routes/master.js')(global_vars)
 let agent = require('./routes/agent.js')(global_vars)
-// let files = require('./routes/files.js')(global_vars)
-
+let files = require('./routes/files.js')(global_vars)
 let calls_requests = require('./routes/vendor/vendor_calls_requests')(global_vars)
-
-
+let onboarding = require('./routes/onboarding.js')(global_vars)
 let vendor = require('./routes/vendor/vendor.js')(global_vars)
 let vendor_groups = require('./routes/vendor/vendor_groups.js')(global_vars)
 let vendor_services = require('./routes/vendor/vendor_services.js')(global_vars)
@@ -80,6 +101,17 @@ let vendor_permissions = require('./routes/vendor/vendor_permissions.js')(global
 let vendor_reports = require('./routes/vendor/vendor_reports.js')(global_vars)
 let vendor_calls_requests = require('./routes/vendor/vendor_calls_requests.js')(global_vars)
 let vendor_settings = require('./routes/vendor/vendor_settings.js')(global_vars)
+let vendor_billing = require('./routes/vendor/vendor_billing.js')(global_vars)
+let stripe_webhooks = require('./routes/stripe_webhooks.js')(global_vars)
+
+
+// onboarding
+app.post('/onboarding/join', onboarding);
+app.post('/onboarding/verify_otp', onboarding);
+app.post('/onboarding/resend_otp', onboarding);
+app.post('/onboarding/check_org_username', onboarding);
+app.post('/onboarding/test', onboarding);
+
 
 // guests
 app.get('/guest', guest);
@@ -101,11 +133,14 @@ app.post('/calls/test', calls);
 // agent
 app.get('/agent', agent);
 app.post('/agent/request_token', agent);
+app.post('/agent/request_reset_password', agent);
+app.post('/agent/do_reset_password', agent);
 app.post('/agent/list_pending_calls', agent);
 app.post('/agent/answer_call', agent);
 app.post('/agent/end_call', agent);
 app.post('/agent/update_call', agent);
 app.post('/agent/send_message', agent);
+app.post('/agent/check_token', agent);
 
 // master
 app.get('/master', master);
@@ -125,18 +160,21 @@ app.post('/vendor/groups/create', vendor_groups);
 app.post('/vendor/groups/edit', vendor_groups);
 app.post('/vendor/groups/list', vendor_groups);
 app.post('/vendor/groups/get', vendor_groups);
+app.post('/vendor/groups/delete', vendor_groups);
 
 // vendors services
 app.post('/vendor/services/create', vendor_services);
 app.post('/vendor/services/edit', vendor_services);
 app.post('/vendor/services/list', vendor_services);
 app.post('/vendor/services/get', vendor_services);
+app.post('/vendor/services/delete', vendor_services);
 
 // vendors users
 app.post('/vendor/users/create', vendor_users);
 app.post('/vendor/users/edit', vendor_users);
 app.post('/vendor/users/list', vendor_users);
 app.post('/vendor/users/get', vendor_users);
+app.post('/vendor/users/delete', vendor_users);
 
 // vendors calls
 app.post('/vendor/calls/list', vendor_calls);
@@ -155,12 +193,14 @@ app.post('/vendor/custom_fields/create', vendor_custom_fields);
 app.post('/vendor/custom_fields/edit', vendor_custom_fields);
 app.post('/vendor/custom_fields/list', vendor_custom_fields);
 app.post('/vendor/custom_fields/get', vendor_custom_fields);
+app.post('/vendor/custom_fields/delete', vendor_custom_fields);
 
 // vendors roles
 app.post('/vendor/roles/create', vendor_roles);
 app.post('/vendor/roles/edit', vendor_roles);
 app.post('/vendor/roles/list', vendor_roles);
 app.post('/vendor/roles/get', vendor_roles);
+app.post('/vendor/roles/delete', vendor_roles);
 
 // vendors permissions
 app.post('/vendor/permissions/list', vendor_permissions);
@@ -175,11 +215,22 @@ app.post('/vendor/reports/calls', vendor_reports);
 app.post('/vendor/settings/get', vendor_settings);
 app.post('/vendor/settings/edit', vendor_settings);
 
+// vendors billing
+app.post('/vendor/billing/payment_method_add', vendor_billing);
+app.post('/vendor/billing/payment_method_list', vendor_billing);
+app.post('/vendor/billing/payment_method_detach', vendor_billing);
+app.post('/vendor/billing/overview', vendor_billing);
+app.post('/vendor/billing/create_subscription', vendor_billing);
+app.post('/vendor/billing/invoices_list', vendor_billing);
+app.post('/vendor/billing/packages_list', vendor_billing);
+
+// stripe webhooks
+app.post('/stripe_webhooks/subscription_update', stripe_webhooks);
 
 
 // files
-// app.post('/files/get', files);
-// app.post('/files/upload', files);
+app.post('/files/get', files);
+app.post('/files/upload', files);
 
 io.on('connection', function (socket) {
     console.log('a user connected with id:', socket.id);
@@ -190,7 +241,7 @@ io.on('connection', function (socket) {
     // iniating a socket by frontend
     socket.on('start_socket', function (data) {
 
-        console.log("I am here");
+        // console.log("I am here");
 
         // let data = {
         //     user_type: "guest or agent",
@@ -200,7 +251,7 @@ io.on('connection', function (socket) {
 
         try {
             data = JSON.parse(data);
-        } catch(ex) {
+        } catch (ex) {
             // console.log(ex);
         }
         data.socket_id = socket.id;
@@ -232,11 +283,47 @@ io.on('connection', function (socket) {
 
     });
 
+    // check socket status, for testing purposes
+    socket.on('services_list_update', async function (data) {
+
+            console.log("I am here at services_list_update");
+
+            await global_vars.knex('sockets').update({
+                services_ids: JSON.stringify(data.services_ids)
+            }).where('socket_id', '=', socket.id).then((result) => {
+            });
+
+            // get socket data
+            let the_socket = await socket_mod.get_socket_data(socket.id);
+            the_socket = the_socket[0];
+            // console.log(JSON.stringify(the_socket));
+            // console.log("here 1");
+            if (the_socket != null && the_socket.vu_id != null) {
+                console.log("found the vu");
+                calls_mod.get_agent_pending_calls({
+                    vu_id: the_socket.vu_id,
+                    services_ids: JSON.stringify(data.services_ids)
+                }).then((pending_calls) => {
+                    console.log("sending the update");
+                    // send them an updated calls list
+                    socket_mod.send_update({
+                        user_type: 'vu',
+                        user_id: the_socket.vu_id,
+                        type: 'pending_list',
+                        data: pending_calls
+                    });
+                });
+            }
+
+
+        }
+    );
+
     socket.on('disconnect', async function () {
 
         console.log("disconnect triggered");
 
-        await socket_mod.disconnect_socket(socket.id);
+        await global_vars.socket_mod.disconnect_socket(socket.id);
 
     });
 });

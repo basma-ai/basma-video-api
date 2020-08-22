@@ -21,7 +21,7 @@ module.exports = {
 
         while (goAhead) {
 
-            if (table_name == 'phone_verification_tokens') {
+            if (table_name == 'phone_verification_tokens' || table_name == 'vendors_phone_tokens') {
                 return Math.floor(1000 + Math.random() * 9000);
             } else if (table_name == 'call_requests') {
                 return Math.random().toString(36).substring(7);
@@ -82,14 +82,20 @@ module.exports = {
 
 
         // get the token
-        var the_result = null;
+        let the_result = null;
         await global_vars.knex(table_name).select('*').where('token','=',token).then((result) => {
             if(result.length > 0) {
                 the_result = result[0];
             }
         });
 
-        return the_result[col_name];
+        try {
+            return the_result[col_name];
+        } catch (e) {
+
+        }
+
+        return null;
 
 
     }

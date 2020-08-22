@@ -58,7 +58,7 @@ router.post('/vendor/call_requests/list', async function (req, res, next) {
     stmnt = stmnt.where('vendor_id', '=', vu.vendor.id);
 
     // check if is_authenticated
-    const has_call_requests_permission = await roles_mod.is_authenticated(vu, [roles_mod.PERMISSIONS.CALL_REQUESTS]);
+    const has_call_requests_permission = await roles_mod.is_authenticated(vu, [roles_mod.PERMISSIONS.ASSIGN_CALL_REQUEST]);
 
     if (!has_call_requests_permission) {
         stmnt = stmnt.where('vu_id', '=', vu.id);
@@ -153,6 +153,8 @@ router.post('/vendor/call_requests/get', async function (req, res, next) {
  * @apiParam {Boolean} send_sms Send the user an SMS notification
  * @apiParam {Integer} scheduled_time The call's time, as a unix timestamp in ms (that's milliseconds)
  * @apiParam {JSON} custom_fields_values The custom fields and their values, as a json array
+ * @apiParam {Boolean} make_it_ring Make it ring in the agent phone
+
  *
  * @apiSuccessExample {json} Success-Response:
  *     HTTP/1.1 200 OK
@@ -189,7 +191,8 @@ router.post('/vendor/call_requests/create', async function (req, res, next) {
             service_id: req.body.service_id,
             send_sms: req.body.send_sms,
             custom_fields_values: req.body.custom_fields_values == null ? null : JSON.stringify(req.body.custom_fields_values),
-            token: request_token
+            token: request_token,
+            make_it_ring: req.body.make_it_ring
 
         }).then((result) => {
             success = true;
@@ -208,7 +211,7 @@ router.post('/vendor/call_requests/create', async function (req, res, next) {
                 if (req.body.custom_fields_values != null) {
 
                     let phone_cs = req.body.custom_fields_values.filter((a) => {
-                        return a.name == 'mobile';
+                        return a.type == 'mobile';
                     })[0];
 
                     if (phone_cs != null) {
@@ -219,6 +222,8 @@ router.post('/vendor/call_requests/create', async function (req, res, next) {
 
 
             }
+
+            return_data['join_url'] = `${process.env.PUBLIC_LINK}/${vu.vendor.username}?token=${request_token}`
         }
 
 
@@ -398,7 +403,7 @@ router.post('/vendor/call_requests/join', async function (req, res, next) {
         if (call_request.custom_fields_values != null) {
 
             let phone_cs = call_request.custom_fields_values.filter((a) => {
-                return a.name == 'mobile';
+                return a.type == 'mobile';
             })[0];
 
             if (phone_cs != null) {
@@ -424,7 +429,7 @@ router.post('/vendor/call_requests/join', async function (req, res, next) {
 
             }
 
-            if(call_request.send_sms) {
+            if (call_request.send_sms && !call_request.sms_sent) {
 
                 // get full vendor
                 let full_vendor = await format_mod.get_vendor(vu.vendor.id, 'agent');
@@ -432,7 +437,13 @@ router.post('/vendor/call_requests/join', async function (req, res, next) {
                 notifs_mod.sendSMSUsingTemplate(phone_number, full_vendor.call_request_sms_template, {
                     link: link,
                     time: time_humanized
-                });
+                })
+
+                await global_vars.knex('call_requests')
+                    .where('id', call_request.id)
+                    .update({
+                        sms_sent: true
+                    })
 
             }
         }
